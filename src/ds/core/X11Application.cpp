@@ -53,14 +53,19 @@ ds::core::X11Application::X11Application(
 
     this->glc = glXCreateContext(this->display, this->vi, nullptr, GL_TRUE);
 
-
     XSync(this->display, False);
     
     glXMakeCurrent(this->display, this->win, this->glc);
 
     glViewport(0, 0, this->gwa.width, this->gwa.height);    
 
-    glClearColor(1.0, 1.0, 1.0, 1.0);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glXSwapBuffers(this->display, this->win);
+
+    glClearColor(0.0, 0.0, 0.0, 1.0);
 
     glClear(GL_COLOR_BUFFER_BIT);
 
