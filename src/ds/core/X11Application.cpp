@@ -12,7 +12,15 @@
 
 ds::core::X11Application::X11Application(
     std::shared_ptr<ds::core::Engine> eng
-    ) : ds::core::Application(eng) {
+    ) : ds::core::Application(eng),
+        display(nullptr),
+        root(),
+        win(),
+        vi(nullptr),
+        cmap(),
+        swa(),
+        gwa(),
+        glc(nullptr) {
 
     if(this->getEngine() == nullptr) {
         throw ApplicationException("Engine cannot be a nullptr");
