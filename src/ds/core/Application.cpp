@@ -5,11 +5,6 @@
 #include <vector>
 #include <X11/Xlib.h>
 
-void runThread (ds::core::TaskHandler* handler, ds::core::TaskHandlerCondition cond)
-{
-    (*handler)(cond);
-}
-
 ds::core::Application::Application (std::shared_ptr<ds::core::Engine> e)
     :   cond (std::make_shared<std::atomic_bool>(true)),
         eng (e),
