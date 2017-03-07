@@ -1,10 +1,10 @@
-
 #ifndef DS_CORE_WORLD_H
 #define DS_CORE_WORLD_H
 
 #include <string>
 #include <chrono>
 #include <memory>
+#include <vector>
 #include <shared_mutex>
 
 //Forward declare render namespace
@@ -45,6 +45,12 @@ namespace ds { namespace core {
             void addRenderer(render::Renderer* renderer);
             //Render the entire world
             void render(render::RenderContext* ctx);
+
+            /**
+             * Returns a copy of all objects in the world
+             * @return
+             */
+            std::vector<ObjectPtr> getObjects();            
     private:
         struct Pimpl;
         std::unique_ptr<Pimpl> internal;
@@ -79,7 +85,6 @@ namespace ds { namespace core {
         //When modifying any positional information, this mutex must be held
         std::shared_timed_mutex mutex;
     };
-
 
 }}
 

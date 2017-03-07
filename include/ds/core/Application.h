@@ -7,23 +7,22 @@
 #include <thread>
 #include <exception>
 
- namespace ds { namespace core {
+namespace ds { namespace core {
 
+    //A shared pointer to an atomic boolean on which task handlers depend on
+    //Used to signal that their job should no longer be continued
+    typedef std::shared_ptr<std::atomic_bool> TaskHandlerCondition;
 
-     //A shared pointer to an atomic boolean on which task handlers depend on
-     //Used to signal that their job should no longer be continued
-     typedef std::shared_ptr<std::atomic_bool> TaskHandlerCondition;
+    typedef std::function<void(TaskHandlerCondition) > TaskHandler;
 
-     typedef std::function<void(TaskHandlerCondition)> TaskHandler;
-
-     /**
-      * Manages windowing & system initialization
-      */
+    /**
+     * Manages windowing & system initialization
+     */
 
     class Engine; //Forward declare
     class RenderContext; //Forward declare
-     
-    class Application {                          
+
+    class Application {
     public:
 
         //Setup application
@@ -36,7 +35,7 @@
         virtual ~Application();
 
         virtual void run();
-        
+
         virtual Engine* getEngine();
 
     protected:
@@ -48,10 +47,12 @@
     };
 
     //Exceptions
-    struct ApplicationException : public std::runtime_error {
-        ApplicationException(const char* arg) : runtime_error(arg) {}
-    };
 
+    struct ApplicationException : public std::runtime_error {
+        ApplicationException(const char* arg) : runtime_error(arg) 
+        {
+        }
+    };
 }}
 
 #endif /* DS_CORE_APPLICATION_H */

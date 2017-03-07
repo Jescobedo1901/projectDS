@@ -24,7 +24,7 @@ namespace ds { namespace impl {
         std::vector<ds::core::TaskHandler> getHandlers();
 
         void verify();
-        
+
         void attach(core::Application*);
 
         void detach(core::Application*);
@@ -34,8 +34,6 @@ namespace ds { namespace impl {
         core::World* getWorld();
 
         render::RenderContext* getRenderContext();
-
-        //
 
         DSAudioHandler* getAudioHandler();
 
@@ -54,15 +52,14 @@ namespace ds { namespace impl {
         std::unique_ptr<core::World> world;
     };
 
-
     inline void verify(DSEngine* eng) {
-        if(!eng) {
+        if (!eng) {
             throw ds::core::EngineException("Engine not initialized");
         }
-        if(!eng->getApplication()) {
+        if (!eng->getApplication()) {
             throw ds::core::EngineException("Engine is not attached");
         }
-        if(!eng->getWorld()) {
+        if (!eng->getWorld()) {
             throw ds::core::EngineException("World is not ready");
         }
     }

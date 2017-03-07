@@ -1,4 +1,3 @@
-
 #ifndef DS_IMPL_DSHANDLER_H
 #define DS_IMPL_DSHANDLER_H
 
@@ -13,7 +12,8 @@ namespace ds { namespace impl {
         
         virtual ~DSHandler() {}
 
-        void addProcessor(E&& processor) {
+        void addProcessor(E&& processor)
+        {
             this->processors.push_back(std::move(processor));
         }        
 
@@ -21,7 +21,6 @@ namespace ds { namespace impl {
         std::vector<E> processors;
 
     };
-
     
 }}
 

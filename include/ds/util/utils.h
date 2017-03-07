@@ -5,18 +5,21 @@
 #include <iostream>
 
 namespace ds { namespace util {
-    
+
     /**
      * Helpful structure to create scoped XLock for
      * multithreaded X11 programming
      */
     struct XLockDisplayGuard {
+
         XLockDisplayGuard(Display* d) : display(d) {
             XLockDisplay(this->display);
         }
-        virtual ~XLockDisplayGuard () {
+
+        virtual ~XLockDisplayGuard() {
             XUnlockDisplay(this->display);
         }
+
     private:
         Display* display;
     };
@@ -24,20 +27,22 @@ namespace ds { namespace util {
 
     namespace detail {
         struct noop {
-            void operator()() {}
+            void operator()()
+            {
+            }
         };
     }
-    template<int Frequency, bool MissingDeadlineIsFailure, bool Debug = false>
+
+    template<int Frequency, bool MissingDeadlineIsFailure, bool Debug = false >
     struct Timer {
-        
         const int frequency = Frequency;
         const bool missing_deadline_is_failure = MissingDeadlineIsFailure;
 
-
         template<typename Function, typename Condition, typename DeadlineHandler>
         inline void run(Function&& function,
-                        const Condition& cond,
-                        DeadlineHandler&& deadlineHandler) {
+                const Condition& cond,
+                DeadlineHandler&& deadlineHandler)
+        {
             using dur_nano = std::chrono::nanoseconds;
             using dur_sec = std::chrono::seconds;
             using hr_clock = std::chrono::high_resolution_clock;
@@ -46,31 +51,29 @@ namespace ds { namespace util {
 
             hr_clock::time_point last = hr_clock::now();
 
-            while(cond) {
+            while (cond) {
+                function();
                 auto runtime = hr_clock::now() - last;
-                if(runtime < stepDuration) {
+                if (runtime < stepDuration) {
                     auto sleepFor = stepDuration - runtime;
                     std::this_thread::sleep_for(sleepFor);
                     last += stepDuration; //normal flow
-                } else if(MissingDeadlineIsFailure) {
+                } else if (MissingDeadlineIsFailure) {
                     deadlineHandler();
                 } else {
-//                    std::cout   << "Deadline missed by "
-//                                << (stepDuration - runtime).count()
-//                                << "ns."
-//                                << std::endl;
                     //reset to now, or timer will have bias towards
                     //and try to "catch up"
                     last = hr_clock::now();
                 }
             }
         }
-        
+
         template<typename Function, typename Condition>
         inline void run(Function&& function, const Condition& cond) {
             return run(std::move(function), cond, detail::noop());
         }
     };
+
 }}
 #endif /* DS_UTIL_HELPER_H */
 
