@@ -12,24 +12,25 @@
 #include<GL/glu.h>
 
 #include "Application.h"
-#include "./../util/helper.h"
+#include "./../util/utils.h"
 
  namespace ds { namespace core {
 
     class Engine; //Forward declare
-    
+
     class X11Application : public Application {
     public:
-        
+
          //Setup application
          X11Application(std::shared_ptr<Engine> engine);
 
          ~X11Application();
 
-         //Generic API       
+         //Generic API
          void exit();
 
         //X11 related
+        virtual bool hasPendingEvents();
         virtual void nextEvent(XEvent& event);
 
     public:
@@ -42,7 +43,7 @@
         XWindowAttributes gwa;
         GLXContext glc;
      };
-     
+
 }}
 
 #endif /* DS_CORE_X11APPLICATION_H */

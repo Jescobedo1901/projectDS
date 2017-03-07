@@ -25,6 +25,7 @@ namespace ds { namespace core {
     typedef Vec3 Acceleration;
     typedef Vec3 Position;
 
+    typedef std::chrono::high_resolution_clock clock;
     typedef std::chrono::high_resolution_clock::time_point time_point;
 
     class Object; //forward delcare Object

@@ -20,14 +20,16 @@ void ds::impl::DSEventHandler::operator()(core::TaskHandlerCondition cond) {
     verify(this->eng);
     while (*cond) {
             //Process events
-            this->eng->getApplication()->nextEvent(event);
-            for(auto    it = this->processors.begin(),
-                        end = this->processors.end();
-                        it != end;
-                        ++it) {
-                (*it)(event);
+            while(this->eng->getApplication()->hasPendingEvents()) {
+                this->eng->getApplication()->nextEvent(event);
+                for(auto    it = this->processors.begin(),
+                            end = this->processors.end();
+                            it != end;
+                            ++it) {
+                    (*it)(event);
+                }
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     std::cout << "I have stopped processing events" << std::endl;

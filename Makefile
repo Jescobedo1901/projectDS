@@ -53,4 +53,4 @@ $(TARGET):  $(OBJECTS)
 -include $(OBJECTS:.o=.$(DEPEXT))
 
 clean:
-	rm -f $(SOURCES:.cpp=.d) $(OBJECTS) $(TARGET)
+	rm -f $(SOURCES:.cpp=.$(DEPEXT)) $(OBJECTS) $(TARGET)

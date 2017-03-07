@@ -17,21 +17,15 @@
 #include <chrono>
 #include <thread>
 #include "ds/core/Application.h"
+#include "DSHandler.h"
 
 namespace ds { namespace impl {
 
-    struct DSPhysicsHandler {
+    struct DSPhysicsHandler : DSHandler<std::function<void(double)>> {
 
-        void operator()(core::TaskHandlerCondition cond) {
-            while(*cond) {
-                std::cout << "I am processing physics" << std::endl;
-                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            }
-            std::cout << "I have stopped processing physics" << std::endl;
-        }
-
+        DSPhysicsHandler();
+        void operator()(core::TaskHandlerCondition cond);
         
-
     };
 
 }}

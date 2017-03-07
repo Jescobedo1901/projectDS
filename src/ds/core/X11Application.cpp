@@ -1,6 +1,7 @@
- 
+
 #include "ds/core/X11Application.h"
 #include "ds/core/Engine.h"
+#include "ds/util/utils.h"
 
 #include <X11/keysym.h>
 
@@ -8,6 +9,7 @@
 #include <cstdlib> // for atexit func
 #include <thread>
 #include <vector>
+
 
 
 ds::core::X11Application::X11Application(
@@ -26,18 +28,24 @@ ds::core::X11Application::X11Application(
         throw ApplicationException("Engine cannot be a nullptr");
     }
 
+    if(!XInitThreads()) {
+        throw new ApplicationException("X11 could not initialize threads");
+    }
+    
     GLint glAttr[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 
     if(!(this->display= XOpenDisplay(nullptr))) {
         throw ApplicationException("X11: Failed opening X11 display");
     }
-    
+
+    util::XLockDisplayGuard lock(this->display);
+
     this->root= DefaultRootWindow(this->display);
-    
-    if(!(this->vi = glXChooseVisual(this->display, 0, glAttr))) {
+
+        if(!(this->vi = glXChooseVisual(this->display, 0, glAttr))) {
         throw ApplicationException("GL: Acquring visual failed");
     }
-    
+
     this->cmap = XCreateColormap(this->display, this->root, this->vi->visual, AllocNone);
     swa.colormap = this->cmap;
     swa.event_mask = ExposureMask | KeyPressMask;
@@ -58,34 +66,13 @@ ds::core::X11Application::X11Application(
     XMapWindow(this->display, this->win);
 
     XStoreName(this->display, this->win, "Deepsea Survival");
-
-    this->glc = glXCreateContext(this->display, this->vi, nullptr, GL_TRUE);
-
-    XSync(this->display, False);
     
-    glXMakeCurrent(this->display, this->win, this->glc);
-
-    glViewport(0, 0, this->gwa.width, this->gwa.height);    
-
-    glClearColor(0.0, 0.0, 0.0, 1.0);
-
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glXSwapBuffers(this->display, this->win);
-
-    glClearColor(0.0, 0.0, 0.0, 1.0);
-
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glXSwapBuffers(this->display, this->win);  
-
     std::cout << "Finished setting up X11 Application.." << std::endl;
-    
+
 }
 
 ds::core::X11Application::~X11Application() {
-    glXMakeCurrent(this->display, None, NULL);
-    glXDestroyContext(this->display, glc);
+    util::XLockDisplayGuard lock(this->display);
     XDestroyWindow(this->display, win);
     XCloseDisplay(this->display);
 }
@@ -94,6 +81,13 @@ void ds::core::X11Application::exit() {
     std::exit(EXIT_SUCCESS);
 }
 
+
+bool ds::core::X11Application::hasPendingEvents() {
+    util::XLockDisplayGuard lock(this->display);
+    return XPending(this->display) > 0;
+}
+
 void ds::core::X11Application::nextEvent(XEvent& event) {
+    util::XLockDisplayGuard lock(this->display);
     XNextEvent(this->display, &event);
 }

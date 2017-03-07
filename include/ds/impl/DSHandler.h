@@ -9,15 +9,15 @@ namespace ds { namespace impl {
     template<typename E>
     struct DSHandler {
 
+        DSHandler() : processors() {}
+        
         virtual ~DSHandler() {}
 
-        virtual void addProcessor(E&& processor) {
+        void addProcessor(E&& processor) {
             this->processors.push_back(std::move(processor));
-        }
-        
+        }        
 
     protected:
-
         std::vector<E> processors;
 
     };
