@@ -2,6 +2,7 @@
 #define DS_IMPL_DSHANDLER_H
 
 #include <vector>
+#include <type_traits>
 
 namespace ds { namespace impl {
 
@@ -9,19 +10,21 @@ namespace ds { namespace impl {
     struct DSHandler {
 
         DSHandler() : processors() {}
-        
+
         virtual ~DSHandler() {}
 
-        void addProcessor(E&& processor)
+        template<typename T>
+        std::shared_ptr<T> addProcessor(std::shared_ptr<T> processor)
         {
-            this->processors.push_back(std::move(processor));
-        }        
+            auto ptr = std::dynamic_pointer_cast<E>(processor);
+            this->processors.emplace_back(ptr);
+            return processor;
+        }
 
     protected:
-        std::vector<E> processors;
-
+        std::vector<std::shared_ptr<E>> processors;
     };
-    
+
 }}
 
 #endif /* DS_IMPL_DSHANDLER_H */

@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <iostream>
+#include "ds/core/World.h"
 
 namespace ds { namespace util {
 
@@ -45,19 +46,32 @@ namespace ds { namespace util {
         {
             using dur_nano = std::chrono::nanoseconds;
             using dur_sec = std::chrono::seconds;
+            //using dur_sec_fp = std::chrono::duration<core::fp_type>;
             using hr_clock = std::chrono::high_resolution_clock;
-            int const updatesPerSecond = 60; //60 updates per second
-            const dur_nano stepDuration = dur_nano(dur_sec(1)) / updatesPerSecond;
+            const dur_nano stepDuration = dur_nano(dur_sec(1)) / frequency;
 
-            hr_clock::time_point last = hr_clock::now();
+            //Used to measure the real time passed, for delta
+            hr_clock::time_point real = hr_clock::now();
+
+            //Used to measure the timer expiration
+            hr_clock::time_point last = hr_clock::now();            
 
             while (cond) {
+
+                auto now = hr_clock::now();
+                
+                this->delta = (now - real).count() / static_cast<core::fp_type>(dur_nano(dur_sec(1)).count());
+                
+                real = now;
+
                 function();
+
                 auto runtime = hr_clock::now() - last;
+                
                 if (runtime < stepDuration) {
                     auto sleepFor = stepDuration - runtime;
                     std::this_thread::sleep_for(sleepFor);
-                    last += stepDuration; //normal flow
+                    last += stepDuration; //normal flow                    
                 } else if (MissingDeadlineIsFailure) {
                     deadlineHandler();
                 } else {
@@ -69,9 +83,20 @@ namespace ds { namespace util {
         }
 
         template<typename Function, typename Condition>
-        inline void run(Function&& function, const Condition& cond) {
+        inline void run(Function&& function, const Condition& cond)
+        {
             return run(std::move(function), cond, detail::noop());
         }
+
+        //The current delta in the execution context
+        //Only meaningful to the running code
+        core::fp_type getDelta()
+        {
+            return delta;
+        }
+
+    private:
+        core::fp_type delta;
     };
 
 }}

@@ -3,12 +3,20 @@
 
 #include <chrono>
 #include <thread>
+#include "ds/core/World.h"
 #include "ds/core/Application.h"
 #include "DSHandler.h"
 
 namespace ds { namespace impl {
 
-    struct DSPhysicsHandler : DSHandler<std::function<void(double)>> {
+    struct PhysicsProcessor {
+        virtual ~PhysicsProcessor()
+        {
+        }
+        virtual void operator()(core::fp_type delta) = 0;
+    };
+
+    struct DSPhysicsHandler : DSHandler<PhysicsProcessor> {
 
         DSPhysicsHandler();
         void operator()(core::TaskHandlerCondition cond);

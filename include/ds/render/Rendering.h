@@ -30,35 +30,47 @@ namespace ds { namespace render {
         {
         }
         virtual void render(RenderContext* ctx, core::Object* obj, Renderable* renderable) = 0;
-    };
-
-    /**
-     * All renderable objects must inherit this class
-     */
-    class Renderable {
-    public:
+        
         /**
          * Check if a Renderer is applicable to Renderable
          * @param render
          * @return
          */
-        virtual bool isRenderer(Renderer* render)  = 0;
+        virtual bool isRenderer(Renderable* render)  = 0;
+    };
 
+    typedef std::shared_ptr<Renderer> RendererPtr;
+
+    /**
+     * All renderable objects must inherit this class
+     */
+    struct Renderable {
+        virtual ~Renderable()
+        {
+        }
     };
 
     /**
      * Basic shape
      */
-    class Shape : public Renderable {
-        virtual bool isRenderer(Renderer* render);
+    struct Shape : public Renderable {
+            virtual ~Shape()
+            {
+            }
     };
 
-    class Texture : public Renderable {
-        
+    struct Sphere : public Shape {
+        virtual ~Sphere()
+        {
+        }
     };
 
-    class Text : public Renderable {
-        
+    struct Texture : public Renderable {
+    };
+
+    struct Text : public Renderable {
+
+        std::string text;
     };
 }}
 

@@ -13,12 +13,17 @@
 #include <thread>
 #include <mutex>
 #include <shared_mutex>
+#include <ostream>
 
 #include "ds/render/Rendering.h"
 
+std::ostream& ds::core::operator<<(std::ostream& os, const ds::core::Vec3& v) {
+    return os << '{' <<v.x << ", " << v.y << ", " << v.z << '}';
+}
+
 struct ds::core::World::Pimpl {
     std::vector<ds::core::ObjectPtr> objs;
-    std::vector<ds::render::Renderer*> renderers;
+    std::vector<ds::render::RendererPtr> renderers;
     std::shared_timed_mutex objsMtx;
     std::shared_timed_mutex renderersMtx;
 };
@@ -53,7 +58,7 @@ bool ds::core::World::remove (ObjectPtr obj)
     return vec.erase(std::remove(vec.begin(), end, obj), end) != end;
 }
 
-void ds::core::World::addRenderer (render::Renderer* renderer)
+void ds::core::World::addRenderer (std::shared_ptr<render::Renderer> renderer)
 {
     std::unique_lock<std::shared_timed_mutex> lock(this->internal->objsMtx);
     this->internal->renderers.push_back(renderer);
@@ -65,15 +70,16 @@ void ds::core::World::render (render::RenderContext* ctx)
 {
     std::shared_lock <std::shared_timed_mutex> readObjects(this->internal->objsMtx);
     std::shared_lock <std::shared_timed_mutex> readRenderers(this->internal->renderersMtx);
-    auto vec = this->internal->objs;
-    auto renderers = this->internal->renderers;
+    auto& vec = this->internal->objs;
+    auto& renderers = this->internal->renderers;
     //Simple rendering logic
     //@TODO Optimize
     for (auto& e : vec) {
         if (e->renderable) {
             for (auto r : renderers) {
-                if (e->renderable->isRenderer(r)) {
+                if(r->isRenderer(&*e->renderable)) {
                     r->render(ctx, &*e, &*e->renderable);
+                    break;
                 }
             }
         }

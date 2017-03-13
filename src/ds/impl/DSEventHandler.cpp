@@ -27,14 +27,27 @@ void ds::impl::DSEventHandler::operator() (core::TaskHandlerCondition cond)
         //Process events
         while (this->eng->getApplication()->hasPendingEvents()) {
             this->eng->getApplication()->nextEvent(event);
+//            if(event.type == Expose) {
+//                util::XLockDisplayGuard guard(this->eng->getApplication()->display);
+//                XGetWindowAttributes(
+//                    this->eng->getApplication()->display,
+//                    this->eng->getApplication()->win,
+//                    &this->eng->getApplication()->gwa
+//                );
+//                auto    width = this->eng->getApplication()->gwa.width,
+//                        height = this->eng->getApplication()->gwa.height;
+//                glMatrixMode(GL_PROJECTION); glLoadIdentity();
+//                glMatrixMode(GL_MODELVIEW); glLoadIdentity();
+//                glOrtho(0, width, 0, height, -1, 1);
+//                glViewport(0, 0, width, height);
+//            }
             for (auto it = this->processors.begin(),
                     end = this->processors.end();
                     it != end;
                     ++it) {
-                (*it)(event);
+                (**it)(event);
             }
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     std::cout << "I have stopped processing events" << std::endl;

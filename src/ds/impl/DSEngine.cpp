@@ -8,6 +8,62 @@
 #include "ds/impl/DSAudioHandler.h"
 #include "ds/core/World.h"
 
+
+
+ds::impl::DSNewtonianPhysics::DSNewtonianPhysics (DSEngine* e) : eng (e)
+{
+}
+
+void ds::impl::DSNewtonianPhysics::operator() (ds::core::fp_type delta)
+{
+    auto objs = this->eng->getWorld()->getObjects();
+    for (auto
+            it = objs.begin(),
+            end = objs.end();
+            it != end;
+            ++it) {
+        core::ObjectPtr obj = *it;
+
+        core::Vec3 F = obj->cumForces();
+        obj->forces.clear(); //clear applied forces
+
+        // a = F / m
+        core::Vec3 a = F / obj->mass;
+
+        //Velocity  = acceleration * time
+        obj->vel += delta * a;
+
+        //Position = velocity * time
+        // Adjust pixel to meter radio
+        obj->pos += delta * obj->vel * impl::PIXEL_TO_METER;
+//
+//        std::cout << "Mass: " <<  obj->mass << std::endl;
+//        std::cout << "F: " <<  F << std::endl;
+//        std::cout << "Acc: " <<  obj->acc << std::endl;
+//        std::cout << "Vel: " <<  obj->vel << std::endl;
+//        std::cout << "Pos: " <<  obj->pos << std::endl;
+    }
+
+}
+
+ds::impl::DSGravity::DSGravity (ds::core::Vec3 acc, ds::impl::DSEngine* e) : acceleration(acc), eng (e)
+{
+}
+
+void ds::impl::DSGravity::operator() (ds::core::fp_type delta)
+{
+    auto objs = this->eng->getWorld()->getObjects();
+    for (auto
+            it = objs.begin(),
+            end = objs.end();
+            it != end;
+            ++it) {                        
+        (*it)->forces.emplace_back((*it)->mass * acceleration);
+    }
+}
+
+
+
 ds::impl::DSEngine::DSEngine ()
     :   core::Engine (),
         eventHandler (this),
@@ -17,6 +73,8 @@ ds::impl::DSEngine::DSEngine ()
         app (nullptr),
         world (std::make_unique<core::World>())
 {
+    this->getPhysicsHandler()->addProcessor(std::make_shared<DSNewtonianPhysics>(this));
+    this->getPhysicsHandler()->addProcessor(std::make_shared<DSGravity>(core::Vec3{0, -9.8, 0}, this));
 }
 
 ds::impl::DSEngine::~DSEngine ()
@@ -81,3 +139,4 @@ ds::core::X11Application* ds::impl::DSEngine::getApplication ()
 {
     return this->app;
 }
+

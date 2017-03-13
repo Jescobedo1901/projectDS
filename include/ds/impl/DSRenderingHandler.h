@@ -6,19 +6,18 @@
 #include <iostream>
 #include "ds/core/Application.h"
 #include "ds/render/Rendering.h"
+#include "DSHandler.h"
 
 namespace ds { namespace impl {
-
 
     struct DSEngine; //forward declare
     
     struct DSRenderingHandler {
         
-        DSRenderingHandler(DSEngine* e) : eng(e)
-        {
-        }
+        DSRenderingHandler(DSEngine* e);
 
         void operator()(core::TaskHandlerCondition cond);
+
     private:
         DSEngine* eng;
     };

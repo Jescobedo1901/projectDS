@@ -16,6 +16,8 @@
 
 namespace ds { namespace impl {
 
+    const core::fp_type PIXEL_TO_METER = 4;
+
     class DSEngine : public core::Engine, public render::RenderContext {
     public:
         DSEngine();
@@ -50,6 +52,23 @@ namespace ds { namespace impl {
         DSAudioHandler audioHandler;
         core::X11Application* app;
         std::unique_ptr<core::World> world;
+    };
+        
+    //Newtonian physics model
+    struct DSNewtonianPhysics : PhysicsProcessor {
+        DSNewtonianPhysics (DSEngine* e);
+        void operator() (core::fp_type delta);
+    private:
+        DSEngine* eng;
+    };
+    
+    //Simple gravity model
+    struct DSGravity : PhysicsProcessor {
+        DSGravity (core::Vec3 acc, DSEngine* e);
+        void operator() (core::fp_type delta);    
+    private:
+        core::Vec3 acceleration;
+        DSEngine* eng;
     };
 
     inline void verify(DSEngine* eng) {

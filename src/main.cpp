@@ -20,7 +20,7 @@ namespace ds { namespace impl {
     void initJacobE (DSEngine* eng);
     //Implemented in marcelF.cpp
     void initMarcelF (DSEngine* eng);
-    //Implemented in omarO.cpp
+        //Implemented in omarO.cpp
     void initOmarO (DSEngine* eng);
     //Implemented in seanC.cpp
     void initSeanC (DSEngine* eng);
@@ -34,11 +34,12 @@ int main (int argc, char** argv)
     std::shared_ptr<ds::core::Engine> eng(std::make_shared<ds::impl::DSEngine>());
     std::unique_ptr<ds::core::Application> a(std::make_unique<ds::core::X11Application>(eng));
 
+    a->init();
     //Initialize contributors sections
-    //    ds::impl::initJacobE(dynamic_cast<ds::impl::DSEngine*>(a->getEngine()));
-    //    ds::impl::initMarcelF(dynamic_cast<ds::impl::DSEngine*>(a->getEngine()));
-    //    ds::impl::initOmarO(dynamic_cast<ds::impl::DSEngine*>(a->getEngine()));
-    //    ds::impl::initSeanC(dynamic_cast<ds::impl::DSEngine*>(a->getEngine()));
+    ds::impl::initJacobE(dynamic_cast<ds::impl::DSEngine*>(a->getEngine()));
+    ds::impl::initMarcelF(dynamic_cast<ds::impl::DSEngine*>(a->getEngine()));
+    ds::impl::initOmarO(dynamic_cast<ds::impl::DSEngine*>(a->getEngine()));
+    ds::impl::initSeanC(dynamic_cast<ds::impl::DSEngine*>(a->getEngine()));
 
     //Blocks until exit is called
     a->run();

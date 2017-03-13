@@ -31,9 +31,12 @@ namespace ds { namespace core {
         Application(const Application&) = delete;
         Application& operator=(const Application&) = delete;
 
+
         //Takedown application
         virtual ~Application();
 
+        virtual void init();
+        
         virtual void run();
 
         virtual Engine* getEngine();

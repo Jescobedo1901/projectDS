@@ -12,10 +12,19 @@
 
 namespace ds { namespace impl {
 
+
+    struct EventProcessor {
+        virtual ~EventProcessor()
+        {
+        }
+        virtual void operator()(const XEvent& event) = 0;
+    };
+
+    
     struct DSEngine;
     
     struct DSEventHandler
-        : public DSHandler<std::function<void(const XEvent&)>> {
+        : public DSHandler<EventProcessor> {
         
         DSEventHandler(DSEngine* eng);
 

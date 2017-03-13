@@ -12,9 +12,12 @@ ds::core::Application::Application (std::shared_ptr<ds::core::Engine> e)
 {
     if (!this->eng) {
         throw ApplicationException("Invalid engine pointer");
-    }
+    }    
 }
 
+void ds::core::Application::init() {
+    this->eng->attach(this);
+}
 ds::core::Application::~Application ()
 {
     (*this->cond) = false;
@@ -26,7 +29,6 @@ ds::core::Application::~Application ()
 
 void ds::core::Application::run ()
 {
-    this->eng->attach(this);
     auto engHandlers = this->eng->getHandlers();
     for (auto it = engHandlers.begin(),
             end = engHandlers.end(); it != end; ++it) {
