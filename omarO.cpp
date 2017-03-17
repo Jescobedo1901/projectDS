@@ -5,8 +5,10 @@
 #include <X11/Xlib.h>
 #include <cmath>
 #include <memory>
+#include <mutex>
 #include "ds/impl/DSEngine.h"
 #include "ds/core/World.h"
+#include "fonts.h"
 
 namespace ds { namespace impl {
 
@@ -22,6 +24,7 @@ struct SphereRenderer : public render::Renderer {
 
     void render (render::RenderContext* ctx, core::Object* obj, render::Renderable* renderable)
     {
+        DS_SCOPED_OBJECT_READ_LOCK(obj)
         glColor4f(1.0f,1.0f,1.0f,1.0f);
         glBegin(GL_TRIANGLE_FAN);
             auto    rad = obj->avgRadius,
@@ -40,6 +43,63 @@ struct SphereRenderer : public render::Renderer {
 
 };
 
+
+struct TextRenderer : render::Renderer {
+
+     TextRenderer() : rect()
+    {                
+    }
+
+    bool isRenderer (render::Renderable* render) {
+        return dynamic_cast<render::Text*>(render);
+    }
+
+    void render (render::RenderContext* ctx, core::Object* obj, render::Renderable* renderable)
+    {
+        render::Text* txt = dynamic_cast<render::Text*>(renderable);
+        DS_SCOPED_OBJECT_READ_LOCK(obj)
+        rect.bot = obj->pos.y;
+	rect.left = obj->pos.x;
+	rect.center = 0;
+        int cref = txt->color.toInt();
+        using render::TextStyle;
+        switch(txt->style) {
+            case TextStyle::plain6:
+                ggprint06(&rect, 0, cref, txt->text.c_str());
+            break;
+            case TextStyle::plain7:
+                ggprint07(&rect, 0, cref, txt->text.c_str());
+                break;
+            case TextStyle::plain8:
+                ggprint08(&rect, 0, cref, txt->text.c_str());
+                break;
+            case TextStyle::bold8:
+                ggprint8b(&rect, 0, cref, txt->text.c_str());
+                break;
+            case TextStyle::plain10:
+                ggprint10(&rect, 0, cref, txt->text.c_str());
+                break;
+            case TextStyle::plain12:
+                ggprint12(&rect, 0, cref, txt->text.c_str());
+                break;
+            case TextStyle::plain13:
+                ggprint13(&rect, 30,   cref, txt->text.c_str());
+                break;
+            case TextStyle::plain16:
+                ggprint16(&rect, 30,   cref, txt->text.c_str());
+                break;
+            case TextStyle::plain40:
+                ggprint40(&rect, 0,    cref, txt->text.c_str());
+            break;
+            default:
+                ggprint06(&rect, 0, cref, txt->text.c_str());
+                break;
+        }   
+    }
+private:
+    Rect rect;
+};
+
 //Physics section
 enum Direction {
     DirLeft = 1, DirRight = 2, DirUp = 4, DirDown = 8, DirNone = 16
@@ -50,11 +110,12 @@ struct PlayerMovementTracker : PhysicsProcessor {
     {
     }
 
-    void operator()(core::fp_type delta) {        
+    void operator()(core::fp_type delta) {
         if(eng->getWorld()->getObjects().begin() != eng->getWorld()->getObjects().end()) {
-            core::ObjectPtr obj = *eng->getWorld()->getObjects().begin();
-            if(obj) {        
-                auto thrust = 20 * obj->mass;
+            core::ObjectPtr obj = eng->getWorld()->getObject("player/ball");
+            if(obj) {            
+                DS_SCOPED_OBJECT_WRITE_LOCK(obj)
+                auto thrust = 200 * obj->mass;
                 if(this->dirMask & DirUp)
                     obj->forces.push_back({0, thrust, 0});
                 if(this->dirMask & DirDown)
@@ -112,7 +173,7 @@ struct PlayerMovement : EventProcessor {
             }
             if(key == XK_Right) {
                 tracker->dirMask &= ~DirRight;
-            }            
+            }
         }
     }
 
@@ -155,33 +216,48 @@ void initOmarO(DSEngine* eng) {
     verify(eng);
 
     //Adding renderers
+    eng->getWorld()->addRenderer(std::make_shared<TextRenderer>());
     eng->getWorld()->addRenderer(std::make_shared<SphereRenderer>());
-    
+
     //Adding physics effect
     auto playerTracker = eng->getPhysicsHandler()->addProcessor(
         std::make_shared<PlayerMovementTracker>(eng)
     );
+    
     //Adding event handler for player movement
     eng->getEventHandler()->addProcessor(
         std::make_shared<PlayerMovement>(playerTracker, eng)
     );
+    
     //Adding event handler for click X event
     eng->getEventHandler()->addProcessor(
         std::make_shared<ExitEventProcessor>(eng)
     );
-    
-    
+
     //Demo code for a test ball
     core::ObjectPtr testBall = std::make_shared<core::Object>();
 
     testBall->name = "Test object";
     testBall->avgRadius = 10;
-    testBall->pos.y = 300;
+    testBall->pos.y = 400;
     testBall->pos.x = 400;
     testBall->renderable = std::make_shared<render::Sphere>();
     testBall->mass = 100;
-    eng->getWorld()->add(testBall);
 
+    core::ObjectPtr healthBar = std::make_shared<core::Object>();
+    
+    auto healthText = std::make_shared<render::Text>();
+    
+    healthBar->pos.x = 5;
+    healthBar->pos.y = 580;
+    healthText->style =  render::TextStyle::plain12;
+    healthText->text = "Life: 97%";
+    healthText->color = render::Color(255, 255, 255, 255);
+    healthBar->renderable =  healthText;
+    healthBar->getAttrs().set<int>("level", 100);
+
+    eng->getWorld()->add("player/ball", testBall);
+    eng->getWorld()->add("player/health", healthBar);
 }
 
 

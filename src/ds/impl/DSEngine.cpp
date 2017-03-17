@@ -24,24 +24,23 @@ void ds::impl::DSNewtonianPhysics::operator() (ds::core::fp_type delta)
             ++it) {
         core::ObjectPtr obj = *it;
 
-        core::Vec3 F = obj->cumForces();
+        DS_SCOPED_OBJECT_WRITE_LOCK(obj)
+                
+        core::Vec3 force = obj->cumForces();
         obj->forces.clear(); //clear applied forces
 
-        // a = F / m
-        core::Vec3 a = F / obj->mass;
+        //Apply only to objects with mass
+        if(obj->mass) {            
+            // a = F / m
+            core::Vec3 a = force / obj->mass;
 
-        //Velocity  = acceleration * time
-        obj->vel += delta * a;
+            //Velocity  = acceleration * time
+            obj->vel += delta * a;
 
-        //Position = velocity * time
-        // Adjust pixel to meter radio
-        obj->pos += delta * obj->vel * impl::PIXEL_TO_METER;
-//
-//        std::cout << "Mass: " <<  obj->mass << std::endl;
-//        std::cout << "F: " <<  F << std::endl;
-//        std::cout << "Acc: " <<  obj->acc << std::endl;
-//        std::cout << "Vel: " <<  obj->vel << std::endl;
-//        std::cout << "Pos: " <<  obj->pos << std::endl;
+            //Position = velocity * time
+            // Adjust pixel to meter radio
+            obj->pos += delta * obj->vel * impl::PIXEL_TO_METER;        
+        }
     }
 
 }
@@ -58,6 +57,7 @@ void ds::impl::DSGravity::operator() (ds::core::fp_type delta)
             end = objs.end();
             it != end;
             ++it) {                        
+        DS_SCOPED_OBJECT_WRITE_LOCK(*it)
         (*it)->forces.emplace_back((*it)->mass * acceleration);
     }
 }

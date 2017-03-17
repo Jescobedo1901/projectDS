@@ -68,7 +68,7 @@ ds::core::X11Application::X11Application (std::shared_ptr<Engine> eng)
     XStoreName(this->display, this->win, "Deepsea Survival");
 
     XkbSetDetectableAutoRepeat(this->display, 1, nullptr);
-
+    
     std::cout << "Finished setting up X11 Application.." << std::endl;
 
 }

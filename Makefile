@@ -1,4 +1,4 @@
-INCLUDES =	    -I ./include
+INCLUDES =	    -I ./include -I ./ext/include
 
 # Workaround for X11 system headers
 ifeq ($(shell uname -s),Darwin)
@@ -9,7 +9,8 @@ DEPEXT =	    dep
 
 SOURCES =	    $(wildcard src/*.cpp) \
 		    $(wildcard *.cpp) \
-		    $(wildcard src/ds/*/*.cpp)
+		    $(wildcard src/ds/*/*.cpp) \
+		    $(wildcard ext/src/*.cpp)
 
 HEADERS =	    $(wildcard include/ds/*/*.h)
 
@@ -31,7 +32,7 @@ endif
 
 LFLAGS_DIRS =	    
 
-LFLAGS =	    -lpthread -lm -lGLU -lGL -lrt -lX11
+LFLAGS =	    ./ext/lib/libggfonts.a -lpthread -lm -lGLU -lGL -lrt -lX11
 
 TARGET =	    ds    
 
@@ -45,7 +46,7 @@ $(TARGET):  $(OBJECTS)
 
 # Compile
 %.o: %.cpp
-	$(CXX) $(INCLUDES) $(CFLAGS) $(LFLAGS_DIRS) $(LFLAGS) -c $< -o $@
+	$(CXX) $(INCLUDES) $(CFLAGS) -c $< -o $@
 	@# Generate compile dependency graph on file changes
 	$(CXX) -MM $(INCLUDES) -c $< > $(patsubst %.o, %.$(DEPEXT), $@)
 

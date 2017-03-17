@@ -3,10 +3,11 @@
 #include "ds/impl/DSEngine.h"
 #include "ds/impl/DSRenderingHandler.h"
 #include "ds/util/utils.h"
+#include "fonts.h"
 
 ds::impl::DSRenderingHandler::DSRenderingHandler (DSEngine* e)
 : eng (e)
-{
+{    
 }
 
 void ds::impl::DSRenderingHandler::operator() (core::TaskHandlerCondition cond)
@@ -81,13 +82,13 @@ void ds::impl::DSRenderingHandler::operator() (core::TaskHandlerCondition cond)
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_FOG);
 	glDisable(GL_CULL_FACE);
+        
+        glEnable(GL_TEXTURE_2D);
 
         //Clear the screen to black
 	glClearColor(0.0, 0.0, 0.0, 1.0);
-
-//	//Do this to allow fonts
-//
-//        glEnable(GL_TEXTURE_2D);
+        
+        initialize_fonts();    
     }
 
     util::Timer<60, false> timer;
@@ -105,9 +106,10 @@ void ds::impl::DSRenderingHandler::operator() (core::TaskHandlerCondition cond)
             }, *cond);
 
     {
+        cleanup_fonts();
         util::XLockDisplayGuard guard(this->eng->getApplication()->display);
-                glXMakeCurrent(this->eng->getApplication()->display, None, NULL);
-                glXDestroyContext(this->eng->getApplication()->display, this->eng->getApplication()->glc);
+        glXMakeCurrent(this->eng->getApplication()->display, None, NULL);
+        glXDestroyContext(this->eng->getApplication()->display, this->eng->getApplication()->glc);
     }
 
 }

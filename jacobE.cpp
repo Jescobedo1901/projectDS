@@ -40,7 +40,7 @@ struct StokesApprox : PhysicsProcessor {
                 ++it) {
             
             core::ObjectPtr obj = *it;
-
+            DS_SCOPED_OBJECT_READ_LOCK(obj)
             //Viscoscity of water at 20C
             core::fp_type water_mu = 1.002;
             

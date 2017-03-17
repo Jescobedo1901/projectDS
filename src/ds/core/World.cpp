@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ds/core/World.h"
+#include <unordered_map>
 #include <vector>
 #include <algorithm>
 #include <thread>
@@ -22,7 +23,10 @@ std::ostream& ds::core::operator<<(std::ostream& os, const ds::core::Vec3& v) {
 }
 
 struct ds::core::World::Pimpl {
-    std::vector<ds::core::ObjectPtr> objs;
+    std::unordered_map<
+        ds::core::World::ObjectKeyType,
+        ds::core::ObjectPtr
+    > objs;
     std::vector<ds::render::RendererPtr> renderers;
     std::shared_timed_mutex objsMtx;
     std::shared_timed_mutex renderersMtx;
@@ -37,13 +41,14 @@ ds::core::World::~World ()
 {
 }
 
-bool ds::core::World::add (ObjectPtr obj)
+bool ds::core::World::add (const ObjectKeyType& key, ObjectPtr obj)
 {
     std::unique_lock<std::shared_timed_mutex> lock(this->internal->objsMtx);
     auto vec = this->internal->objs;
     auto end = vec.end();
-    if (std::find(vec.begin(), end, obj) == end) {
-        this->internal->objs.emplace_back(obj);
+    auto res = this->internal->objs.find(key);
+    if (res == end) {
+        this->internal->objs[key] = obj;
         return true;
     } else {
         return false;
@@ -53,9 +58,18 @@ bool ds::core::World::add (ObjectPtr obj)
 bool ds::core::World::remove (ObjectPtr obj)
 {
     std::unique_lock<std::shared_timed_mutex> lock(this->internal->objsMtx);
-    auto vec = this->internal->objs;
-    auto end = vec.end();
-    return vec.erase(std::remove(vec.begin(), end, obj), end) != end;
+
+    return std::find_if(
+        this->internal->objs.begin(),
+        this->internal->objs.end(),
+        [obj] (const auto& p) { return p.second == obj; }
+    ) != this->internal->objs.end();
+}
+
+bool ds::core::World::remove(const ObjectKeyType& key)
+{
+    std::unique_lock<std::shared_timed_mutex> lock(this->internal->objsMtx);
+    return this->internal->objs.erase(key) > 0;
 }
 
 void ds::core::World::addRenderer (std::shared_ptr<render::Renderer> renderer)
@@ -68,17 +82,21 @@ void ds::core::World::addRenderer (std::shared_ptr<render::Renderer> renderer)
 
 void ds::core::World::render (render::RenderContext* ctx)
 {
-    std::shared_lock <std::shared_timed_mutex> readObjects(this->internal->objsMtx);
-    std::shared_lock <std::shared_timed_mutex> readRenderers(this->internal->renderersMtx);
+    //deadlock free multilock
+    std::lock(this->internal->objsMtx, this->internal->renderersMtx);
+    std::shared_lock <std::shared_timed_mutex>
+            readObjects(this->internal->objsMtx, std::adopt_lock);
+    std::shared_lock <std::shared_timed_mutex>
+            readRenderers(this->internal->renderersMtx, std::adopt_lock);
     auto& vec = this->internal->objs;
     auto& renderers = this->internal->renderers;
     //Simple rendering logic
     //@TODO Optimize
     for (auto& e : vec) {
-        if (e->renderable) {
-            for (auto r : renderers) {
-                if(r->isRenderer(&*e->renderable)) {
-                    r->render(ctx, &*e, &*e->renderable);
+        if (e.second->renderable) {
+            for (auto& r : renderers) {
+                if(r->isRenderer(&*e.second->renderable)) {
+                    r->render(ctx, &*e.second, &*e.second->renderable);
                     break;
                 }
             }
@@ -89,5 +107,22 @@ void ds::core::World::render (render::RenderContext* ctx)
 std::vector<ds::core::ObjectPtr> ds::core::World::getObjects ()
 {
     std::shared_lock<std::shared_timed_mutex> lock(this->internal->objsMtx);
-    return this->internal->objs;
+    std::vector<ObjectPtr> copy;
+    copy.reserve(this->internal->objs.size());
+
+    for (const auto &s : this->internal->objs)
+        copy.push_back(s.second);
+
+    return copy;
+}
+
+ds::core::ObjectPtr ds::core::World::getObject(const ObjectKeyType& key)
+{
+    std::shared_lock<std::shared_timed_mutex> lock(this->internal->objsMtx);
+    auto res =  this->internal->objs.find(key);
+    if(res != this->internal->objs.end()) {
+        return (*res).second;
+    } else {
+        return nullptr;
+    }
 }
