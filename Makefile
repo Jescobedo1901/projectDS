@@ -18,7 +18,7 @@ OBJECTS =	    $(SOURCES:.cpp=.o)
 
 CXX =		    g++
 
-CFLAGS =	    -std=c++14 -Wall -Wextra -Wpedantic \
+CFLAGS =	    -std=c++1y -Wall -Wextra -Wpedantic \
 		    -rdynamic				\
 		    -Wno-unused-variable -Wno-unused-parameter \
 		    -pipe
@@ -48,7 +48,7 @@ $(TARGET):  $(OBJECTS)
 %.o: %.cpp
 	$(CXX) $(INCLUDES) $(CFLAGS) -c $< -o $@
 	@# Generate compile dependency graph on file changes
-	$(CXX) -MM $(INCLUDES) -c $< > $(patsubst %.o, %.$(DEPEXT), $@)
+	$(CXX) -MM $(INCLUDES) $(CFLAGS) -c $< > $(patsubst %.o, %.$(DEPEXT), $@)
 
 #Include object dependency override if any
 -include $(OBJECTS:.o=.$(DEPEXT))
