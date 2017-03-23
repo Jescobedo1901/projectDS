@@ -57,9 +57,6 @@ namespace ds { namespace render {
          */
         virtual bool isRenderer(Renderable* render)  = 0;
     };
-
-    typedef std::shared_ptr<Renderer> RendererPtr;
-
     /**
      * All renderable objects must inherit this class
      */

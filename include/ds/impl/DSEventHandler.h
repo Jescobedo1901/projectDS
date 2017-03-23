@@ -1,17 +1,14 @@
 #ifndef DS_IMPL_EVENTHANDLER_H
 #define DS_IMPL_EVENTHANDLER_H
 
-#include <chrono>
-#include <thread>
-#include <memory>
 #include <iostream>
 #include <X11/Xlib.h>
 
+#include "ds/core/World.h"
 #include "DSHandler.h"
 
 
 namespace ds { namespace impl {
-
 
     struct EventProcessor {
         virtual ~EventProcessor()
@@ -28,7 +25,7 @@ namespace ds { namespace impl {
         
         DSEventHandler(DSEngine* eng);
 
-        void operator()(core::TaskHandlerCondition cond);
+        void apply();
 
     private:
         DSEngine* eng;

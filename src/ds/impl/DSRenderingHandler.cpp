@@ -2,114 +2,101 @@
 #include "ds/core/World.h"
 #include "ds/impl/DSEngine.h"
 #include "ds/impl/DSRenderingHandler.h"
-#include "ds/util/utils.h"
 #include "fonts.h"
 
 ds::impl::DSRenderingHandler::DSRenderingHandler (DSEngine* e)
 : eng (e)
-{    
+{   
 }
 
-void ds::impl::DSRenderingHandler::operator() (core::TaskHandlerCondition cond)
+void ds::impl::DSRenderingHandler::init()
 {
-    verify(eng);
-    {
-        util::XLockDisplayGuard guard(this->eng->getApplication()->display);
-        //Move rendering context to the current thread
+    verify(this->eng);
+    if (!(this->eng->getApplication()->glc = glXCreateContext(
+            this->eng->getApplication()->display,
+            this->eng->getApplication()->vi,
+            NULL,
+            GL_TRUE))
+        ) {
+        core::init_failure("Failed creating new GLX context");
+    }
 
-        if (!(this->eng->getApplication()->glc = glXCreateContext(
-                this->eng->getApplication()->display,
-                this->eng->getApplication()->vi,
-                nullptr,
-                GL_TRUE))
-            ) {
-            throw core::EngineException("Failed creating new GLX context");
-        }
-
-        if (!glXMakeCurrent(
-                this->eng->getApplication()->display,
-                this->eng->getApplication()->win,
-                this->eng->getApplication()->glc)
-                ) {
-            throw core::EngineException("Failed making GLX current");
-        }
-
-        glViewport(
-            0, 0,
-            this->eng->getApplication()->gwa.width,
-            this->eng->getApplication()->gwa.height
-        );
-
-        XGetWindowAttributes(
+    if (!glXMakeCurrent(
             this->eng->getApplication()->display,
             this->eng->getApplication()->win,
-            &this->eng->getApplication()->gwa
-        );
-
-        std::cout   << "Width is: " << this->eng->getApplication()->gwa.width
-                    << ", and height is: "
-                    << this->eng->getApplication()->gwa.width
-                    << std::endl;
-        glOrtho(
-            0,
-            this->eng->getApplication()->gwa.width,
-            0,
-            this->eng->getApplication()->gwa.height,
-            -1,
-            1
-        );
-
-        glViewport(
-            0, 0,
-            this->eng->getApplication()->gwa.width,
-            this->eng->getApplication()->gwa.height
-        );
-        //Initialize matrices
-	glMatrixMode(GL_PROJECTION); glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW); glLoadIdentity();
-
-        //This sets 2D mode (no perspective)
-	glOrtho(
-            0,
-            this->eng->getApplication()->gwa.width,
-            0,
-            this->eng->getApplication()->gwa.height,
-            -1,
-            1
-        );
-
-        glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_FOG);
-	glDisable(GL_CULL_FACE);
-        
-        glEnable(GL_TEXTURE_2D);
-
-        //Clear the screen to black
-	glClearColor(0.0, 0.0, 0.0, 1.0);
-        
-        initialize_fonts();    
+            this->eng->getApplication()->glc)
+            ) {
+        core::init_failure("Failed making GLX current");
     }
 
-    util::Timer<60, false> timer;
-            timer.run(
-            [&]
-            {
+    glViewport(
+        0, 0,
+        this->eng->getApplication()->gwa.width,
+        this->eng->getApplication()->gwa.height
+    );
 
-                glClear(GL_COLOR_BUFFER_BIT); // Clear the color buffer (background)
+    XGetWindowAttributes(
+        this->eng->getApplication()->display,
+        this->eng->getApplication()->win,
+        &this->eng->getApplication()->gwa
+    );
 
-                eng->getWorld()->render(eng->getRenderContext());
+    std::cout   << "Width is: " << this->eng->getApplication()->gwa.width
+                << ", and height is: "
+                << this->eng->getApplication()->gwa.width
+                << std::endl;
+    glOrtho(
+        0,
+        this->eng->getApplication()->gwa.width,
+        0,
+        this->eng->getApplication()->gwa.height,
+        -1,
+        1
+    );
 
-                util::XLockDisplayGuard guard(this->eng->getApplication()->display);
-                glXSwapBuffers(this->eng->getApplication()->display, this->eng->getApplication()->win);
+    glViewport(
+        0, 0,
+        this->eng->getApplication()->gwa.width,
+        this->eng->getApplication()->gwa.height
+    );
+    //Initialize matrices
+    glMatrixMode(GL_PROJECTION); glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW); glLoadIdentity();
 
-            }, *cond);
+    //This sets 2D mode (no perspective)
+    glOrtho(
+        0,
+        this->eng->getApplication()->gwa.width,
+        0,
+        this->eng->getApplication()->gwa.height,
+        -1,
+        1
+    );
 
-    {
-        cleanup_fonts();
-        util::XLockDisplayGuard guard(this->eng->getApplication()->display);
-        glXMakeCurrent(this->eng->getApplication()->display, None, NULL);
-        glXDestroyContext(this->eng->getApplication()->display, this->eng->getApplication()->glc);
-    }
+    glDisable(GL_LIGHTING);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_FOG);
+    glDisable(GL_CULL_FACE);
 
+    glEnable(GL_TEXTURE_2D);
+
+    glEnable(GL_MULTISAMPLE);
+
+    //Clear the screen to black
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+
+    initialize_fonts();        
+}
+ds::impl::DSRenderingHandler::~DSRenderingHandler ()
+{
+    cleanup_fonts();
+    glXMakeCurrent(this->eng->getApplication()->display, None, NULL);
+    glXDestroyContext(this->eng->getApplication()->display, this->eng->getApplication()->glc);
+}
+
+void ds::impl::DSRenderingHandler::apply()
+{
+    glClear(GL_COLOR_BUFFER_BIT); // Clear the color buffer (background)
+    eng->getWorld()->render(this->eng->getRenderContext());
+    glXSwapBuffers(this->eng->getApplication()->display, this->eng->getApplication()->win);
 }

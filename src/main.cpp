@@ -31,18 +31,23 @@ int main (int argc, char** argv)
 {
     std::cout << "Starting application..." << std::endl;
 
-    std::shared_ptr<ds::core::Engine> eng(std::make_shared<ds::impl::DSEngine>());
-    std::unique_ptr<ds::core::Application> a(std::make_unique<ds::core::X11Application>(eng));
+    
+    using namespace ds::impl;
+    using namespace ds::core;
+    
 
-    a->init();
+    DSEngine* e = new DSEngine();
+    X11Application app(e);
+    app.init();
+    
     //Initialize contributors sections
-    ds::impl::initJacobE(dynamic_cast<ds::impl::DSEngine*>(a->getEngine()));
-    ds::impl::initMarcelF(dynamic_cast<ds::impl::DSEngine*>(a->getEngine()));
-    ds::impl::initOmarO(dynamic_cast<ds::impl::DSEngine*>(a->getEngine()));
-    ds::impl::initSeanC(dynamic_cast<ds::impl::DSEngine*>(a->getEngine()));
+    ds::impl::initJacobE(e);
+    ds::impl::initMarcelF(e);
+    ds::impl::initOmarO(e);
+    ds::impl::initSeanC(e);
 
     //Blocks until exit is called
-    a->run();
+    app.run();
 
     std::cout << "Application terminating..." << std::endl;
 

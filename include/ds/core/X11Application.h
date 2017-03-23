@@ -1,8 +1,6 @@
 #ifndef DS_CORE_X11APPLICATION_H
 #define DS_CORE_X11APPLICATION_H
 
-#include <memory>
-#include <atomic>
 #include<cstdio>
 #include<cstdlib>
 #include<X11/X.h>
@@ -12,7 +10,6 @@
 #include<GL/glu.h>
 
 #include "Application.h"
-#include "ds/util/utils.h"
 
 namespace ds { namespace core {
 
@@ -22,16 +19,12 @@ namespace ds { namespace core {
     public:
 
         //Setup application
-        X11Application(std::shared_ptr<Engine> engine);
+        X11Application(Engine* engine);
 
         ~X11Application();
 
         //Generic API
         void exit();
-
-        //X11 related
-        virtual bool hasPendingEvents();
-        virtual void nextEvent(XEvent& event);
 
     public:
         Display* display;

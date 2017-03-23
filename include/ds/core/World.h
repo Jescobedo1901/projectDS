@@ -2,13 +2,10 @@
 #define DS_CORE_WORLD_H
 
 #include <string>
-#include <chrono>
-#include <memory>
 #include <vector>
 #include <cmath>
-#include <shared_mutex>
 #include <iosfwd>
-#include <unordered_map>
+#include <map>
 
 //Forward declare render namespace
 namespace ds { namespace render {
@@ -22,9 +19,19 @@ namespace ds { namespace core {
     typedef float fp_type;
     //3 Dimensional vector
     struct Vec3 {
+
+        Vec3() : x(0), y(0), z(0)
+        {
+        }
+
+        Vec3(fp_type x, fp_type y, fp_type z)
+            : x(x), y(y), z(z)
+        {
+        }
+
         fp_type x, y, z;
 
-        float magnitude() {
+        core::fp_type magnitude() {
             return cbrtf(x*x + y*y + z*z);
         }
 
@@ -43,70 +50,77 @@ namespace ds { namespace core {
         }
 
         inline Vec3& operator *=(const Vec3& r) {
-            this->x *= r.x,
-            this->y *= r.y;
-            this->z *= r.z;
+
             return *this;
-        }
+        }      
 
     };
 
     //Simple math operators
 
     inline Vec3 operator*(const Vec3& v1, const Vec3& v2) {
-        return Vec3{v1.x * v2.x, v1.y * v2.y, v1.z * v2.z};
+        return Vec3(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z);
     }
 
     template<typename T>
     inline Vec3 operator*(const T& l, const Vec3& r) {
-        return Vec3{l * r.x, l * r.y, l * r.z};
+        return Vec3(l * r.x, l * r.y, l * r.z);
     }
 
     template<typename T>
     inline Vec3 operator*(const Vec3& l, const T& r) {
-        return Vec3{l.x * r, l.y * r, l.z * r};
+        return Vec3(l.x * r, l.y * r, l.z * r);
     }
 
     template<typename T>
     inline Vec3 operator/(const Vec3& l, const T& r) {
-        return Vec3{l.x / r, l.y / r, l.z / r};
+        return Vec3(l.x / r, l.y / r, l.z / r);
     }
 
     template<typename T>
     inline Vec3 operator/(const T& l, const Vec3& r) {
-        return Vec3{l / r.x, l / r.y, l / r.z};
+        return Vec3(l / r.x, l / r.y, l / r.z);
     }
 
     inline Vec3 operator+(const Vec3& v1, const Vec3& v2) {
-        return Vec3{v1.x + v2.x, v1.y + v2.y, v1.z + v2.z};
+        return Vec3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
     }
 
     template<typename T>
     inline Vec3 operator+(const Vec3& l, const T& r) {
-        return Vec3{l.x + r, l.y + r, l.z + r};
+        return Vec3(l.x + r, l.y + r, l.z + r);
     }
 
     template<typename T>
     inline Vec3 operator+(const T& l, const Vec3& r) {
-        return Vec3{l + r.x, l + r.y, l + r.z};
+        return Vec3(l + r.x, l + r.y, l + r.z);
     }
 
     inline Vec3 operator-(const Vec3& v1, const Vec3& v2) {
-        return Vec3{v1.x - v2.x, v1.y - v2.y, v1.z - v2.z};
+        return Vec3(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
     }
 
     template<typename T>
     inline Vec3 operator-(const Vec3& l, const T& r) {
-        return Vec3{l.x - r, l.y - r, l.z - r};
+        return Vec3(l.x - r, l.y - r, l.z - r);
     }
 
     template<typename T>
     inline Vec3 operator-(const T& l, const Vec3& r) {
-        return Vec3{l - r.x, l - r.y, l - r.z};
+        return Vec3(l - r.x, l - r.y, l - r.z);
     }
 
     inline Vec3 operator-(const Vec3& v) {
-        return Vec3{-v.x, -v.y, -v.z};
+        return Vec3(-v.x, -v.y, -v.z);
+    }
+    
+        
+    inline Vec3 abs(const Vec3& vec) {
+        return Vec3(std::abs(vec.x), std::abs(vec.y), std::abs(vec.z));
+    }
+    
+    inline Vec3 sqrt(const Vec3& vec) {
+        return Vec3(std::sqrt(vec.x), std::sqrt(vec.y), std::sqrt(vec.z));
     }
 
     std::ostream& operator<<(std::ostream& os, const Vec3 & v);
@@ -115,27 +129,30 @@ namespace ds { namespace core {
     typedef Vec3 Acceleration;
     typedef Vec3 Position;
 
-    typedef std::chrono::high_resolution_clock clock;
-    typedef std::chrono::high_resolution_clock::time_point time_point;
-
     class Object; //forward delcare Object
-    typedef std::shared_ptr<Object> ObjectPtr;
 
     class Application; //forward declare Application
 
-    /**
-     * MT safe
-     */
     class World {
     public:
         typedef std::string ObjectKeyType;
             World();
             ~World();
-            bool add(const ObjectKeyType& key, ObjectPtr obj);
+            //Adding Object to World
+            //Passing ownership to World
+            bool add(const ObjectKeyType& key, Object* obj);
 
-            bool remove(ObjectPtr obj);
+            //Removes AND deletes the object from the world
+            //also deletes the object itself
+            //Therefore the pointer is invalid after this call
+            bool remove(Object* obj);
+            //Removes object by key
+            //Any references to the Object are invalid after this call
             bool remove(const ObjectKeyType& key);
-            void addRenderer(std::shared_ptr<render::Renderer> renderer);
+
+            //Add renderer to World, passing ownership to World
+            void addRenderer(render::Renderer* renderer);
+
             //Render the entire world
             void render(render::RenderContext* ctx);
 
@@ -143,18 +160,18 @@ namespace ds { namespace core {
              * Returns a copy of all objects pointers in the world
              * @return
              */
-            std::vector<ObjectPtr> getObjects();
+            std::vector<Object*> getObjects();
 
             /**
-             * Returns a copy of the objects
+             * Returns a copy of the objects pointers
              * @param key
              * @return
              */
-            ObjectPtr getObject(const ObjectKeyType& key);
+            Object* getObject(const ObjectKeyType& key);
 
     private:
         struct Pimpl;
-        std::unique_ptr<Pimpl> internal;
+        Pimpl* internal;
     };
 
 
@@ -167,7 +184,7 @@ namespace ds { namespace core {
     //Value holder for attributes (for type T)
     template<typename T>
     struct TypedAttribute : Attribute {
-        TypedAttribute(T&& value) : value(std::move(value))
+        TypedAttribute(T value) : value(value)
         {
         }
 
@@ -176,9 +193,9 @@ namespace ds { namespace core {
             return value;
         }
 
-        inline void set(T&& value)
+        inline void set(T value)
         {
-            this->value = std::move(value);
+            this->value = value;
         }
     private:
         T value;
@@ -190,30 +207,34 @@ namespace ds { namespace core {
 
         typedef KeyType key_type;
 
-        AttributeMap() : attrs(0)
+        AttributeMap() : attrs()
         {
         }
 
         virtual ~AttributeMap() {
-            for(const auto& pair : this->attrs) {
-                delete pair.second;
+            for(typename std::map<KeyType, Attribute*>::iterator
+                    it = this->attrs.begin(),
+                    end = this->attrs.end();
+                    it != end;
+                    ++it) {
+                delete (*it).second;
             }
         }
 
         template<typename T>
-        bool set(const KeyType& key, T&& value)
+        bool set(const KeyType& key, T value)
         {
-            std::unique_lock<std::shared_timed_mutex> lock(this->mutex);
-            auto it = this->attrs.find(key);
+            typename std::map<KeyType, Attribute*>::iterator
+                    it = this->attrs.find(key);
 
             if(it == attrs.end()) {
-                this->attrs[key] = new TypedAttribute<T>(std::move(value));
+                this->attrs[key] = new TypedAttribute<T>(value);
                 return true;
             }
             TypedAttribute<T>* ptr =
                     dynamic_cast<TypedAttribute<T>*>((*it).second);
             if(ptr) {
-                ptr->set(std::move(value));
+                ptr->set(value);
                 return true;
             }
             return false;
@@ -221,33 +242,34 @@ namespace ds { namespace core {
 
         /**
          * Get value from map by key
-         * If key does not exist, a nullptr is returned
+         * If key does not exist, a NULL is returned
          * If type specified is wrong, this call will simply return a
-         * nullptr value
+         * NULL value
          * @param key
          * @return
          */
         template<typename T>
         T* get(const KeyType& key) const
         {
-            std::shared_lock<std::shared_timed_mutex> lock(this->mutex);
-            auto res = this->attrs.find(key);
+            typename std::map<KeyType, Attribute*>::iterator
+                res = this->attrs.find(key);
             if(res != attrs.end()) {
-                auto ptr = dynamic_cast<TypedAttribute<T>*>((*res).second);
+                TypedAttribute<T>* ptr =
+                        dynamic_cast<TypedAttribute<T>*>((*res).second);
                 if(ptr) {
                     return &ptr->get();
                 } else {
-                    return nullptr;
+                    return NULL;
                 }
             } else {
-                return nullptr;
+                return NULL;
             }
         }
 
         template<typename T>
         T* getOrDefault(const KeyType& key, T& def) const
         {
-            auto res = get(key);
+            T* res = get(key);
             if(res) {
                 return res;
             } else {
@@ -256,8 +278,7 @@ namespace ds { namespace core {
         }
 
     private:
-        std::unordered_map<KeyType, Attribute*> attrs;
-        std::shared_timed_mutex mutex;
+        std::map<KeyType, Attribute*> attrs;
     };
 
 
@@ -270,18 +291,18 @@ namespace ds { namespace core {
     struct Object {
 
         Object()
-            :   name(), world(nullptr), renderable(),
+            :   name(), objectType(-1), world(NULL), renderable(NULL),
                 pos(), vel(), acc(), avgRadius(),
-                mass(), forces(), mutex(),
+                mass(), forces(0),
                 attributes()
         {
         }
 
-        Object(const Object&) = delete;
-
-
         //Name of this object (optional)
         std::string name;
+        
+        //Integer object type identifier (optional)
+        int objectType;
 
         //Once added to World, world sets itself as owner of Object
         //Pointer to the attached to World object
@@ -292,7 +313,7 @@ namespace ds { namespace core {
 
         //A shared pointer to the renderable that this object represents
         //in a world
-        std::shared_ptr<render::Renderable> renderable;
+        render::Renderable* renderable;
 
         //The current position of this object
         Position pos;
@@ -315,11 +336,18 @@ namespace ds { namespace core {
         std::vector<Vec3> forces;
 
         inline Vec3 cumForces() const {
-            Vec3 cum{0,0,0};
-            for(auto& f : forces) {
-                cum.x += f.x;
-                cum.y += f.y;
-                cum.z += f.z;
+            Vec3 cum;
+            if(!forces.empty()) {
+                for(std::vector<Vec3>::const_iterator
+                        it = forces.begin(),
+                        end = forces.end();
+                        it != end;
+                        ++it) {
+                    const Vec3& f= *it;
+                    cum.x += f.x;
+                    cum.y += f.y;
+                    cum.z += f.z;
+                }
             }
             return cum;
         }
@@ -328,17 +356,19 @@ namespace ds { namespace core {
             return this->attributes;
         }
 
-        std::shared_timed_mutex mutex;
     private:
+
+        Object(const Object&)
+        {
+        }
+        Object& operator=(const Object&)
+        {
+            return *this;
+        }
         //When modifying any positional information, this mutex must be held
 
         AttributeMap<> attributes;
-    };
-
-    #define DS_SCOPED_OBJECT_WRITE_LOCK(objPtr) \
-            std::unique_lock<std::shared_timed_mutex> _objPtr_lock((objPtr)->mutex);
-    #define DS_SCOPED_OBJECT_READ_LOCK(objPtr) \
-            std::shared_lock<std::shared_timed_mutex> _objPtr_lock((objPtr)->mutex);
+    };   
 
 }}
 

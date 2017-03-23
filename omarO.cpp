@@ -4,8 +4,7 @@
 
 #include <X11/Xlib.h>
 #include <cmath>
-#include <memory>
-#include <mutex>
+#include <sstream>
 #include "ds/impl/DSEngine.h"
 #include "ds/core/World.h"
 #include "fonts.h"
@@ -24,10 +23,10 @@ struct SphereRenderer : public render::Renderer {
 
     void render (render::RenderContext* ctx, core::Object* obj, render::Renderable* renderable)
     {
-        DS_SCOPED_OBJECT_READ_LOCK(obj)
         glColor4f(1.0f,1.0f,1.0f,1.0f);
         glBegin(GL_TRIANGLE_FAN);
-            auto    rad = obj->avgRadius,
+            core::fp_type 
+                    rad = obj->avgRadius,
                     x = obj->pos.x,
                     y = obj->pos.y;
             for (int i = 0; i < 360; ++i)
@@ -47,7 +46,7 @@ struct SphereRenderer : public render::Renderer {
 struct TextRenderer : render::Renderer {
 
      TextRenderer() : rect()
-    {                
+    {
     }
 
     bool isRenderer (render::Renderable* render) {
@@ -57,44 +56,42 @@ struct TextRenderer : render::Renderer {
     void render (render::RenderContext* ctx, core::Object* obj, render::Renderable* renderable)
     {
         render::Text* txt = dynamic_cast<render::Text*>(renderable);
-        DS_SCOPED_OBJECT_READ_LOCK(obj)
         rect.bot = obj->pos.y;
 	rect.left = obj->pos.x;
 	rect.center = 0;
         int cref = txt->color.toInt();
-        using render::TextStyle;
         switch(txt->style) {
-            case TextStyle::plain6:
+            case render::plain6:
                 ggprint06(&rect, 0, cref, txt->text.c_str());
             break;
-            case TextStyle::plain7:
+            case render::plain7:
                 ggprint07(&rect, 0, cref, txt->text.c_str());
                 break;
-            case TextStyle::plain8:
+            case render::plain8:
                 ggprint08(&rect, 0, cref, txt->text.c_str());
                 break;
-            case TextStyle::bold8:
+            case render::bold8:
                 ggprint8b(&rect, 0, cref, txt->text.c_str());
                 break;
-            case TextStyle::plain10:
+            case render::plain10:
                 ggprint10(&rect, 0, cref, txt->text.c_str());
                 break;
-            case TextStyle::plain12:
+            case render::plain12:
                 ggprint12(&rect, 0, cref, txt->text.c_str());
                 break;
-            case TextStyle::plain13:
+            case render::plain13:
                 ggprint13(&rect, 30,   cref, txt->text.c_str());
                 break;
-            case TextStyle::plain16:
+            case render::plain16:
                 ggprint16(&rect, 30,   cref, txt->text.c_str());
                 break;
-            case TextStyle::plain40:
+            case render::plain40:
                 ggprint40(&rect, 0,    cref, txt->text.c_str());
             break;
             default:
                 ggprint06(&rect, 0, cref, txt->text.c_str());
                 break;
-        }   
+        }
     }
 private:
     Rect rect;
@@ -106,32 +103,37 @@ enum Direction {
 };
 
 struct PlayerMovementTracker : PhysicsProcessor {
-    PlayerMovementTracker(DSEngine* e) : dirMask(DirNone), eng(e)
+    
+    PlayerMovementTracker(DSEngine* e) : dirMask(DirNone), eng(e), idx(0)
     {
     }
 
     void operator()(core::fp_type delta) {
         if(eng->getWorld()->getObjects().begin() != eng->getWorld()->getObjects().end()) {
-            core::ObjectPtr obj = eng->getWorld()->getObject("player/ball");
-            if(obj) {            
-                DS_SCOPED_OBJECT_WRITE_LOCK(obj)
-                auto thrust = 200 * obj->mass;
+            core::Object* obj = eng->getWorld()->getObject("player/token");
+            if(obj) {
+                core::fp_type thrust = 200 * obj->mass;
                 if(this->dirMask & DirUp)
-                    obj->forces.push_back({0, thrust, 0});
+                    obj->forces.push_back(core::Vec3(0, thrust, 0));
                 if(this->dirMask & DirDown)
-                    obj->forces.push_back({0, -thrust, 0});
+                    obj->forces.push_back(core::Vec3(0, -thrust, 0));
                 if(this->dirMask & DirRight)
-                    obj->forces.push_back({thrust, 0, 0});
+                    obj->forces.push_back(core::Vec3(thrust, 0, 0));
                 if(this->dirMask & DirLeft)
-                    obj->forces.push_back({-thrust, 0, 0});
+                    obj->forces.push_back(core::Vec3(-thrust, 0, 0));
+                core::Object* healthBar = eng->getWorld()->getObject("player/health");
+                std::stringstream ss;
+                ss << "Health level: " << (idx++);
+                dynamic_cast<render::Text*>(healthBar->renderable)->text = ss.str();
             }
         }
     }
 
-    int dirMask;
+    int dirMask;    
 private:
 
     DSEngine* eng;
+    int idx;
 };
 
 //Event section
@@ -139,7 +141,7 @@ private:
 struct PlayerMovement : EventProcessor {
 
     PlayerMovement(
-        std::shared_ptr<PlayerMovementTracker> tracker,
+        PlayerMovementTracker* tracker,
         impl::DSEngine* e
     ) : tracker(tracker), eng(e)
     {
@@ -178,7 +180,7 @@ struct PlayerMovement : EventProcessor {
     }
 
 private:
-    std::shared_ptr<PlayerMovementTracker> tracker;
+    PlayerMovementTracker* tracker;
     ds::impl::DSEngine* eng;
 };
 
@@ -187,12 +189,15 @@ struct ExitEventProcessor : EventProcessor {
         :   eng(e),
             wmDeleteMessage()
     {
-        auto app = eng->getApplication();
         //util::XLockDisplayGuard(this->app->display);
         this->wmDeleteMessage = XInternAtom(
-            app->display, "WM_DELETE_WINDOW", False
+            eng->getApplication()->display, "WM_DELETE_WINDOW", False
         );
-        XSetWMProtocols(app->display, app->win, &wmDeleteMessage, 1);
+        XSetWMProtocols(
+            eng->getApplication()->display, 
+            eng->getApplication()->win, &wmDeleteMessage, 
+            1
+        );
     }
 
     void operator()(const XEvent& event) {
@@ -216,47 +221,47 @@ void initOmarO(DSEngine* eng) {
     verify(eng);
 
     //Adding renderers
-    eng->getWorld()->addRenderer(std::make_shared<TextRenderer>());
-    eng->getWorld()->addRenderer(std::make_shared<SphereRenderer>());
+    eng->getWorld()->addRenderer(new TextRenderer());
+    eng->getWorld()->addRenderer(new SphereRenderer());
 
     //Adding physics effect
-    auto playerTracker = eng->getPhysicsHandler()->addProcessor(
-        std::make_shared<PlayerMovementTracker>(eng)
-    );
-    
+    PlayerMovementTracker* playerTracker = 
+        eng->getPhysicsHandler()->addProcessor(
+            new PlayerMovementTracker(eng)
+        );
+
     //Adding event handler for player movement
     eng->getEventHandler()->addProcessor(
-        std::make_shared<PlayerMovement>(playerTracker, eng)
+        new PlayerMovement(playerTracker, eng)
     );
-    
+
     //Adding event handler for click X event
     eng->getEventHandler()->addProcessor(
-        std::make_shared<ExitEventProcessor>(eng)
+        new ExitEventProcessor(eng)
     );
 
     //Demo code for a test ball
-    core::ObjectPtr testBall = std::make_shared<core::Object>();
+    core::Object* testBall = new core::Object();
 
     testBall->name = "Test object";
     testBall->avgRadius = 10;
     testBall->pos.y = 400;
     testBall->pos.x = 400;
-    testBall->renderable = std::make_shared<render::Sphere>();
+    testBall->renderable = new render::Sphere();
     testBall->mass = 100;
 
-    core::ObjectPtr healthBar = std::make_shared<core::Object>();
-    
-    auto healthText = std::make_shared<render::Text>();
-    
+    core::Object* healthBar = new core::Object();
+
+    render::Text* healthText = new render::Text();
+
     healthBar->pos.x = 5;
     healthBar->pos.y = 580;
-    healthText->style =  render::TextStyle::plain12;
-    healthText->text = "Life: 97%";
+    healthText->style = render::plain12;
     healthText->color = render::Color(255, 255, 255, 255);
     healthBar->renderable =  healthText;
     healthBar->getAttrs().set<int>("level", 100);
-
-    eng->getWorld()->add("player/ball", testBall);
+   
+    eng->getWorld()->add("player/token", testBall);
     eng->getWorld()->add("player/health", healthBar);
 }
 

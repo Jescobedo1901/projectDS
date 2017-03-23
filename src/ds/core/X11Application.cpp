@@ -1,47 +1,39 @@
 #include "ds/core/X11Application.h"
 #include "ds/core/Engine.h"
-#include "ds/util/utils.h"
 
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>
 
 #include <iostream>
 #include <cstdlib> // for atexit func
-#include <thread>
 #include <vector>
 
-ds::core::X11Application::X11Application (std::shared_ptr<Engine> eng)
+ds::core::X11Application::X11Application (Engine* eng)
     :   ds::core::Application (eng),
-        display (nullptr),
+        display (NULL),
         root (),
         win (),
-        vi (nullptr),
+        vi (NULL),
         cmap (),
         swa (),
         gwa (),
-        glc (nullptr)
+        glc (NULL)
 {
 
-    if (this->getEngine() == nullptr) {
-        throw ApplicationException("Engine cannot be a nullptr");
-    }
-
-    if (!XInitThreads()) {
-        throw new ApplicationException("X11 could not initialize threads");
+    if (this->getEngine() == NULL) {
+        init_failure("Engine cannot be a NULL");
     }
 
     GLint glAttr[] = {GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None};
 
-    if (!(this->display = XOpenDisplay(nullptr))) {
-        throw ApplicationException("X11: Failed opening X11 display");
+    if (!(this->display = XOpenDisplay(NULL))) {
+        init_failure("X11: Failed opening X11 display");
     }
-
-    util::XLockDisplayGuard lock(this->display);
 
     this->root = DefaultRootWindow(this->display);
 
     if (!(this->vi = glXChooseVisual(this->display, 0, glAttr))) {
-        throw ApplicationException("GL: Acquiring visual failed");
+        init_failure("GL: Acquiring visual failed");
     }
 
     this->cmap = XCreateColormap(this->display, this->root, this->vi->visual, AllocNone);
@@ -67,7 +59,7 @@ ds::core::X11Application::X11Application (std::shared_ptr<Engine> eng)
 
     XStoreName(this->display, this->win, "Deepsea Survival");
 
-    XkbSetDetectableAutoRepeat(this->display, 1, nullptr);
+    XkbSetDetectableAutoRepeat(this->display, 1, NULL);
     
     std::cout << "Finished setting up X11 Application.." << std::endl;
 
@@ -75,7 +67,6 @@ ds::core::X11Application::X11Application (std::shared_ptr<Engine> eng)
 
 ds::core::X11Application::~X11Application ()
 {
-    util::XLockDisplayGuard lock(this->display);
     XDestroyWindow(this->display, win);
     XCloseDisplay(this->display);
 }
@@ -83,16 +74,4 @@ ds::core::X11Application::~X11Application ()
 void ds::core::X11Application::exit ()
 {
     std::exit(EXIT_SUCCESS);
-}
-
-bool ds::core::X11Application::hasPendingEvents ()
-{
-    util::XLockDisplayGuard lock(this->display);
-    return XPending(this->display) > 0;
-}
-
-void ds::core::X11Application::nextEvent (XEvent& event)
-{
-    util::XLockDisplayGuard lock(this->display);
-    XNextEvent(this->display, &event);
 }

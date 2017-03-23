@@ -33,20 +33,19 @@ struct StokesApprox : PhysicsProcessor {
 
     void operator() (core::fp_type delta)
     {
-        auto objs = this->eng->getWorld()->getObjects();
-        for (auto it = objs.begin(),
+        std::vector<ds::core::Object*> objs = this->eng->getWorld()->getObjects();
+        for (std::vector<ds::core::Object*>::iterator
+                it = objs.begin(),
                 end = objs.end();
                 it != end;
                 ++it) {
-            
-            core::ObjectPtr obj = *it;
-            DS_SCOPED_OBJECT_READ_LOCK(obj)
+            core::Object* obj = *it;
             //Viscoscity of water at 20C
             core::fp_type water_mu = 1.002;
             
-            auto Force = -(6.0f * static_cast<core::fp_type>(M_PI) * water_mu * obj->avgRadius * obj->vel);
+            core::Vec3 force = -(6.0f * static_cast<core::fp_type>(M_PI) * water_mu * obj->avgRadius * obj->vel);
 
-            obj->forces.emplace_back(std::move(Force));
+            obj->forces.push_back(force);
         }
     }
 
@@ -58,7 +57,7 @@ struct StokesApprox : PhysicsProcessor {
 
 void initJacobE (DSEngine* eng)
 {           
-    eng->getPhysicsHandler()->addProcessor(std::make_shared<StokesApprox>(eng));    
+    eng->getPhysicsHandler()->addProcessor(new StokesApprox(eng));    
     //TODO add boyancy effect
 }
 

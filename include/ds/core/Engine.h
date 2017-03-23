@@ -19,22 +19,15 @@ namespace ds { namespace core {
         virtual ~Engine()
         {
         }
-        virtual std::vector<TaskHandler> getHandlers() = 0;
+        
         virtual void attach(Application*) = 0;
         virtual void detach(Application*) = 0;
         virtual Application* getApplication() = 0;
         virtual World* getWorld() = 0;
+        virtual void init() = 0;
+        virtual void run() = 0;
         virtual render::RenderContext* getRenderContext() = 0;
-    };
-
-
-    //Exceptions
-    struct EngineException : public std::runtime_error {
-
-        EngineException(const char* arg) : runtime_error(arg)
-        {
-        }
-    };
+    };        
 
 }}
 

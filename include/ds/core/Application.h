@@ -1,19 +1,10 @@
 #ifndef DS_CORE_APPLICATION_H
 #define DS_CORE_APPLICATION_H
 
-#include <memory>
-#include <atomic>
 #include <vector>
-#include <thread>
 #include <exception>
 
 namespace ds { namespace core {
-
-    //A shared pointer to an atomic boolean on which task handlers depend on
-    //Used to signal that their job should no longer be continued
-    typedef std::shared_ptr<std::atomic_bool> TaskHandlerCondition;
-
-    typedef std::function<void(TaskHandlerCondition) > TaskHandler;
 
     /**
      * Manages windowing & system initialization
@@ -26,11 +17,8 @@ namespace ds { namespace core {
     public:
 
         //Setup application
-        Application(std::shared_ptr<Engine> engine);
-        //Delete copy constructor and move assignment
-        Application(const Application&) = delete;
-        Application& operator=(const Application&) = delete;
-
+        //Application becomes the owner of engine passed
+        Application(Engine* engine);
 
         //Takedown application
         virtual ~Application();
@@ -42,20 +30,13 @@ namespace ds { namespace core {
         virtual Engine* getEngine();
 
     protected:
-        TaskHandlerCondition cond;
+        bool cond;
     private:
-        std::atomic_bool run_guard;
-        std::shared_ptr<Engine> eng;
-        std::vector<std::thread> threads;
+        Engine* eng;
     };
-
-    //Exceptions
-
-    struct ApplicationException : public std::runtime_error {
-        ApplicationException(const char* arg) : runtime_error(arg) 
-        {
-        }
-    };
+    
+    //Cause the application to stop and report an initialization failure
+    void init_failure(const char* msg);
 }}
 
 #endif /* DS_CORE_APPLICATION_H */

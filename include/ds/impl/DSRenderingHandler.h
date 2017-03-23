@@ -1,8 +1,6 @@
 #ifndef DS_IMPL_RENDERINGHANDLER_H
 #define DS_IMPL_RENDERINGHANDLER_H
 
-#include <chrono>
-#include <thread>
 #include <iostream>
 #include "ds/core/Application.h"
 #include "ds/render/Rendering.h"
@@ -15,8 +13,10 @@ namespace ds { namespace impl {
     struct DSRenderingHandler {
         
         DSRenderingHandler(DSEngine* e);
+        ~DSRenderingHandler();
 
-        void operator()(core::TaskHandlerCondition cond);
+        void init();
+        void apply();
 
     private:
         DSEngine* eng;

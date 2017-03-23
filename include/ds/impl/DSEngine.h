@@ -2,9 +2,6 @@
 #define DS_IMPL_ENGINE_H
 
 #include <vector>
-#include <memory>
-
-#include <initializer_list>
 
 #include "ds/core/Engine.h"
 #include "ds/core/X11Application.h"
@@ -23,8 +20,6 @@ namespace ds { namespace impl {
         DSEngine();
         ~DSEngine();
 
-        std::vector<ds::core::TaskHandler> getHandlers();
-
         void verify();
 
         void attach(core::Application*);
@@ -34,8 +29,9 @@ namespace ds { namespace impl {
         core::X11Application* getApplication();
 
         core::World* getWorld();
-
-        render::RenderContext* getRenderContext();
+        
+        void init();
+        void run();
 
         DSAudioHandler* getAudioHandler();
 
@@ -44,14 +40,18 @@ namespace ds { namespace impl {
         DSPhysicsHandler* getPhysicsHandler();
 
         DSRenderingHandler* getRenderingHandler();
+        
+        render::RenderContext* getRenderContext();
 
-    private:
+    private:                  
         DSEventHandler eventHandler;
         DSPhysicsHandler physicsHandler;
         DSRenderingHandler renderingHandler;
         DSAudioHandler audioHandler;
+        
         core::X11Application* app;
-        std::unique_ptr<core::World> world;
+        core::World world;
+        bool done;
     };
         
     //Newtonian physics model
@@ -73,13 +73,13 @@ namespace ds { namespace impl {
 
     inline void verify(DSEngine* eng) {
         if (!eng) {
-            throw ds::core::EngineException("Engine not initialized");
+            ds::core::init_failure("Engine not initialized");
         }
         if (!eng->getApplication()) {
-            throw ds::core::EngineException("Engine is not attached");
+            ds::core::init_failure("Engine is not attached");
         }
         if (!eng->getWorld()) {
-            throw ds::core::EngineException("World is not ready");
+            ds::core::init_failure("World is not ready");
         }
     }
 

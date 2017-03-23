@@ -8,45 +8,57 @@
 #include <vector>
 
 #include "ds/core/World.h"
-#include <unordered_map>
 #include <vector>
 #include <algorithm>
-#include <thread>
-#include <mutex>
-#include <shared_mutex>
 #include <ostream>
+#include <map>
 
 #include "ds/render/Rendering.h"
 
 std::ostream& ds::core::operator<<(std::ostream& os, const ds::core::Vec3& v) {
     return os << '{' <<v.x << ", " << v.y << ", " << v.z << '}';
 }
+typedef std::map<
+            ds::core::World::ObjectKeyType,
+            ds::core::Object*
+        > ObjectMapType;
 
 struct ds::core::World::Pimpl {
-    std::unordered_map<
-        ds::core::World::ObjectKeyType,
-        ds::core::ObjectPtr
-    > objs;
-    std::vector<ds::render::RendererPtr> renderers;
-    std::shared_timed_mutex objsMtx;
-    std::shared_timed_mutex renderersMtx;
+    ObjectMapType objs;
+    std::vector<ds::render::Renderer*> renderers;
 };
 
-ds::core::World::World () :
-internal (std::make_unique<ds::core::World::Pimpl>())
+ds::core::World::World ()
+    : internal (new ds::core::World::Pimpl())
 {
 }
 
 ds::core::World::~World ()
 {
+    //cleanup owned stuff
+    for(ObjectMapType::iterator 
+            it = this->internal->objs.begin(),
+            end = this->internal->objs.end();
+            it != end;
+            ++it) {
+        delete (*it).second;
+    }    
+    for(std::vector<ds::render::Renderer*>::iterator 
+            it = this->internal->renderers.begin(),
+            end = this->internal->renderers.end();
+            it != end;
+            ++it) {
+        delete *it;
+    }
+    delete this->internal;
 }
 
-bool ds::core::World::add (const ObjectKeyType& key, ObjectPtr obj)
+bool ds::core::World::add (const ObjectKeyType& key, Object* obj)
 {
-    std::unique_lock<std::shared_timed_mutex> lock(this->internal->objsMtx);
-    auto vec = this->internal->objs;
-    auto end = vec.end();
-    auto res = this->internal->objs.find(key);
+    ObjectMapType& vec = this->internal->objs;
+    typename ObjectMapType::iterator
+        res = this->internal->objs.find(key), 
+        end = vec.end();;
     if (res == end) {
         this->internal->objs[key] = obj;
         return true;
@@ -54,27 +66,36 @@ bool ds::core::World::add (const ObjectKeyType& key, ObjectPtr obj)
         return false;
     }
 }
-
-bool ds::core::World::remove (ObjectPtr obj)
+struct compareObject
 {
-    std::unique_lock<std::shared_timed_mutex> lock(this->internal->objsMtx);
+    compareObject(ds::core::Object* obj)
+        : obj(obj)
+    {
+    }
 
+    bool operator()(const ObjectMapType::value_type& p)
+    {
+        return p.second == obj;
+    }
+    
+    ds::core::Object* obj;
+};
+bool ds::core::World::remove (Object* obj)
+{
     return std::find_if(
         this->internal->objs.begin(),
         this->internal->objs.end(),
-        [obj] (const auto& p) { return p.second == obj; }
+        compareObject(obj)
     ) != this->internal->objs.end();
 }
 
 bool ds::core::World::remove(const ObjectKeyType& key)
 {
-    std::unique_lock<std::shared_timed_mutex> lock(this->internal->objsMtx);
     return this->internal->objs.erase(key) > 0;
 }
 
-void ds::core::World::addRenderer (std::shared_ptr<render::Renderer> renderer)
+void ds::core::World::addRenderer (render::Renderer* renderer)
 {
-    std::unique_lock<std::shared_timed_mutex> lock(this->internal->objsMtx);
     this->internal->renderers.push_back(renderer);
 }
 
@@ -82,47 +103,65 @@ void ds::core::World::addRenderer (std::shared_ptr<render::Renderer> renderer)
 
 void ds::core::World::render (render::RenderContext* ctx)
 {
-    //deadlock free multilock
-    std::lock(this->internal->objsMtx, this->internal->renderersMtx);
-    std::shared_lock <std::shared_timed_mutex>
-            readObjects(this->internal->objsMtx, std::adopt_lock);
-    std::shared_lock <std::shared_timed_mutex>
-            readRenderers(this->internal->renderersMtx, std::adopt_lock);
-    auto& vec = this->internal->objs;
-    auto& renderers = this->internal->renderers;
+    ObjectMapType& vec = this->internal->objs;
+    std::vector<ds::render::Renderer*>& renderers = this->internal->renderers;
     //Simple rendering logic
     //@TODO Optimize
-    for (auto& e : vec) {
-        if (e.second->renderable) {
-            for (auto& r : renderers) {
-                if(r->isRenderer(&*e.second->renderable)) {
-                    r->render(ctx, &*e.second, &*e.second->renderable);
+//    for (auto& e : vec) {
+//        if (e.second->renderable) {
+//            for (auto& r : renderers) {
+//                if(r->isRenderer(&*e.second->renderable)) {
+//                    r->render(ctx, &*e.second, &*e.second->renderable);
+//                    break;
+//                }
+//            }
+//        }
+//    }
+    
+    for (typename ObjectMapType::iterator 
+            it = vec.begin(), 
+            end = vec.end(); 
+            it != end; 
+            ++it) {
+        typename ObjectMapType::value_type e = *it;
+        if (e.second->renderable) {                    
+            for (std::vector<ds::render::Renderer*>::iterator 
+                        rit = renderers.begin(), rend = renderers.end();
+                        rit != rend;
+                        ++rit) {
+                ds::render::Renderer* r = *rit;                
+                if(r->isRenderer(e.second->renderable)) {
+                    r->render(ctx, e.second, e.second->renderable);
                     break;
                 }
             }
         }
-    }
+    }    
 }
 
-std::vector<ds::core::ObjectPtr> ds::core::World::getObjects ()
+std::vector<ds::core::Object*> ds::core::World::getObjects ()
 {
-    std::shared_lock<std::shared_timed_mutex> lock(this->internal->objsMtx);
-    std::vector<ObjectPtr> copy;
+    std::vector<Object*> copy;
     copy.reserve(this->internal->objs.size());
 
-    for (const auto &s : this->internal->objs)
+    for (typename ObjectMapType::iterator 
+            it = this->internal->objs.begin(), 
+            end = this->internal->objs.end(); 
+            it != end; 
+            ++it) {
+        const ObjectMapType::value_type& s = *it;
         copy.push_back(s.second);
-
+    }
+    
     return copy;
 }
 
-ds::core::ObjectPtr ds::core::World::getObject(const ObjectKeyType& key)
+ds::core::Object* ds::core::World::getObject(const ObjectKeyType& key)
 {
-    std::shared_lock<std::shared_timed_mutex> lock(this->internal->objsMtx);
-    auto res =  this->internal->objs.find(key);
+    typename ObjectMapType::iterator res =  this->internal->objs.find(key);
     if(res != this->internal->objs.end()) {
         return (*res).second;
     } else {
-        return nullptr;
+        return NULL;
     }
 }
