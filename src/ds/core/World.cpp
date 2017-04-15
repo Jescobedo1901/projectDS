@@ -6,13 +6,14 @@
 #include<GL/glu.h>
 
 #include <vector>
-
-#include "ds/core/World.h"
 #include <vector>
 #include <algorithm>
 #include <ostream>
 #include <map>
+#include <set>
+#include <climits>
 
+#include "ds/core/World.h"
 #include "ds/render/Rendering.h"
 
 std::ostream& ds::core::operator<<(std::ostream& os, const ds::core::Vec3& v) {
@@ -42,7 +43,7 @@ ds::core::World::~World ()
             it != end;
             ++it) {
         delete (*it).second;
-    }    
+    }
     for(std::vector<ds::render::Renderer*>::iterator 
             it = this->internal->renderers.begin(),
             end = this->internal->renderers.end();
@@ -55,10 +56,9 @@ ds::core::World::~World ()
 
 bool ds::core::World::add (const ObjectKeyType& key, Object* obj)
 {
-    ObjectMapType& vec = this->internal->objs;
     typename ObjectMapType::iterator
         res = this->internal->objs.find(key), 
-        end = vec.end();;
+        end = this->internal->objs.end();;
     if (res == end) {
         this->internal->objs[key] = obj;
         return true;
@@ -82,11 +82,13 @@ struct compareObject
 };
 bool ds::core::World::remove (Object* obj)
 {
-    return std::find_if(
-        this->internal->objs.begin(),
-        this->internal->objs.end(),
-        compareObject(obj)
-    ) != this->internal->objs.end();
+    return this->internal->objs.erase(
+                std::find_if(
+                    this->internal->objs.begin(),
+                    this->internal->objs.end(),
+                    compareObject(obj)
+                ))
+            != this->internal->objs.end();
 }
 
 bool ds::core::World::remove(const ObjectKeyType& key)
@@ -99,39 +101,76 @@ void ds::core::World::addRenderer (render::Renderer* renderer)
     this->internal->renderers.push_back(renderer);
 }
 
-//Render the entire world
+struct RenderableComparator {
+    
+    bool operator()(
+        const ds::core::Object* lhs, 
+        const ds::core::Object* rhs)
+    {
+        //get z order if available, or INT_MIN
+        int lhsOrder = lhs->renderable ? 
+                            lhs->renderable->getZOrder() : 
+                            ds::render::ZOrder::min;
+        //get z order if available, or INT_MIN
+        int rhsOrder = rhs->renderable->getZOrder() ?
+                            rhs->renderable->getZOrder() : 
+                            ds::render::ZOrder::min;
+        return lhsOrder < rhsOrder;
+    }
+};
 
+struct ToSecondValue {
+    ObjectMapType::mapped_type operator()(
+        ObjectMapType::value_type& pair)
+    {
+        return pair.second;
+    }
+};
+
+//Render the entire world
+//First step is to copy all renderables into a set
+//which sorts the renderables by z-order
+//next, it loops through all the renderables
+//  while looping through all the renderers
+//      checks if a renderer supports a renderable
+//          if it does, then call render and break out of loop
+//  repeat until everything is rendered
 void ds::core::World::render (render::RenderContext* ctx)
 {
-    ObjectMapType& vec = this->internal->objs;
+    ObjectMapType& renderablePairs = this->internal->objs;
     std::vector<ds::render::Renderer*>& renderers = this->internal->renderers;
-    //Simple rendering logic
-    //@TODO Optimize
-//    for (auto& e : vec) {
-//        if (e.second->renderable) {
-//            for (auto& r : renderers) {
-//                if(r->isRenderer(&*e.second->renderable)) {
-//                    r->render(ctx, &*e.second, &*e.second->renderable);
-//                    break;
-//                }
-//            }
-//        }
-//    }
     
-    for (typename ObjectMapType::iterator 
-            it = vec.begin(), 
-            end = vec.end(); 
+    typedef std::multiset<
+        typename ObjectMapType::mapped_type,
+        RenderableComparator
+    > ObjectSet;
+
+    ObjectSet renderablesSet;
+    //use transform using inserter and ToSecondValue transforming function 
+    std::transform(
+        renderablePairs.begin(), 
+        renderablePairs.end(),
+        std::inserter(
+            renderablesSet,
+            renderablesSet.begin()
+        ),
+        ToSecondValue()
+    );
+
+    for (typename ObjectSet::iterator
+            it = renderablesSet.begin(), 
+            end = renderablesSet.end(); 
             it != end; 
             ++it) {
-        typename ObjectMapType::value_type e = *it;
-        if (e.second->renderable) {                    
+        typename ObjectMapType::mapped_type obj = *it;
+        if (obj->renderable) {
             for (std::vector<ds::render::Renderer*>::iterator 
                         rit = renderers.begin(), rend = renderers.end();
                         rit != rend;
                         ++rit) {
                 ds::render::Renderer* r = *rit;                
-                if(r->isRenderer(e.second->renderable)) {
-                    r->render(ctx, e.second, e.second->renderable);
+                if(r->isRenderer(obj->renderable)) {
+                    r->render(ctx, obj, obj->renderable);
                     break;
                 }
             }

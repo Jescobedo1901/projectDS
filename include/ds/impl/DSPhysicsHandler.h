@@ -12,11 +12,20 @@ namespace ds { namespace impl {
         {
         }
         virtual void operator()(core::fp_type delta) = 0;
+        
+        //Allows physics processor to have priority over others
+        //Default priority is 0
+        virtual int getPriority() const
+        {
+            return 0;
+        }
     };
 
     struct DSPhysicsHandler : DSHandler<PhysicsProcessor> {
 
         DSPhysicsHandler();
+        
+        void init();
         
         void apply(core::fp_type delta);
         

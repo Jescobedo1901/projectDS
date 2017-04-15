@@ -1,14 +1,14 @@
 #include <vector>
 #include <unistd.h>
+#include <cstring>
+
 #include "ds/impl/DSEngine.h"
 #include "ds/core/Application.h"
-
 #include "ds/impl/DSEventHandler.h"
 #include "ds/impl/DSPhysicsHandler.h"
 #include "ds/impl/DSRenderingHandler.h"
 #include "ds/impl/DSAudioHandler.h"
 #include "ds/core/World.h"
-
 
 
 ds::impl::DSNewtonianPhysics::DSNewtonianPhysics (DSEngine* e) : eng (e)
@@ -23,26 +23,35 @@ void ds::impl::DSNewtonianPhysics::operator() (ds::core::fp_type delta)
             end = objs.end();
             it != end;
             ++it) {
+
         core::Object* obj = *it;
 
-        core::Vec3 force = obj->cumForces();
-        obj->forces.clear(); //clear applied forces
+        if(obj) {
+            core::Vec3 force = obj->cumForces();
+            obj->forces.clear(); //clear applied forces
 
-        //Apply only to objects with mass
-        if(obj->mass) {
-            // a = F / m
-            core::Vec3 a = force / obj->mass;
+            //Apply only to objects with mass
+            if(obj->mass) {
+                // a = F / m
+                obj->acc = force / obj->mass;
 
-            //Velocity  = acceleration * time
-            obj->vel += delta * a;
+                //Velocity  = acceleration * time
+                obj->vel += obj->acc * delta;
 
-            //Position = velocity * time
-            // Adjust pixel to meter radio
-            obj->pos += delta * obj->vel * impl::PIXEL_TO_METER;
+                //Position = velocity * time
+                // Adjust pixel to meter radio
+                obj->pos += obj->vel * delta * impl::PIXEL_TO_METER;
+            }
         }
     }
 
 }
+
+int ds::impl::DSNewtonianPhysics::getPriority() const
+{
+    return INT_MAX;
+}
+
 
 ds::impl::DSGravity::DSGravity (ds::core::Vec3 acc, ds::impl::DSEngine* e) : acceleration(acc), eng (e)
 {
@@ -70,10 +79,13 @@ ds::impl::DSEngine::DSEngine ()
         audioHandler (),
         app (NULL),
         world (),
-        done(false)
+        done(false),
+        mapBoundsGenerator(new MapBoundsGenerator)
 {
+    this->getPhysicsHandler()->addProcessor(this->mapBoundsGenerator);
     this->getPhysicsHandler()->addProcessor(new DSNewtonianPhysics(this));
     this->getPhysicsHandler()->addProcessor(new DSGravity(core::Vec3(0, -9.8, 0), this));
+    
 }
 
 ds::impl::DSEngine::~DSEngine ()
@@ -110,6 +122,11 @@ ds::render::RenderContext* ds::impl::DSEngine::getRenderContext ()
     return this;
 }
 
+ds::impl::MapBoundsGenerator* ds::impl::DSEngine::getMapBoundsGenerator()
+{
+    return this->mapBoundsGenerator;
+}
+
 void ds::impl::DSEngine::attach (ds::core::Application* application)
 {
     core::X11Application* attempt_cast = dynamic_cast<core::X11Application*> (application);
@@ -134,7 +151,7 @@ inline double diff(timespec& start, timespec& end) {
 
 void ds::impl::DSEngine::run()
 {
-    const double tickSeconds = 1.0 / 60.0;
+    const double tickSeconds = 1.0 / 120.0;
 
     //Used to measure the real time passed, for delta
     struct timespec real;
@@ -154,11 +171,12 @@ void ds::impl::DSEngine::run()
 
         //tick game state
         clock_gettime(CLOCK_REALTIME, &now);
+
         double dt = diff(now, prev);
         while (dt >= tickSeconds) {
             dt -= tickSeconds;
-            this->physicsHandler.apply(tickSeconds);
             this->eventHandler.apply();
+            this->physicsHandler.apply(tickSeconds);
             this->audioHandler.apply();
         }
 
@@ -174,6 +192,7 @@ void ds::impl::DSEngine::detach (core::Application* appl)
 void ds::impl::DSEngine::init()
 {
     this->getRenderingHandler()->init();
+    this->getPhysicsHandler()->init();
 }
 ds::core::X11Application* ds::impl::DSEngine::getApplication ()
 {

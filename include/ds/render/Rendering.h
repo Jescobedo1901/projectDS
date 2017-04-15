@@ -1,15 +1,28 @@
 #ifndef DS_RENDER_RENDERCONTEXT_H
 #define DS_RENDER_RENDERCONTEXT_H
 
+#include <climits>
 
 namespace ds { namespace core {
     class Object; //forward declare
 }}
 namespace ds { namespace render {
 
+    //ZOrder enum
+    //
+    struct ZOrder {
+        enum ZorderValues {            
+            min = INT_MIN,
+            background = INT_MIN + 5,
+            def = 0,
+            text = 10000,            
+            effects = 100000,
+            max = INT_MAX
+        };
+    };
     
     struct Color {
-        Color() : r(), g(), b(), a()
+        Color() : r(0), g(0), b(0), a(0)
         {            
         }
         Color(  unsigned char _r,
@@ -19,12 +32,19 @@ namespace ds { namespace render {
             : r(_r), g(_g), b(_b), a(_a)
         {            
         }
+        
+        //To RGBA
         int toInt()
         {
-            return (r << 24) + (r << 16) + (b << 8) + b;
+            return (r << 24) + (g << 16) + (b << 8) + a;
+        }
+        //To RGB no alpha
+        int toRGBInt()
+        {
+            return (r << 16) + (g << 8) + b;
         }
         
-        unsigned char r, g, b, a;
+        int r, g, b, a;
     };
     /**
      * Render Context class
@@ -61,21 +81,46 @@ namespace ds { namespace render {
      * All renderable objects must inherit this class
      */
     struct Renderable {
+        
+        Renderable(int zo) : zOrder(zo)
+        {
+        }
+        
+        Renderable() : zOrder(ZOrder::def)
+        {
+        }
+        
         virtual ~Renderable()
         {
         }
+
+        virtual void setZOrder(int zOrder)
+        {
+            this->zOrder = zOrder;
+        }
+        
+        virtual int getZOrder() const
+        {
+            return 0;
+        }
+        
+    private:
+        int zOrder;
     };
 
     /**
      * Basic shape
      */
     struct Shape : public Renderable {
-            virtual ~Shape()
-            {
-            }
+        virtual ~Shape()
+        {
+        }
     };
 
     struct Sphere : public Shape {
+        Sphere() : color()
+        {
+        }
         virtual ~Sphere()
         {
         }
@@ -101,7 +146,7 @@ namespace ds { namespace render {
         //Currently supported styles
 
                 
-        Text() : style(plain6), text()
+        Text() : Renderable(ZOrder::text), style(plain6), text()
         {            
         }        
 

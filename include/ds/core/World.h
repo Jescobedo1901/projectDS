@@ -31,8 +31,15 @@ namespace ds { namespace core {
 
         fp_type x, y, z;
 
-        core::fp_type magnitude() {
+        inline core::fp_type magnitude() const{
             return cbrtf(x*x + y*y + z*z);
+        }
+        
+        //Create a normalized vector from this
+        inline Vec3 norm() const
+        {
+            core::fp_type magn = this->magnitude();
+            return Vec3(this->x / magn, this->y / magn, this->z / magn);
         }
 
         inline Vec3& operator+=(const Vec3& r) {
@@ -50,9 +57,11 @@ namespace ds { namespace core {
         }
 
         inline Vec3& operator *=(const Vec3& r) {
-
+            this->x *= r.x,
+            this->y *= r.y;
+            this->z *= r.z;         
             return *this;
-        }      
+        }
 
     };
 
@@ -121,6 +130,15 @@ namespace ds { namespace core {
     
     inline Vec3 sqrt(const Vec3& vec) {
         return Vec3(std::sqrt(vec.x), std::sqrt(vec.y), std::sqrt(vec.z));
+    }
+    
+    // Cross product between two vectors
+    inline Vec3 cross(const Vec3& l, const Vec3& r) {       
+        return Vec3(
+            l.y*r.z - r.y*l.z,
+            l.z*r.x - r.z*l.x, 
+            l.x*r.y - r.x*l.y
+        );
     }
 
     std::ostream& operator<<(std::ostream& os, const Vec3 & v);
@@ -322,7 +340,7 @@ namespace ds { namespace core {
         Velocity vel;
 
         //the current acceleration of this object
-        Acceleration acc;
+        Acceleration acc;                
 
         //The average radius of the object
         //Not necessarily a meaningful attribute
@@ -333,6 +351,7 @@ namespace ds { namespace core {
 
         // A vector of vector forces being applied to this object
         // Must be reapplied every step in order to have continuous effect
+        //These forces added are per second
         std::vector<Vec3> forces;
 
         inline Vec3 cumForces() const {
