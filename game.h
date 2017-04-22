@@ -316,8 +316,8 @@ void applyGravity(Object*);
 void applyStokesApprox(Object*);
 void applyBuoyancyApprox(Object*);
 void applyPlayerMovement(Object*);
-void handlePlayerCollisions(Object*);
-void handleScrollingObjectLifetime(Object*);
+inline void handlePlayerCollisions(Object*) {}
+inline void handleScrollingObjectLifetime(Object*) {}
 
 //Audio
 

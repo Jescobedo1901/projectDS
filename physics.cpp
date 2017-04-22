@@ -181,10 +181,9 @@ void stepPhysics(float stepDuration)
     /**
      * No physical effects are apply
      * unless the game scene loaded is play
-     */
-    switch (game.scene == GameScenePlay) {
-
-        printf("Now doing scene\n");
+     */    
+    if (game.scene == GameScenePlay) {
+        
         stepMapBoundsIteration();
 
         for (int i = 0, l = game.objects.size(); i < l; ++i) {
