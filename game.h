@@ -1,4 +1,4 @@
- 
+
 #ifndef GAME_H
 #define GAME_H
 
@@ -28,8 +28,8 @@
 const float PIXEL_TO_METER = 60.0f;
 
 //3 Dimensional vector
-struct Vec3 {
 
+struct Vec3 {
     Vec3();
     Vec3(float x, float y, float z);
 
@@ -47,7 +47,7 @@ struct Vec3 {
     Vec3& operator-=(const Vec3& r);
 
     // *= math operator
-    inline Vec3& operator *=(const Vec3& r);
+    inline Vec3& operator*=(const Vec3& r);
 
 };
 //Simple math operators defined for Vec3
@@ -84,20 +84,22 @@ typedef Vec3 Acceleration;
 
 //Color class, helpful to convert to int and RGB
 //implemented in render.cpp
+
 struct Color {
-    
     Color();
-    Color(unsigned char r,unsigned char g, unsigned char b);
-    Color(unsigned char r, unsigned char g, unsigned char b, unsigned char a);  
-    
-    GLint toInt();//To RGBA
-    GLint toRGBInt();//To RGB no alpha
-    
+    Color(unsigned char r, unsigned char g, unsigned char b);
+    Color(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
+
+    void glChangeColor();
+
+    GLint toRGBInt(); //To RGB no alpha
+
     unsigned char r, g, b, a;
 };
 
 //Different object types
 //used for handling physics and rendering
+
 enum ObjectType {
     ObjectTypeInvalid,
     ObjectTypePlayer,
@@ -105,14 +107,15 @@ enum ObjectType {
     ObjectTypeNeutral,
     ObjectTypeFriendly,
     ObjectTypeRectangle,
+    ObjectTypeSphere,
     ObjectTypeTexture,
     ObjectTypeText
 };
 
 //Different rendering scenes
 //used to control processing of physics and selective rendering
-enum GameScene 
-{
+
+enum GameScene {
     GameSceneNone,
     GameSceneMenu,
     GameScenePlay,
@@ -135,13 +138,12 @@ enum TextStyle {
 //ENUM declarations - END
 
 struct Object {
-  
+
     Object()
-        :   name(), objectType(), scene(GameSceneNone),
-            pos(), vel(), acc(), avgRadius(),
-            mass(), forces(0), color(), style(),
-            dim()
-    {
+    : name(), objectType(), scene(GameSceneNone),
+    pos(), vel(), acc(), avgRadius(),
+    mass(), forces(0), color(), style(),
+    dim() {
     }
 
     //Name of this object (optional)
@@ -149,7 +151,7 @@ struct Object {
 
     //Integer object type identifier (optional)
     ObjectType objectType;
-    
+
     //The ID of the scene this object belongs to
     //By default, it does NOT belong to any scene
     GameScene scene;
@@ -161,7 +163,7 @@ struct Object {
     Velocity vel;
 
     //the current acceleration of this object
-    Acceleration acc;                
+    Acceleration acc;
 
     //The average radius of the object
     //Not necessarily a meaningful attribute
@@ -174,8 +176,8 @@ struct Object {
     // Must be reapplied every step in order to have continuous effect
     //These forces added are per second
     std::vector<Force> forces;
-    
-    
+
+
     /**
      * (OPTIONAL)
      * The color of the object, if meaningful to object type
@@ -186,35 +188,34 @@ struct Object {
      * (OPTIONAL)
      * The text style of this object, if meaningful to object type
      */
-    TextStyle style;    
-    
-        
+    TextStyle style;
+
+
     /**
      * (OPTIONAL)
      * The dimensions of this object, if meaningful to the object type
      */
     Dimension dim;
-    
+
     inline Force cumForces() const {
         Force cum;
-        for(int i = 0, l = forces.size(); i < l; ++i) {
+        for (int i = 0, l = forces.size(); i < l; ++i) {
             cum.x += forces[i].x;
             cum.y += forces[i].y;
             cum.z += forces[i].z;
         }
         return cum;
     }
-    
+
 };
 
 //Game struct
 
 struct Game {
-    
     //Initializes variables to null/default values
     //implementation defined in main
     Game();
-    
+
     //X11 and OpenGL variables
     Display* display;
     Window root;
@@ -224,32 +225,32 @@ struct Game {
     XSetWindowAttributes swa;
     XWindowAttributes gwa;
     GLXContext glc;
-    
-    
+
+
     //Set to true to exit the game
     bool done;
-    
-    
+
+
     /**
      * Controls which game flow we are currently in
      * e.g., menu, play, etc
      */
     GameScene scene;
     bool isGamePaused;
-        
-    
+
+
     int mapBoundsIteration;
-    
+
     /**
      * Keeps track of player keyboard directional input
      */
     int playerMovementDirectionMask;
-    
+
     /**
      * Game Objects
      * Every object is rendered depending on its
      * objectType attribute found in Object struct
-     */    
+     */
     std::vector<Object*> objects;
 
 };
@@ -257,12 +258,12 @@ struct Game {
 extern Game game;
 
 //Physics section
+
 enum Direction {
-    
-    DirLeft = 1, 
-    DirRight = 2, 
-    DirUp = 4, 
-    DirDown = 8, 
+    DirLeft = 1,
+    DirRight = 2,
+    DirUp = 4,
+    DirDown = 8,
     DirNone = 16
 
 };
@@ -273,7 +274,8 @@ void initGL();
 void uninitX11();
 void uninitGL();
 
-inline void initResources() {}
+inline void initResources() {
+}
 void initScenes();
 void initSceneMenu();
 void initScenePlay();
@@ -302,6 +304,8 @@ float getOceanFloorLowerBound(int x);
 void handleEvents();
 void handlePlayerMovement(const XEvent& event);
 void handlePlayerClickExit(const XEvent& event);
+void handleMouseClicks(const XEvent& event);
+void handleClickMenuItems(const XEvent& event);
 
 //Physics
 void stepPhysics(float stepDuration);
@@ -315,13 +319,15 @@ void handlePlayerCollisions(Object*);
 void handleScrollingObjectLifetime(Object*);
 
 //Audio
-inline void applyAudio() {}
+
+inline void applyAudio() {
+}
 
 
 //Error handling
-inline void initFailure(const char* msg)
-{
-    printf( "An initialization failure occured."
+
+inline void initFailure(const char* msg) {
+    printf("An initialization failure occured."
             "With the following message:\n\t%s\n", msg);
     std::exit(1);
 }
