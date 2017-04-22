@@ -306,6 +306,7 @@ void handlePlayerMovement(const XEvent& event);
 void handlePlayerClickExit(const XEvent& event);
 void handleMouseClicks(const XEvent& event);
 void handleClickMenuItems(const XEvent& event);
+void handleESC(const XEvent& event);
 
 //Physics
 void stepPhysics(float stepDuration);

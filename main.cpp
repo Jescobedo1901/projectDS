@@ -53,6 +53,7 @@ void handleEvents()
     while (XPending(game.display) > 0) {
         XNextEvent(game.display, &event);
         handlePlayerClickExit(event);
+        handleESC(event);
         handleMouseClicks(event);
     }
 }
