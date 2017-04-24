@@ -207,8 +207,7 @@ void initSceneMenu()
     menuBg->dim.y = 500;
     game.objects.push_back(menuBg);
 
-
-    char* buttons[4] = {
+    const char* buttons[4] = {
         "New Game",
         "Restart",
         "Credits",
