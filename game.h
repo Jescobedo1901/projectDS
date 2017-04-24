@@ -24,6 +24,7 @@
 
 //other
 #include "fonts.h"
+#include "ppm.h"
 
 const float PIXEL_TO_METER = 60.0f;
 
@@ -143,7 +144,8 @@ struct Object {
     : name(), objectType(), scene(GameSceneNone),
     pos(), vel(), acc(), avgRadius(),
     mass(), forces(0), color(), style(),
-    dim() {
+    dim(), value() //textureimage()
+    {
     }
 
     //Name of this object (optional)
@@ -196,6 +198,16 @@ struct Object {
      * The dimensions of this object, if meaningful to the object type
      */
     Dimension dim;
+
+    /**
+     * (OPTIONAL)
+     * The texure of this object, if meaningful to the object type
+     */
+    //Ppmimage *textureimage = NULL;
+
+	//Value to keep track of if necessary
+   int value;
+
 
     inline Force cumForces() const {
         Force cum;
@@ -288,6 +300,7 @@ void gameLoop();
 //Rendering
 void renderAll();
 void renderMap();
+void renderCharacter(Object*);
 void renderSphere(Object*);
 void renderRectangle(Object*);
 void renderTexture(Object*);

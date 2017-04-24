@@ -1,4 +1,14 @@
 #include "game.h"
+#include "ppm.h"
+//GLOBAL PPM ARRAYS
+
+GLuint playerTexture;
+GLuint silhouetteTexture;
+Ppmimage *playerImage = NULL;
+
+//GLOBAL SCREEN SETUP
+int xres = 800;
+int yres = 600;
 
 //Color class implementation - BEGIN
 
@@ -33,6 +43,39 @@ GLint Color::toRGBInt()
 }
 //Color class implementation - END
 
+//ALPHA DATA FUNCTION
+unsigned char *buildAlphaData(Ppmimage *img)
+{
+	//add 4th component to RGB stream...
+	int i;
+	int a,b,c;
+	unsigned char *newdata, *ptr;
+	unsigned char *data = (unsigned char *)img->data;
+	newdata = (unsigned char *)malloc(img->width * img->height * 4);
+	ptr = newdata;
+	for (i=0; i<img->width * img->height * 3; i+=3) {
+		a = *(data+0);
+		b = *(data+1);
+		c = *(data+2);
+		*(ptr+0) = a;
+		*(ptr+1) = b;
+		*(ptr+2) = c;
+		//get largest color component...
+		//*(ptr+3) = (unsigned char)((
+		//		(int)*(ptr+0) +
+		//		(int)*(ptr+1) +
+		//		(int)*(ptr+2)) / 3);
+		//d = a;
+		//if (b >= a && b >= c) d = b;
+		//if (c >= a && c >= b) d = c;
+		//*(ptr+3) = d;
+		*(ptr+3) = (a|b|c);
+		ptr += 4;
+		data += 3;
+	}
+	return newdata;
+}
+
 void initX11()
 {
 
@@ -63,8 +106,8 @@ void initX11()
             game.display,
             game.root,
             0, 0,
-            800,
-            600,
+            xres,
+            yres,
             0,
             game.vi->depth,
             InputOutput,
@@ -192,8 +235,8 @@ void initSceneMenu()
     screenBg->color = Color(0, 0, 0, 50);
     screenBg->pos.y = 0;
     screenBg->pos.x = 0;
-    screenBg->dim.x = 800;
-    screenBg->dim.y = 600;
+    screenBg->dim.x = xres;
+    screenBg->dim.y = yres;
     game.objects.push_back(screenBg);
 
     Object* menuBg = new Object();
@@ -242,6 +285,75 @@ void initSceneMenu()
 
 void initScenePlay()
 {
+	glEnable(GL_TEXTURE_2D);
+
+	Object* character = new Object();
+	character->scene = GameScenePlay;
+	character->name  = "player";
+	character->objectType = ObjectTypePlayer;
+	character->pos.y = 150;
+	character->pos.x = 200;
+	game.objects.push_back(character);
+	//character->textureimage = ppm6GetImage("./images/bigfoot.ppm");
+	playerImage = ppm6GetImage("./images/bigfoot.ppm");
+
+	//BIND PPM DATA
+	
+	glGenTextures(1, &playerTexture);
+	glGenTextures(1, &silhouetteTexture);
+	//int w = character->textureimage->width;
+	//int h = character->textureimage->height;
+	int w = playerImage->width;
+	int h = playerImage->height;
+	glBindTexture(GL_TEXTURE_2D, playerTexture);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+
+	//TRANSPARENCY
+
+	unsigned char *sillhouetteData = buildAlphaData(playerImage);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+			sillhouetteData);
+	free(sillhouetteData);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+			//playerImage->data);
+
+
+	//Game Diagnostics Text
+	Object* healthText = new Object();
+	healthText->scene = GameScenePlay;
+	healthText->objectType = ObjectTypeText;
+	healthText->style = plain16;
+	healthText->color = Color(244, 66, 66, 1);
+	healthText->value = 100;
+	healthText->pos.y = yres-50;
+	healthText->pos.x = 0+50;
+	healthText->name = (char)100;
+	game.objects.push_back(healthText);
+
+	Object* hunger = new Object();
+	hunger->scene = GameScenePlay;
+	hunger->objectType = ObjectTypeText;
+	hunger->style = plain16;
+	hunger->color = Color(255, 149, 50, 1);
+	hunger->value = 100;
+	hunger->pos.y = yres-50;
+	hunger->pos.x = 0+150;
+	hunger->name = (char)100;
+	game.objects.push_back(hunger);
+
+	Object* speed = new Object();
+	speed->scene = GameScenePlay;
+	speed->objectType = ObjectTypeText;
+	speed->style = plain16;
+	speed->color = Color(71, 244, 86, 1);
+	speed->value = 0;
+	speed->pos.y = yres-50;
+	speed->pos.x = 0+250;
+	speed->name = (char)100;
+	game.objects.push_back(speed);
+	
+
 
 }
 
@@ -265,15 +377,20 @@ void renderAll()
      */
     if (game.scene == GameScenePlay ||
             game.scene == GameScenePlayPause) {
+	
         renderMap();
+	
+	
     }
-
+	
     //Rendered in order and let's hope it works
     for (int i = 0, l = game.objects.size(); i < l; ++i) {
         Object* obj = game.objects[i];
         if (game.scene == obj->scene) {
             switch (obj->objectType) {
-            case ObjectTypePlayer:
+            case ObjectTypePlayer: 
+		renderCharacter(obj);
+		break;
             case ObjectTypeEnemy:
                 renderSphere(obj);
                 break;
@@ -288,12 +405,13 @@ void renderAll()
                 break;
             case ObjectTypeText:
                 renderText(obj);
-                break;
+                break;	
             default:
                 break;
             }
 
         }
+	
 
     }
 
@@ -350,9 +468,32 @@ void renderRectangle(Object* obj)
             );
 }
 
-void renderTexture(Object* sphere)
+void renderCharacter(Object* obj)
 {
+	
+	glColor4f(1.0,1.0,1.0,0.8f);
+	
+	
+	
+	glPushMatrix();
+	glEnable(GL_ALPHA_TEST);
+	glAlphaFunc(GL_GREATER, 0.0f);
+	//glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	//glEnable(GL_BLEND);
+	glBindTexture(GL_TEXTURE_2D, playerTexture);
+	glBegin(GL_QUADS);
+	glTexCoord2f(1.0f,1.0f); glVertex2i(obj->pos.x,obj->pos.x);
+	glTexCoord2f(1.0f,0.0f); glVertex2i(obj->pos.x,(obj->pos.y)+100);
+	glTexCoord2f(0.0f,0.0f); glVertex2i((obj->pos.x)+100, (obj->pos.y)+100);
+	glTexCoord2f(0.0f,1.0f); glVertex2i((obj->pos.x)+100, obj->pos.x);
+	glEnd();
+	glPopMatrix();
+	
+}
 
+void renderTexture(Object* obj)
+{
+	
 }
 
 void renderText(Object* obj)
@@ -362,6 +503,45 @@ void renderText(Object* obj)
     rect.left = obj->pos.x;
     rect.center = 0;
     int cref = obj->color.toRGBInt();
+    if(obj->value != NULL)
+	{
+		char str[5];
+		sprintf(str, "%d", obj->value);
+		
+	switch (obj->style) {
+    case plain6:
+        ggprint06(&rect, 0, cref, str);
+        break;
+    case plain7:
+        ggprint07(&rect, 0, cref, str);
+        break;
+    case plain8:
+        ggprint08(&rect, 0, cref, str);
+        break;
+    case bold8:
+        ggprint8b(&rect, 0, cref, str);
+        break;
+    case plain10:
+        ggprint10(&rect, 0, cref, str);
+        break;
+    case plain12:
+        ggprint12(&rect, 0, cref, str);
+        break;
+    case plain13:
+        ggprint13(&rect, 30, cref, str);
+        break;
+    case plain16:
+        ggprint16(&rect, 30, cref, str);
+        break;
+    case plain40:
+        ggprint40(&rect, 0, cref, str);
+        break;
+    default:
+        ggprint06(&rect, 0, cref, str);
+        break;
+    }
+	}
+    else{
     switch (obj->style) {
     case plain6:
         ggprint06(&rect, 0, cref, obj->name.c_str());
@@ -394,6 +574,7 @@ void renderText(Object* obj)
         ggprint06(&rect, 0, cref, obj->name.c_str());
         break;
     }
+  }
 }
 
 float getSkyUpperBound(int x)
