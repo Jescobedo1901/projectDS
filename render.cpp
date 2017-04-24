@@ -190,7 +190,6 @@ void initSceneMenu()
     screenBg->scene = GameSceneMenu;
     screenBg->objectType = ObjectTypeRectangle;
     screenBg->color = Color(0, 0, 0, 50);
-    screenBg->avgRadius = 1;
     screenBg->pos.y = 0;
     screenBg->pos.x = 0;
     screenBg->dim.x = 800;
