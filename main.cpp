@@ -30,20 +30,22 @@ int main(int argc, char** argv)
 Game game = Game();
 
 Game::Game() :
-display(NULL),
-root(),
-win(),
-vi(NULL),
-cmap(),
-swa(),
-gwa(),
-glc(NULL),
-done(false),
-scene(GameSceneMenu), //initialize new game to menu
-isGamePaused(false),
-mapBoundsIteration(0),
-playerMovementDirectionMask(0),
-objects()
+    display(NULL),
+    root(),
+    win(),
+    vi(NULL),
+    cmap(),
+    swa(),
+    gwa(),
+    glc(NULL),
+    done(false),
+    scene(GameSceneMenu), //initialize new game to menu
+    isGamePaused(false),
+    mapBoundsIteration(0),
+    playerMovementDirectionMask(0),
+    xres(800),
+    yres(600),
+    objects()
 {
 }
 
@@ -51,7 +53,8 @@ void handleEvents()
 {
     XEvent event;
     while (XPending(game.display) > 0) {
-        XNextEvent(game.display, &event);
+        XNextEvent(game.display, &event);    
+        handlePlayerMovement(event);
         handlePlayerClickExit(event);
         handleESC(event);
         handleMouseClicks(event);
@@ -61,11 +64,11 @@ void handleEvents()
 void handleMouseClicks(const XEvent& event)
 {
     switch (game.scene) {
-    case GameSceneMenu:
-        handleClickMenuItems(event);
-        break;
-    default:
-        break;
+        case GameSceneMenu:
+            handleClickMenuItems(event);
+            break;
+        default:
+            break;
     }
 }
 

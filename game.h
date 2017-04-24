@@ -144,9 +144,17 @@ struct Object {
     : name(), objectType(), scene(GameSceneNone),
     pos(), vel(), acc(), avgRadius(),
     mass(), forces(0), color(), style(),
-    dim(), value() //textureimage()
+    dim(), intAttribute1(),
+    tex(NULL),
+    texId(),
+    texTransUsingFirstPixel(false)
     {
     }
+    
+    ~Object() {
+        delete tex;
+    }
+
 
     //Name of this object (optional)
     std::string name;
@@ -199,15 +207,20 @@ struct Object {
      */
     Dimension dim;
 
+    
     /**
      * (OPTIONAL)
-     * The texure of this object, if meaningful to the object type
+     * Optional integer attribute
      */
-    //Ppmimage *textureimage = NULL;
-
-	//Value to keep track of if necessary
-   int value;
-
+    int intAttribute1;
+    
+    /**
+     * (OPTIONAL)
+     * The texture Ppmimage and GLint texture id of this object, if meaningful to the object type
+     */
+    Ppmimage *tex;
+    GLuint texId;
+    bool texTransUsingFirstPixel;
 
     inline Force cumForces() const {
         Force cum;
@@ -258,6 +271,9 @@ struct Game {
      */
     int playerMovementDirectionMask;
 
+    int xres;
+    int yres;
+    
     /**
      * Game Objects
      * Every object is rendered depending on its
@@ -297,14 +313,16 @@ void initSceneCredits();
 //Core API
 void gameLoop();
 
-//Rendering
+//Rendering+
 void renderAll();
 void renderMap();
-void renderCharacter(Object*);
 void renderSphere(Object*);
 void renderRectangle(Object*);
 void renderTexture(Object*);
 void renderText(Object*);
+
+//Allows simple mapping of texture file to an Object file
+void mapTexture(Object* obj, const char* textureFile);
 
 //SkyBounds for rendering map
 float getSkyUpperBound(int x);
@@ -329,8 +347,12 @@ void applyGravity(Object*);
 void applyStokesApprox(Object*);
 void applyBuoyancyApprox(Object*);
 void applyPlayerMovement(Object*);
-inline void handlePlayerCollisions(Object*) {}
-inline void handleScrollingObjectLifetime(Object*) {}
+
+inline void handlePlayerCollisions(Object*) {
+}
+
+inline void handleScrollingObjectLifetime(Object*) {
+}
 
 //Audio
 

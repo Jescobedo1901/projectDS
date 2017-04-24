@@ -1,14 +1,5 @@
 #include "game.h"
 #include "ppm.h"
-//GLOBAL PPM ARRAYS
-
-GLuint playerTexture;
-GLuint silhouetteTexture;
-Ppmimage *playerImage = NULL;
-
-//GLOBAL SCREEN SETUP
-int xres = 800;
-int yres = 600;
 
 //Color class implementation - BEGIN
 
@@ -44,36 +35,35 @@ GLint Color::toRGBInt()
 //Color class implementation - END
 
 //ALPHA DATA FUNCTION
-unsigned char *buildAlphaData(Ppmimage *img)
+
+unsigned char *buildAlphaData(
+    Ppmimage *img, 
+    bool useFirstPixelToDetermineTransparencyColor = true)
 {
-	//add 4th component to RGB stream...
-	int i;
-	int a,b,c;
-	unsigned char *newdata, *ptr;
-	unsigned char *data = (unsigned char *)img->data;
-	newdata = (unsigned char *)malloc(img->width * img->height * 4);
-	ptr = newdata;
-	for (i=0; i<img->width * img->height * 3; i+=3) {
-		a = *(data+0);
-		b = *(data+1);
-		c = *(data+2);
-		*(ptr+0) = a;
-		*(ptr+1) = b;
-		*(ptr+2) = c;
-		//get largest color component...
-		//*(ptr+3) = (unsigned char)((
-		//		(int)*(ptr+0) +
-		//		(int)*(ptr+1) +
-		//		(int)*(ptr+2)) / 3);
-		//d = a;
-		//if (b >= a && b >= c) d = b;
-		//if (c >= a && c >= b) d = c;
-		//*(ptr+3) = d;
-		*(ptr+3) = (a|b|c);
-		ptr += 4;
-		data += 3;
-	}
-	return newdata;
+    //add 4th component to RGB stream...
+    int i;
+    int a, b, c;
+    unsigned char *newdata, *ptr;
+    unsigned char *data = (unsigned char *) img->data;
+    newdata = (unsigned char *) malloc(img->width * img->height * 4);
+    ptr = newdata;
+    //Let's use top right corner pixel color to distinct texture transparenc
+    unsigned char ta = 0, tb = 0, tc = 0;
+    if(useFirstPixelToDetermineTransparencyColor && img->width > 0 && img->height > 0) {
+        ta = *(data + 0), tb = *(data + 0), tc = *(data + 0);
+    }
+    for (i = 0; i < img->width * img->height * 3; i += 3) {
+        a = *(data + 0);
+        b = *(data + 1);
+        c = *(data + 2);
+        *(ptr + 0) = a;
+        *(ptr + 1) = b;
+        *(ptr + 2) = c;
+        *(ptr + 3) = !(a == ta && a == tb && c == tc);
+        ptr += 4;
+        data += 3;
+    }
+    return newdata;
 }
 
 void initX11()
@@ -92,9 +82,9 @@ void initX11()
     }
 
     game.cmap = XCreateColormap(
-        game.display, 
-        game.root, 
-        game.vi->visual, 
+        game.display,
+        game.root,
+        game.vi->visual,
         AllocNone
     );
     game.swa.colormap = game.cmap;
@@ -103,18 +93,18 @@ void initX11()
             PointerMotionMask | MotionNotify | ButtonPress |
             ButtonRelease | StructureNotifyMask | SubstructureNotifyMask;
     game.win = XCreateWindow(
-            game.display,
-            game.root,
-            0, 0,
-            xres,
-            yres,
-            0,
-            game.vi->depth,
-            InputOutput,
-            game.vi->visual,
-            CWColormap | CWEventMask,
-            &game.swa
-            );
+        game.display,
+        game.root,
+        0, 0,
+        game.xres,
+        game.yres,
+        0,
+        game.vi->depth,
+        InputOutput,
+        game.vi->visual,
+        CWColormap | CWEventMask,
+        &game.swa
+    );
 
     XMapWindow(game.display, game.win);
 
@@ -147,31 +137,31 @@ void initGL()
     }
 
     glViewport(
-            0, 0,
-            game.gwa.width,
-            game.gwa.height
-            );
+        0, 0,
+        game.gwa.width,
+        game.gwa.height
+    );
 
     XGetWindowAttributes(
-            game.display,
-            game.win,
-            &game.gwa
-            );
+        game.display,
+        game.win,
+        &game.gwa
+    );
 
     glOrtho(
-            0,
-            game.gwa.width,
-            0,
-            game.gwa.height,
-            -1,
-            1
-            );
+        0,
+        game.gwa.width,
+        0,
+        game.gwa.height,
+        -1,
+        1
+    );
 
     glViewport(
-            0, 0,
-            game.gwa.width,
-            game.gwa.height
-            );
+        0, 0,
+        game.gwa.width,
+        game.gwa.height
+    );
     //Initialize matrices
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -180,13 +170,13 @@ void initGL()
 
     //This sets 2D mode (no perspective)
     glOrtho(
-            0,
-            game.gwa.width,
-            0,
-            game.gwa.height,
-            -1,
-            1
-            );
+        0,
+        game.gwa.width,
+        0,
+        game.gwa.height,
+        -1,
+        1
+    );
 
     glDisable(GL_LIGHTING);
     glDisable(GL_DEPTH_TEST);
@@ -195,6 +185,7 @@ void initGL()
 
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
+    //glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glEnable(GL_MULTISAMPLE);
 
@@ -235,8 +226,8 @@ void initSceneMenu()
     screenBg->color = Color(0, 0, 0, 50);
     screenBg->pos.y = 0;
     screenBg->pos.x = 0;
-    screenBg->dim.x = xres;
-    screenBg->dim.y = yres;
+    screenBg->dim.x = game.xres;
+    screenBg->dim.y = game.yres;
     game.objects.push_back(screenBg);
 
     Object* menuBg = new Object();
@@ -283,77 +274,55 @@ void initSceneMenu()
 
 }
 
+
 void initScenePlay()
 {
-	glEnable(GL_TEXTURE_2D);
+    Object* player = new Object();
+    player->scene = GameScenePlay;
+    player->name = "player";
+    player->objectType = ObjectTypePlayer;
+    player->pos.y = 150;
+    player->pos.x = 200;
+    player->mass = 1;
+    player->dim.x = 30;
+    player->dim.y = 20;
+    player->avgRadius = 0.25;
+    player->texTransUsingFirstPixel = true;
+    mapTexture(player, "./images/bigfoot.ppm");
+    game.objects.push_back(player);
+        
+    //Game Diagnostics Text
+    Object* healthText = new Object();
+    healthText->scene = GameScenePlay;
+    healthText->objectType = ObjectTypeText;
+    healthText->style = plain16;
+    healthText->color = Color(244, 66, 66);
+    healthText->intAttribute1 = 100;
+    healthText->pos.y = game.yres - 50;
+    healthText->pos.x = 0 + 50;
+    healthText->name = (char) 100;
+    game.objects.push_back(healthText);
 
-	Object* character = new Object();
-	character->scene = GameScenePlay;
-	character->name  = "player";
-	character->objectType = ObjectTypePlayer;
-	character->pos.y = 150;
-	character->pos.x = 200;
-	game.objects.push_back(character);
-	//character->textureimage = ppm6GetImage("./images/bigfoot.ppm");
-	playerImage = ppm6GetImage("./images/bigfoot.ppm");
+    Object* hunger = new Object();
+    hunger->scene = GameScenePlay;
+    hunger->objectType = ObjectTypeText;
+    hunger->style = plain16;
+    hunger->color = Color(255, 149, 50);
+    hunger->intAttribute1 = 100;
+    hunger->pos.y = game.yres - 50;
+    hunger->pos.x = 0 + 150;
+    hunger->name = "100";
+    game.objects.push_back(hunger);
 
-	//BIND PPM DATA
-	
-	glGenTextures(1, &playerTexture);
-	glGenTextures(1, &silhouetteTexture);
-	//int w = character->textureimage->width;
-	//int h = character->textureimage->height;
-	int w = playerImage->width;
-	int h = playerImage->height;
-	glBindTexture(GL_TEXTURE_2D, playerTexture);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-
-	//TRANSPARENCY
-
-	unsigned char *sillhouetteData = buildAlphaData(playerImage);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-			sillhouetteData);
-	free(sillhouetteData);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-			//playerImage->data);
-
-
-	//Game Diagnostics Text
-	Object* healthText = new Object();
-	healthText->scene = GameScenePlay;
-	healthText->objectType = ObjectTypeText;
-	healthText->style = plain16;
-	healthText->color = Color(244, 66, 66, 1);
-	healthText->value = 100;
-	healthText->pos.y = yres-50;
-	healthText->pos.x = 0+50;
-	healthText->name = (char)100;
-	game.objects.push_back(healthText);
-
-	Object* hunger = new Object();
-	hunger->scene = GameScenePlay;
-	hunger->objectType = ObjectTypeText;
-	hunger->style = plain16;
-	hunger->color = Color(255, 149, 50, 1);
-	hunger->value = 100;
-	hunger->pos.y = yres-50;
-	hunger->pos.x = 0+150;
-	hunger->name = (char)100;
-	game.objects.push_back(hunger);
-
-	Object* speed = new Object();
-	speed->scene = GameScenePlay;
-	speed->objectType = ObjectTypeText;
-	speed->style = plain16;
-	speed->color = Color(71, 244, 86, 1);
-	speed->value = 0;
-	speed->pos.y = yres-50;
-	speed->pos.x = 0+250;
-	speed->name = (char)100;
-	game.objects.push_back(speed);
-	
-
+    Object* speed = new Object();
+    speed->scene = GameScenePlay;
+    speed->objectType = ObjectTypeText;
+    speed->style = plain16;
+    speed->color = Color(71, 244, 86);
+    speed->pos.y = game.yres - 50;
+    speed->pos.x = 0 + 250;
+    speed->name = "100";
+    game.objects.push_back(speed);
 
 }
 
@@ -375,46 +344,40 @@ void renderAll()
      * If the game is paused, the background is still
      * rendered
      */
-    if (game.scene == GameScenePlay ||
+    if (    game.scene == GameScenePlay ||
             game.scene == GameScenePlayPause) {
-	
+        
         renderMap();
-	
-	
+
     }
-	
+
     //Rendered in order and let's hope it works
     for (int i = 0, l = game.objects.size(); i < l; ++i) {
         Object* obj = game.objects[i];
         if (game.scene == obj->scene) {
             switch (obj->objectType) {
-            case ObjectTypePlayer: 
-		renderCharacter(obj);
-		break;
-            case ObjectTypeEnemy:
-                renderSphere(obj);
-                break;
-            case ObjectTypeSphere:
-                renderSphere(obj);
-                break;
-            case ObjectTypeRectangle:
-                renderRectangle(obj);
-                break;
-            case ObjectTypeTexture:
-                renderTexture(obj);
-                break;
-            case ObjectTypeText:
-                renderText(obj);
-                break;	
-            default:
-                break;
+                case ObjectTypeEnemy:
+                    renderSphere(obj);
+                    break;
+                case ObjectTypeSphere:
+                    renderSphere(obj);
+                    break;
+                case ObjectTypeRectangle:
+                    renderRectangle(obj);
+                    break;
+                case ObjectTypePlayer:
+                case ObjectTypeTexture:
+                    renderTexture(obj);
+                    break;
+                case ObjectTypeText:
+                    renderText(obj);
+                    break;
+                default:
+                    break;
             }
-
         }
-	
-
     }
-
+    
     glXSwapBuffers(game.display, game.win);
 }
 
@@ -461,39 +424,30 @@ void renderRectangle(Object* obj)
 {
     obj->color.glChangeColor();
     glRectf(
-            obj->pos.x,
-            obj->pos.y,
-            obj->pos.x + obj->dim.x,
-            obj->pos.y + obj->dim.y
-            );
-}
-
-void renderCharacter(Object* obj)
-{
-	
-	glColor4f(1.0,1.0,1.0,0.8f);
-	
-	
-	
-	glPushMatrix();
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.0f);
-	//glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-	//glEnable(GL_BLEND);
-	glBindTexture(GL_TEXTURE_2D, playerTexture);
-	glBegin(GL_QUADS);
-	glTexCoord2f(1.0f,1.0f); glVertex2i(obj->pos.x,obj->pos.x);
-	glTexCoord2f(1.0f,0.0f); glVertex2i(obj->pos.x,(obj->pos.y)+100);
-	glTexCoord2f(0.0f,0.0f); glVertex2i((obj->pos.x)+100, (obj->pos.y)+100);
-	glTexCoord2f(0.0f,1.0f); glVertex2i((obj->pos.x)+100, obj->pos.x);
-	glEnd();
-	glPopMatrix();
-	
+        obj->pos.x,
+        obj->pos.y,
+        obj->pos.x + obj->dim.x,
+        obj->pos.y + obj->dim.y
+    );
 }
 
 void renderTexture(Object* obj)
 {
-	
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER, 0.0f);
+    glColor4ub(255,255,255,255);
+    glBindTexture(GL_TEXTURE_2D, obj->texId);
+    glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 1.0f); 
+        glVertex2i(obj->pos.x, obj->pos.y);
+        glTexCoord2f(0.0f, 0.0f); 
+        glVertex2i(obj->pos.x, obj->pos.y + obj->dim.y);
+        glTexCoord2f(1.0f, 0.0f); 
+        glVertex2i(obj->pos.x + obj->dim.x, obj->pos.y + obj->dim.y);
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex2i(obj->pos.x + obj->dim.x, obj->pos.y);
+    glEnd();
+    glDisable(GL_ALPHA_TEST);
 }
 
 void renderText(Object* obj)
@@ -503,45 +457,6 @@ void renderText(Object* obj)
     rect.left = obj->pos.x;
     rect.center = 0;
     int cref = obj->color.toRGBInt();
-    if(obj->value != NULL)
-	{
-		char str[5];
-		sprintf(str, "%d", obj->value);
-		
-	switch (obj->style) {
-    case plain6:
-        ggprint06(&rect, 0, cref, str);
-        break;
-    case plain7:
-        ggprint07(&rect, 0, cref, str);
-        break;
-    case plain8:
-        ggprint08(&rect, 0, cref, str);
-        break;
-    case bold8:
-        ggprint8b(&rect, 0, cref, str);
-        break;
-    case plain10:
-        ggprint10(&rect, 0, cref, str);
-        break;
-    case plain12:
-        ggprint12(&rect, 0, cref, str);
-        break;
-    case plain13:
-        ggprint13(&rect, 30, cref, str);
-        break;
-    case plain16:
-        ggprint16(&rect, 30, cref, str);
-        break;
-    case plain40:
-        ggprint40(&rect, 0, cref, str);
-        break;
-    default:
-        ggprint06(&rect, 0, cref, str);
-        break;
-    }
-	}
-    else{
     switch (obj->style) {
     case plain6:
         ggprint06(&rect, 0, cref, obj->name.c_str());
@@ -574,7 +489,30 @@ void renderText(Object* obj)
         ggprint06(&rect, 0, cref, obj->name.c_str());
         break;
     }
-  }
+}
+
+
+void mapTexture(Object* obj, const char* textureFile)
+{    
+    //@TODO handle multiple file types? PPM, JPEG? ETC?
+    obj->tex = ppm6GetImage(textureFile);
+    glGenTextures(1, &obj->texId);
+    int w = obj->tex->width;
+    int h = obj->tex->height;
+    glBindTexture(GL_TEXTURE_2D, obj->texId);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    //TRANSPARENCY
+    unsigned char *texAlphaData = buildAlphaData(obj->tex, true);
+    glTexImage2D(
+        GL_TEXTURE_2D, 0, 
+        GL_RGBA, w, h, 0, 
+        GL_RGBA, 
+        GL_UNSIGNED_BYTE, 
+        texAlphaData
+    );
+    free(texAlphaData);
 }
 
 float getSkyUpperBound(int x)
