@@ -333,7 +333,27 @@ void initScenePlayPause()
 
 void initSceneCredits()
 {
+    const char* names[5] = {
+        "Press ESC key to exit!",
+        "Sean C",
+        "Marcel F",
+        "Jacob E",
+        "Omar O"
+    };
 
+    for (int i = 0; i < 5; ++i) {
+        
+        Object* nameText = new Object();
+        nameText->scene = GameSceneCredits;
+        nameText->name = names[i];
+        nameText->objectType = ObjectTypeText;
+        nameText->style = plain40;
+        //Light Pink (255,182,193) rgb
+        nameText->color = Color(255, 182, 193, 255);
+        nameText->pos.y = 120 + i * 100;
+        nameText->pos.x = 300;
+        game.objects.push_back(nameText);
+    }
 }
 
 void renderAll()
@@ -357,6 +377,7 @@ void renderAll()
         if (game.scene == obj->scene) {
             switch (obj->objectType) {
                 case ObjectTypeEnemy:
+		case ObjectTypeFriendly:
                     renderSphere(obj);
                     break;
                 case ObjectTypeSphere:

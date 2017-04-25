@@ -90,7 +90,7 @@ void handleClickMenuItems(const XEvent& event)
                     } else if (obj->name == "Restart") {
                         //TBD
                     } else if (obj->name == "Credits") {
-                        //TBD
+                        game.scene = GameSceneCredits;
                     } else if (obj->name == "Exit") {
                         game.done = true;
                     }

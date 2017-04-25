@@ -4,6 +4,24 @@
 
 #include "game.h"
 
+void handlePlayerCollisions(Object* player) {
+    bool isColliding = true;
+    for(int i = 0, l = game.objects.size(); i < l; i++) {
+        Object* other = game.objects[i];
+        if(other != player) {
+            switch(other->objectType) {
+            case ObjectTypeEnemy:
+                game.objects.erase(game.objects.begin() + i);
+                delete other;
+                break;
+            default:
+                break;
+            }
+        }
+    }
+}
+
+
 void handleESC(const XEvent& event)
 {
     if (event.type == KeyPress) {
@@ -15,7 +33,7 @@ void handleESC(const XEvent& event)
                         game.scene = GameScenePlay;
                         game.isGamePaused = false;
                     } else {
-                        game.done = true;
+                            game.done = true;
                     }
                 break;
                 case GameScenePlay:
@@ -25,10 +43,12 @@ void handleESC(const XEvent& event)
 //                case GameScenePlayPause:
 //                    game.scene = GameScenePlay;
 //                    game.isGamePaused = false;
+                case GameSceneCredits:
+                    game.scene = GameSceneMenu;
+                    break;
                 default:
                 break;
             }
         }
-    }
-    
+    }    
 }

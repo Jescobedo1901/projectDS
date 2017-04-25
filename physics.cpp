@@ -254,7 +254,7 @@ void applyStokesApprox(Object* obj)
 
 void applyGravity(Object* obj)
 {
-    //Apply gravity on objects with mass    
+    //Apply gravity on objects with mass
     if (obj->mass > 0) {
         obj->forces.push_back(obj->mass * Acceleration(0, -9.8, 0));
     }
@@ -293,7 +293,7 @@ void stepMapBoundsIteration()
 void applyPlayerMovement(Object* obj)
 {
     if (obj->pos.y < getOceanUpperBound(obj->pos.x)) {
-        float thrust =  40 * obj->mass;
+        float thrust = 40 * obj->mass;
         if (game.playerMovementDirectionMask & DirUp)
             obj->forces.push_back(Vec3(0, thrust, 0));
         if (game.playerMovementDirectionMask & DirDown)
@@ -302,5 +302,15 @@ void applyPlayerMovement(Object* obj)
             obj->forces.push_back(Vec3(thrust, 0, 0));
         if (game.playerMovementDirectionMask & DirLeft)
             obj->forces.push_back(Vec3(-thrust, 0, 0));
+    }
+}
+
+void handleObjectCollisions(Object* obj) {
+    switch(obj->objectType) {
+        case ObjectTypePlayer:
+            handlePlayerCollisions(obj);
+            break;
+        default:
+            break;
     }
 }

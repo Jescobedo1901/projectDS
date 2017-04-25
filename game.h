@@ -347,9 +347,12 @@ void applyGravity(Object*);
 void applyStokesApprox(Object*);
 void applyBuoyancyApprox(Object*);
 void applyPlayerMovement(Object*);
-
-inline void handlePlayerCollisions(Object*) {
-}
+void handleObjectCollisions(Object*);
+/**
+ * Handle and detect player collisions
+ * Implemented by Jacob
+ */
+void handlePlayerCollisions(Object*);
 
 inline void handleScrollingObjectLifetime(Object*) {
 }
