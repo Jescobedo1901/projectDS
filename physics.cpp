@@ -181,9 +181,9 @@ void stepPhysics(float stepDuration)
     /**
      * No physical effects are apply
      * unless the game scene loaded is play
-     */    
+     */
     if (game.scene == GameScenePlay) {
-        
+
         stepMapBoundsIteration();
 
         for (int i = 0, l = game.objects.size(); i < l; ++i) {
@@ -196,6 +196,7 @@ void stepPhysics(float stepDuration)
             switch (obj->objectType) {
             case ObjectTypePlayer:
                 applyPlayerMovement(obj);
+                applyPlayerDirChange(obj);
                 handlePlayerCollisions(obj);
                 break;
             case ObjectTypeEnemy:
@@ -296,26 +297,43 @@ void applyPlayerMovement(Object* obj)
         float thrust = 40 * obj->mass;
         if (game.playerMovementDirectionMask & DirUp)
             obj->forces.push_back(Vec3(0, thrust, 0));
-        if (game.playerMovementDirectionMask & DirDown){
-	    obj->forces.push_back(Vec3(0, -thrust, 0));
-	    }
+        if (game.playerMovementDirectionMask & DirDown) {
+            obj->forces.push_back(Vec3(0, -thrust, 0));
+        }
         if (game.playerMovementDirectionMask & DirRight) {
             obj->forces.push_back(Vec3(thrust, 0, 0));
-	    if(obj->dim.x < 0)
-		obj->dim.x *= -1;}
-        if (game.playerMovementDirectionMask & DirLeft){
+        }
+        if (game.playerMovementDirectionMask & DirLeft) {
             obj->forces.push_back(Vec3(-thrust, 0, 0));
-	    if(obj->dim.x > 0)
-		obj->dim.x *= -1;}
+        }
     }
 }
 
-void handleObjectCollisions(Object* obj) {
-    switch(obj->objectType) {
-        case ObjectTypePlayer:
-            handlePlayerCollisions(obj);
-            break;
-        default:
-            break;
+void applyPlayerDirChange(Object* obj)
+{
+    if (game.playerMovementDirectionMask & DirRight && obj->dim.x < 0) {
+        obj->dim.x *= -1;
+    }
+    if (game.playerMovementDirectionMask & DirLeft && obj->dim.x > 0) {
+        obj->dim.x *= -1;
+    }
+}
+
+void handleObjectCollisions(Object* obj)
+{
+    switch (obj->objectType) {
+    case ObjectTypePlayer:
+        handlePlayerCollisions(obj);
+        handlePlayerOceanFloorCollision(obj);
+        break;
+    default:
+        break;
+    }
+}
+
+void handlePlayerOceanFloorCollision(Object* player)
+{
+    if (player->pos.y < getOceanFloorUpperBound(player->pos.y)) {
+        player->pos.y = getOceanFloorUpperBound(player->pos.x);
     }
 }

@@ -112,8 +112,7 @@ enum ObjectType {
     ObjectTypeRectangle,
     ObjectTypeSphere,
     ObjectTypeTexture,
-    ObjectTypeText,
-    ObjectTypeUI
+    ObjectTypeText
 };
 
 //Different rendering scenes
@@ -153,8 +152,9 @@ struct Object {
     texTransUsingFirstPixel(false)
     {
     }
-    
-    ~Object() {
+
+    ~Object()
+    {
         delete tex;
     }
 
@@ -210,13 +210,13 @@ struct Object {
      */
     Dimension dim;
 
-    
+
     /**
      * (OPTIONAL)
      * Optional integer attribute
      */
     int intAttribute1;
-    
+
     /**
      * (OPTIONAL)
      * The texture Ppmimage and GLint texture id of this object, if meaningful to the object type
@@ -225,7 +225,8 @@ struct Object {
     GLuint texId;
     bool texTransUsingFirstPixel;
 
-    inline Force cumForces() const {
+    inline Force cumForces() const
+    {
         Force cum;
         for (int i = 0, l = forces.size(); i < l; ++i) {
             cum.x += forces[i].x;
@@ -276,7 +277,7 @@ struct Game {
 
     int xres;
     int yres;
-    
+
     /**
      * Game Objects
      * Every object is rendered depending on its
@@ -305,7 +306,8 @@ void initGL();
 void uninitX11();
 void uninitGL();
 
-inline void initResources() {
+inline void initResources()
+{
 }
 void initScenes();
 void initSceneMenu();
@@ -351,25 +353,30 @@ void applyGravity(Object*);
 void applyStokesApprox(Object*);
 void applyBuoyancyApprox(Object*);
 void applyPlayerMovement(Object*);
+void applyPlayerDirChange(Object*);
 void handleObjectCollisions(Object*);
 /**
  * Handle and detect player collisions
  * Implemented by Jacob
  */
 void handlePlayerCollisions(Object*);
+void handlePlayerOceanFloorCollision(Object*);
 
-inline void handleScrollingObjectLifetime(Object*) {
+inline void handleScrollingObjectLifetime(Object*)
+{
 }
 
 //Audio
 
-inline void applyAudio() {
+inline void applyAudio()
+{
 }
 
 
 //Error handling
 
-inline void initFailure(const char* msg) {
+inline void initFailure(const char* msg)
+{
     printf("An initialization failure occured."
             "With the following message:\n\t%s\n", msg);
     std::exit(1);
