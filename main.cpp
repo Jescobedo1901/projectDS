@@ -26,8 +26,7 @@ int main(int argc, char** argv)
     return 0;
 }
 
-
-Game game = Game();
+Game game;
 
 Game::Game() :
 display(NULL),

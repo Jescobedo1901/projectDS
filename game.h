@@ -50,7 +50,7 @@ struct Vec3 {
     Vec3& operator-=(const Vec3& r);
 
     // *= math operator
-    inline Vec3& operator*=(const Vec3& r);
+    Vec3& operator*=(const Vec3& r);
 
 };
 //Simple math operators defined for Vec3
@@ -61,15 +61,15 @@ Vec3 operator/(const Vec3& l, const float& r);
 Vec3 operator/(const float& l, const Vec3& r);
 Vec3 operator+(const Vec3& v1, const Vec3& v2);
 Vec3 operator+(const Vec3& l, const float& r);
-inline Vec3 operator+(const float& l, const Vec3& r);
-inline Vec3 operator-(const Vec3& v1, const Vec3& v2);
-inline Vec3 operator-(const Vec3& l, const float& r);
-inline Vec3 operator-(const float& l, const Vec3& r);
-inline Vec3 operator-(const Vec3& v);
-inline Vec3 abs(const Vec3& vec);
-inline Vec3 sqrt(const Vec3& vec);
+Vec3 operator+(const float& l, const Vec3& r);
+Vec3 operator-(const Vec3& v1, const Vec3& v2);
+Vec3 operator-(const Vec3& l, const float& r);
+Vec3 operator-(const float& l, const Vec3& r);
+Vec3 operator-(const Vec3& v);
+Vec3 abs(const Vec3& vec);
+Vec3 sqrt(const Vec3& vec);
 // Cross product between two vectors
-inline Vec3 cross(const Vec3& l, const Vec3& r);
+Vec3 cross(const Vec3& l, const Vec3& r);
 
 
 //Create typedefs Dimeinsion, Force, Position, Velocity, and Acceleration
@@ -146,10 +146,11 @@ struct Object {
     : name(), objectType(), scene(GameSceneNone),
     pos(), vel(), acc(), avgRadius(),
     mass(), forces(0), color(), style(),
-    dim(), intAttribute1(),
+    dim(), offset(),
+    intAttribute1(),
     tex(NULL),
     texId(),
-    texTransUsingFirstPixel(false)
+    texTransUsingFirstPixel(true)
     {
     }
 
@@ -210,6 +211,11 @@ struct Object {
      */
     Dimension dim;
 
+    /**
+     * (OPTIONAL)
+     * Positional offset, if meaningful to the object type, e.g. a texture
+     */
+    Position offset;
 
     /**
      * (OPTIONAL)
@@ -354,15 +360,21 @@ void applyStokesApprox(Object*);
 void applyBuoyancyApprox(Object*);
 void applyPlayerMovement(Object*);
 void applyPlayerDirChange(Object*);
-void handleObjectCollisions(Object*);
+void applyObjectCollisions(Object*);
 /**
  * Handle and detect player collisions
  * Implemented by Jacob
  */
-void handlePlayerCollisions(Object*);
-void handlePlayerOceanFloorCollision(Object*);
+void applyPlayerEnemyCollision(Object*);
+void applyPlayerOceanFloorCollision(Object*);
 
-inline void handleScrollingObjectLifetime(Object*)
+
+/**
+ * This function should call any object specific handlers to release resources
+ * that are not handled manually, e.g. scrolling objects
+ * @param 
+ */
+inline void applyObjectLifetimePolicies(Object*)
 {
 }
 

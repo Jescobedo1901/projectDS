@@ -1,5 +1,4 @@
 #include "game.h"
-#include "ppm.h"
 
 //Color class implementation - BEGIN
 
@@ -283,11 +282,12 @@ void initScenePlay()
     player->pos.y = 150;
     player->pos.x = 200;
     player->mass = 1;
-    player->dim.x = 100; // -80 for player to be facing forward
-    player->dim.y = 80; // switch positive for left
+    player->dim.x = -60; //
+    player->dim.y = 40; //
+    player->offset.x = 30;
+    player->offset.y = 20;
     player->avgRadius = 0.25;
-    player->texTransUsingFirstPixel = false;
-    mapTexture(player, "./images/f1.ppm");
+    mapTexture(player, "./images/bigfoot.ppm");
     game.objects.push_back(player);
 
     Object* ui = new Object();
@@ -299,7 +299,6 @@ void initScenePlay()
     ui->mass = 0;
     ui->dim.x = 800;
     ui->dim.y = 600;
-    ui->texTransUsingFirstPixel = false;
     mapTexture(ui, "./images/ui.ppm");
     game.objects.push_back(ui);
 
@@ -315,7 +314,6 @@ void initScenePlay()
     sun->dim.x = 100;
     sun->dim.y = 100;
     sun->avgRadius = 0.25;
-    sun->texTransUsingFirstPixel = false;
     mapTexture(sun, "./images/sun.ppm");
     game.objects.push_back(sun);
 
@@ -364,9 +362,8 @@ void initScenePlay()
     versionText->pos.y = 10;
     versionText->pos.x = 670;
     game.objects.push_back(versionText);
-
-
-    generateFloorObjects(10);
+    
+    //generateFloorObjects(10);
 
 }
 
@@ -391,9 +388,13 @@ void initSceneCredits()
         nameText->scene = GameSceneCredits;
         nameText->name = names[i];
         nameText->objectType = ObjectTypeText;
-        nameText->style = plain40;
-        //Light Pink (255,182,193) rgb
-        nameText->color = Color(255, 182, 193, 255);
+        if(i == 0) {
+            nameText->color = Color(255, 255, 255);
+            nameText->style = plain17;
+        } else {
+            nameText->color = Color(255, 182, 193);
+            nameText->style = plain40;
+        }        
         nameText->pos.y = 120 + i * 100;
         nameText->pos.x = 300;
         game.objects.push_back(nameText);
@@ -516,15 +517,27 @@ void renderTexture(Object* obj)
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255, 255, 255, 255);
     glBindTexture(GL_TEXTURE_2D, obj->texId);
-    glBegin(GL_QUADS);
-    glTexCoord2f(0.0f, 1.0f);
-    glVertex2i(obj->pos.x, obj->pos.y);
-    glTexCoord2f(0.0f, 0.0f);
-    glVertex2i(obj->pos.x, obj->pos.y + obj->dim.y);
-    glTexCoord2f(1.0f, 0.0f);
-    glVertex2i(obj->pos.x + obj->dim.x, obj->pos.y + obj->dim.y);
+    glBegin(GL_QUADS);       
+    float       offsetX = obj->offset.x,
+                offsetY = obj->offset.x,
+                posX = obj->pos.x,
+                posY = obj->pos.y,
+                dimX = obj->dim.x,
+                dimY = obj->dim.y;   
+    if(dimX < 0) {
+        offsetX *= -1;
+    }
+    if(dimY < 0) {
+        offsetY *= -1;
+    }    
+    glTexCoord2f(0.0f, 1.0f); 
+    glVertex2i(posX - offsetX, posY - offsetY);
+    glTexCoord2f(0.0f, 0.0f); 
+    glVertex2i(posX - offsetX, posY - offsetY + dimY);
+    glTexCoord2f(1.0f, 0.0f); 
+    glVertex2i(posX - offsetX + dimX, posY - offsetY + dimY);
     glTexCoord2f(1.0f, 1.0f);
-    glVertex2i(obj->pos.x + obj->dim.x, obj->pos.y);
+    glVertex2i(posX - offsetX + dimX, posY - offsetY);
     glEnd();
     glDisable(GL_ALPHA_TEST);
 }
@@ -582,7 +595,10 @@ void mapTexture(Object* obj, const char* textureFile)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     //TRANSPARENCY
-    unsigned char *texAlphaData = buildAlphaData(obj->tex, true);
+    unsigned char *texAlphaData = buildAlphaData(
+        obj->tex, 
+        obj->texTransUsingFirstPixel
+    );
     glTexImage2D(
             GL_TEXTURE_2D, 0,
             GL_RGBA, w, h, 0,

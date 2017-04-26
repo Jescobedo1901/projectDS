@@ -4,7 +4,7 @@ CXX =		    g++
 CFLAGS =	    -g -std=c++03 -Wall -Wextra -Wpedantic \
 		    -Wno-unused-variable -Wno-unused-parameter
 
-LFLAGS =	    ./libggfonts.a -lpthread -lm -lGLU -lGL -lrt -lX11
+LFLAGS =	    -lpthread -lm -lGLU -lGL -lrt -lX11 ./libggfonts.a 
 
 HEADERS =	    game.h fonts.h ppm.h
 
@@ -12,11 +12,11 @@ TARGET =	    ds
 
 .PHONY:		    $(TARGET) all clean
 
-all: jacobE.o main.o marcelF.o physics.o ppm.o render.o seanC.o #$(TARGET)
+all:		    $(TARGET)
 
 # Link
-$(TARGET): jacobE.o jacobE.o main.o marcelF.o physics.o ppm.o ppm.o render.o seanC.o
-	$(CXX) -o $(TARGET) $(LFLAGS) jacobE.o main.o marcelF.o physics.o ppm.o render.o seanC.o
+$(TARGET): jacobE.o main.o marcelF.o omarO.o physics.o ppm.o render.o seanC.o
+	$(CXX) physics.o render.o jacobE.o main.o marcelF.o omarO.o seanC.o ppm.o $(LFLAGS)  -o $(TARGET) 
 
 jacobE.o: jacobE.cpp $(HEADERS)
 	$(CXX) $(CFLAGS) -c jacobE.cpp -o jacobE.o

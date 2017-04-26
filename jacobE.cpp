@@ -4,7 +4,7 @@
 
 #include "game.h"
 
-void handlePlayerCollisions(Object* player)
+void applyPlayerEnemyCollision(Object* player)
 {
 
     for (int i = 0, l = game.objects.size(); i < l; i++) {

@@ -128,14 +128,6 @@ Vec3 cross(const Vec3& l, const Vec3& r)
 }
 //Vec3 implementation - END
 
-/*
- SETUP:
-     getPhysicsHandler()->addProcessor(mapBoundsGenerator);
-    getPhysicsHandler()->addProcessor(new DSNewtonianPhysics(this));
-    getPhysicsHandler()->addProcessor(new DSGravity(Vec3(0, -9.8, 0), this));
- 
- */
-
 double diff(timespec& start, timespec& end)
 {
     return                  \
@@ -188,21 +180,17 @@ void stepPhysics(float stepDuration)
 
         for (int i = 0, l = game.objects.size(); i < l; ++i) {
             Object* obj = game.objects[i];
+            applyObjectLifetimePolicies(obj);            
             applyGravity(obj);
             applyStokesApprox(obj);
             applyBuoyancyApprox(obj);
             applyNewtonianPhysics(obj, stepDuration);
 
+            applyObjectCollisions(obj);
             switch (obj->objectType) {
             case ObjectTypePlayer:
                 applyPlayerMovement(obj);
                 applyPlayerDirChange(obj);
-                handlePlayerCollisions(obj);
-                break;
-            case ObjectTypeEnemy:
-            case ObjectTypeNeutral:
-            case ObjectTypeFriendly:
-                handleScrollingObjectLifetime(obj);
                 break;
             default:
                 break;
@@ -311,29 +299,29 @@ void applyPlayerMovement(Object* obj)
 
 void applyPlayerDirChange(Object* obj)
 {
-    if (game.playerMovementDirectionMask & DirRight && obj->dim.x < 0) {
-        obj->dim.x *= -1;
+    if (game.playerMovementDirectionMask & DirRight && obj->dim.x > 0) {
+        obj->dim.x = -obj->dim.x;
     }
-    if (game.playerMovementDirectionMask & DirLeft && obj->dim.x > 0) {
-        obj->dim.x *= -1;
+    if (game.playerMovementDirectionMask & DirLeft && obj->dim.x < 0) {
+        obj->dim.x = -obj->dim.x;
     }
 }
 
-void handleObjectCollisions(Object* obj)
+void applyObjectCollisions(Object* obj)
 {
     switch (obj->objectType) {
     case ObjectTypePlayer:
-        handlePlayerCollisions(obj);
-        handlePlayerOceanFloorCollision(obj);
+        applyPlayerEnemyCollision(obj);
+        applyPlayerOceanFloorCollision(obj);
         break;
     default:
         break;
     }
 }
 
-void handlePlayerOceanFloorCollision(Object* player)
+void applyPlayerOceanFloorCollision(Object* player)
 {
-    if (player->pos.y < getOceanFloorUpperBound(player->pos.y)) {
+    if (player->pos.y < getOceanFloorUpperBound(player->pos.x)) {
         player->pos.y = getOceanFloorUpperBound(player->pos.x);
     }
 }

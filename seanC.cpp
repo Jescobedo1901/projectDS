@@ -40,7 +40,6 @@ void generateFloorObjects(int numobj)
         neutral->pos.x = pos;
         neutral->dim.x = dimx;
         neutral->dim.y = dimy;
-        neutral->texTransUsingFirstPixel = false;
         switch (type) {
         case 0: //rock
             mapTexture(neutral, "./images/rock1.ppm");
