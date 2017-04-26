@@ -21,6 +21,8 @@
 #include <utility>
 #include <algorithm>
 #include <climits>
+#include <stdlib.h>
+#include <time.h>
 
 //other
 #include "fonts.h"
@@ -110,7 +112,8 @@ enum ObjectType {
     ObjectTypeRectangle,
     ObjectTypeSphere,
     ObjectTypeTexture,
-    ObjectTypeText
+    ObjectTypeText,
+    ObjectTypeUI
 };
 
 //Different rendering scenes
@@ -320,6 +323,7 @@ void renderSphere(Object*);
 void renderRectangle(Object*);
 void renderTexture(Object*);
 void renderText(Object*);
+void generateFloorObjects(int x);
 
 //Allows simple mapping of texture file to an Object file
 void mapTexture(Object* obj, const char* textureFile);

@@ -19,6 +19,8 @@ void handlePlayerCollisions(Object* player) {
             }
         }
     }
+	if(player->pos.y < getOceanFloorUpperBound(player->pos.y))
+            	player->pos.y = getOceanFloorUpperBound(player->pos.x);
 }
 
 

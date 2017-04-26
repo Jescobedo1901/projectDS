@@ -296,12 +296,17 @@ void applyPlayerMovement(Object* obj)
         float thrust = 40 * obj->mass;
         if (game.playerMovementDirectionMask & DirUp)
             obj->forces.push_back(Vec3(0, thrust, 0));
-        if (game.playerMovementDirectionMask & DirDown)
-            obj->forces.push_back(Vec3(0, -thrust, 0));
-        if (game.playerMovementDirectionMask & DirRight)
+        if (game.playerMovementDirectionMask & DirDown){
+	    obj->forces.push_back(Vec3(0, -thrust, 0));
+	    }
+        if (game.playerMovementDirectionMask & DirRight) {
             obj->forces.push_back(Vec3(thrust, 0, 0));
-        if (game.playerMovementDirectionMask & DirLeft)
+	    if(obj->dim.x < 0)
+		obj->dim.x *= -1;}
+        if (game.playerMovementDirectionMask & DirLeft){
             obj->forces.push_back(Vec3(-thrust, 0, 0));
+	    if(obj->dim.x > 0)
+		obj->dim.x *= -1;}
     }
 }
 

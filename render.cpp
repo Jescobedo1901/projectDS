@@ -212,8 +212,8 @@ void uninitGL()
 
 void initScenes()
 {
-    initSceneMenu();
     initScenePlay();
+    initSceneMenu();
     initScenePlayPause();
     initSceneCredits();
 }
@@ -276,7 +276,7 @@ void initSceneMenu()
 
 
 void initScenePlay()
-{
+{   
     Object* player = new Object();
     player->scene = GameScenePlay;
     player->name = "player";
@@ -284,45 +284,90 @@ void initScenePlay()
     player->pos.y = 150;
     player->pos.x = 200;
     player->mass = 1;
-    player->dim.x = 30;
-    player->dim.y = 20;
+    player->dim.x = 100; // -80 for player to be facing forward
+    player->dim.y = 80; // switch positive for left
     player->avgRadius = 0.25;
-    player->texTransUsingFirstPixel = true;
-    mapTexture(player, "./images/bigfoot.ppm");
+    player->texTransUsingFirstPixel = false;
+    mapTexture(player, "./images/f1.ppm");
     game.objects.push_back(player);
+
+    Object* ui = new Object();
+    ui->scene = GameScenePlay;
+    ui->name = "ui";
+    ui->objectType = ObjectTypeNeutral;
+    ui->pos.y = 0;
+    ui->pos.x = 0;
+    ui->mass = 0;
+    ui->dim.x = 800; 
+    ui->dim.y = 600; 
+    ui->texTransUsingFirstPixel = false;
+    mapTexture(ui, "./images/ui.ppm");
+    game.objects.push_back(ui);
+
+    
+
+    Object* sun = new Object();
+    sun->scene = GameScenePlay;
+    sun->name = "sun";
+    sun->objectType = ObjectTypeNeutral;
+    sun->pos.y = 550;
+    sun->pos.x = 750;
+    sun->mass = 0;
+    sun->dim.x = 100; 
+    sun->dim.y = 100; 
+    sun->avgRadius = 0.25;
+    sun->texTransUsingFirstPixel = false;
+    mapTexture(sun, "./images/sun.ppm");
+    game.objects.push_back(sun);
+
+    
         
     //Game Diagnostics Text
     Object* healthText = new Object();
     healthText->scene = GameScenePlay;
     healthText->objectType = ObjectTypeText;
     healthText->style = plain16;
-    healthText->color = Color(244, 66, 66);
+    healthText->color = Color(15, 95, 230);
     healthText->intAttribute1 = 100;
-    healthText->pos.y = game.yres - 50;
-    healthText->pos.x = 0 + 50;
-    healthText->name = (char) 100;
+    healthText->pos.y = game.yres - 40;
+    healthText->pos.x = 400;
+    healthText->name = "100";
     game.objects.push_back(healthText);
 
     Object* hunger = new Object();
     hunger->scene = GameScenePlay;
     hunger->objectType = ObjectTypeText;
     hunger->style = plain16;
-    hunger->color = Color(255, 149, 50);
+    hunger->color = Color(255, 250, 5);
     hunger->intAttribute1 = 100;
-    hunger->pos.y = game.yres - 50;
-    hunger->pos.x = 0 + 150;
+    hunger->pos.y = game.yres - 60;
+    hunger->pos.x = 400;
     hunger->name = "100";
     game.objects.push_back(hunger);
 
-    Object* speed = new Object();
-    speed->scene = GameScenePlay;
-    speed->objectType = ObjectTypeText;
-    speed->style = plain16;
-    speed->color = Color(71, 244, 86);
-    speed->pos.y = game.yres - 50;
-    speed->pos.x = 0 + 250;
-    speed->name = "100";
-    game.objects.push_back(speed);
+    Object* exp = new Object();
+    exp->scene = GameScenePlay;
+    exp->objectType = ObjectTypeText;
+    exp->style = plain16;
+    exp->color = Color(80, 255, 5);
+    exp->intAttribute1 = 100;
+    exp->pos.y = game.yres - 80;
+    exp->pos.x = 400;
+    exp->name = "100";
+    game.objects.push_back(exp);
+
+    Object* versionText = new Object();
+    versionText->scene = GameScenePlay;
+    versionText->name = "Version 0.2";
+    versionText->objectType = ObjectTypeText;
+    versionText->style = plain16;
+    versionText->color = Color(210, 210, 210, 255);
+    versionText->pos.y = 10;
+    versionText->pos.x = 670;
+    game.objects.push_back(versionText);
+    
+
+    generateFloorObjects(10);
 
 }
 
@@ -387,6 +432,7 @@ void renderAll()
                     renderRectangle(obj);
                     break;
                 case ObjectTypePlayer:
+		case ObjectTypeNeutral:
                 case ObjectTypeTexture:
                     renderTexture(obj);
                     break;
@@ -398,7 +444,20 @@ void renderAll()
             }
         }
     }
-    
+    if (game.scene == GameScenePlay) { //Render UI LAST
+	for(int i = 1; i <= 6; i++) {
+		Object* obj = game.objects[i];
+		switch (obj->objectType) {
+			case ObjectTypeText:
+				renderText(obj);
+				break;
+			default: renderTexture(obj);
+				break;
+			}
+		}
+	    
+	}
+	
     glXSwapBuffers(game.display, game.win);
 }
 
