@@ -299,10 +299,10 @@ void applyPlayerMovement(Object* obj)
 
 void applyPlayerDirChange(Object* obj)
 {
-    if (game.playerMovementDirectionMask & DirRight && obj->dim.x > 0) {
+    if (obj->vel.x > 0 && obj->dim.x > 0) {
         obj->dim.x = -obj->dim.x;
     }
-    if (game.playerMovementDirectionMask & DirLeft && obj->dim.x < 0) {
+    if (obj->vel.x < 0 && obj->dim.x < 0) {
         obj->dim.x = -obj->dim.x;
     }
 }
