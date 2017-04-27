@@ -121,11 +121,12 @@ enum ObjectType {
 //used to control processing of physics and selective rendering
 
 enum GameScene {
-    GameSceneNone,
-    GameSceneMenu,
-    GameScenePlay,
-    GameScenePlayPause,
-    GameSceneCredits
+    GameSceneNone = 1,
+    GameSceneMenu = 2,
+    GameScenePlay = 4,
+    GameSceneHUD = 8,
+    GameScenePlayPause = 16,
+    GameSceneCredits = 32
 };
 
 enum TextStyle {
