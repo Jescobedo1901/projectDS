@@ -275,6 +275,7 @@ void initSceneMenu()
 
 void initScenePlay()
 {
+	srand(time(NULL));
     Object* player = new Object();
     player->scene = GameScenePlay;
     player->name = "player";
@@ -320,42 +321,54 @@ void initScenePlay()
 
 
     //Game Diagnostics Text
+	Object* hRec = new Object();
+    hRec->scene = GameScenePlay;
+    hRec->objectType = ObjectTypeRectangle;
+    hRec->color = Color(255, 0, 0, 255);
+    hRec->pos.y = game.yres - 42;
+    hRec->pos.x = 385;
+	hRec->dim.x = 140;
+	hRec->dim.y = 20;
+    hRec->name = "healthBar";
+    game.objects.push_back(hRec);
+
+	
     Object* healthText = new Object();
     healthText->scene = GameScenePlay;
     healthText->objectType = ObjectTypeText;
     healthText->style = plain16;
-    healthText->color = Color(15, 95, 230);
+    healthText->color = Color(0, 0, 0);
     healthText->intAttribute1 = 100;
-    healthText->pos.y = game.yres - 40;
-    healthText->pos.x = 400;
+    healthText->pos.y = game.yres - 45;
+    healthText->pos.x = 440;
     healthText->name = "100";
     game.objects.push_back(healthText);
 
-    Object* hunger = new Object();
-    hunger->scene = GameScenePlay;
-    hunger->objectType = ObjectTypeText;
-    hunger->style = plain16;
-    hunger->color = Color(255, 250, 5);
-    hunger->intAttribute1 = 100;
-    hunger->pos.y = game.yres - 60;
-    hunger->pos.x = 400;
-    hunger->name = "100";
-    game.objects.push_back(hunger);
+	Object* expRec = new Object();
+    expRec->scene = GameScenePlay;
+    expRec->objectType = ObjectTypeRectangle;
+    expRec->color = Color(5, 255, 5, 255);
+    expRec->pos.y = game.yres - 70;
+    expRec->pos.x = 385;
+	expRec->dim.x = 0;
+	expRec->dim.y = 20;
+    expRec->name = "healthBar";
+    game.objects.push_back(expRec);
 
-    Object* exp = new Object();
-    exp->scene = GameScenePlay;
-    exp->objectType = ObjectTypeText;
-    exp->style = plain16;
-    exp->color = Color(80, 255, 5);
-    exp->intAttribute1 = 100;
-    exp->pos.y = game.yres - 80;
-    exp->pos.x = 400;
-    exp->name = "100";
-    game.objects.push_back(exp);
+    Object* expText = new Object();
+    expText->scene = GameScenePlay;
+    expText->objectType = ObjectTypeText;
+    expText->style = plain16;
+    expText->color = Color(0, 0, 0);
+    expText->intAttribute1 = 0;
+    expText->pos.y = game.yres - 72;
+    expText->pos.x = 440;
+    expText->name = "0";
+    game.objects.push_back(expText);
 
     Object* versionText = new Object();
     versionText->scene = GameScenePlay;
-    versionText->name = "Version 0.2";
+    versionText->name = "Version 0.3";
     versionText->objectType = ObjectTypeText;
     versionText->style = plain16;
     versionText->color = Color(210, 210, 210, 255);
@@ -364,6 +377,43 @@ void initScenePlay()
     game.objects.push_back(versionText);
     
     //generateFloorObjects(10);
+	//Stationary Mines? Deals Large Damage 50 Health?
+	for(int i = 0; i < 5; i++) {
+		char name[12];
+		int posx = rand() % 799;
+		int posy = (rand() % (int)(((getOceanUpperBound(posx)-20)
+							 -(getOceanFloorUpperBound(posx)+20)))
+							 + (int)getOceanFloorUpperBound(posx));
+		sprintf(name, "mine%d", i);
+		Object* mine = new Object();
+		mine->scene = GameScenePlay;
+		mine->name = name;
+		mine->objectType = ObjectTypeSphere;
+		mine->color = Color(0, 0, 0);
+		mine->pos.x = posx;
+		mine->pos.y = posy;
+		mine->avgRadius = 0.50;
+		game.objects.push_back(mine);
+	}
+	
+	for(int i = 0; i < 40; i++) {
+		//char name[12];
+		int posx = rand() % 799;
+		int posy = (rand() % (int)(((getOceanUpperBound(posx)-20)
+							 -(getOceanFloorUpperBound(posx)+20)))
+							 + (int)getOceanFloorUpperBound(posx));
+		//sprintf(name, "exp%d", i);
+		Object* exp = new Object();
+		exp->scene = GameScenePlay;
+		exp->name = "exp";
+		exp->objectType = ObjectTypeSphere;
+		exp->color = Color(0, 255, 0);
+		exp->pos.x = posx;
+		exp->pos.y = posy;
+		exp->avgRadius = 0.10;
+		game.objects.push_back(exp);
+	}
+		
 
 }
 
@@ -445,12 +495,15 @@ void renderAll()
         }
     }
     if (game.scene == GameScenePlay) { //Render UI LAST
-        for (int i = 1; i <= 6; i++) {
+        for (int i = 1; i <= 7; i++) {
             Object* obj = game.objects[i];
             switch (obj->objectType) {
             case ObjectTypeText:
                 renderText(obj);
                 break;
+			case ObjectTypeRectangle:
+				renderRectangle(obj);
+				break;
             default: renderTexture(obj);
                 break;
             }

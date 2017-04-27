@@ -23,6 +23,8 @@
 #include <climits>
 #include <stdlib.h>
 #include <time.h>
+#include <stdio.h>
+#include <string.h>
 
 //other
 #include "fonts.h"
