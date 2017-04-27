@@ -273,7 +273,7 @@ struct Game {
      * Controls which game flow we are currently in
      * e.g., menu, play, etc
      */
-    GameScene scene;
+    int scene;
     bool isGamePaused;
 
 
