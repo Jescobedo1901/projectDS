@@ -211,6 +211,7 @@ void uninitGL()
 
 void initScenes()
 {
+    srand(time(NULL));    
     initScenePlay();
     initSceneMenu();
     initScenePlayPause();
@@ -274,8 +275,7 @@ void initSceneMenu()
 }
 
 void initScenePlay()
-{
-	srand(time(NULL));
+{   
     Object* player = new Object();
     player->scene = GameScenePlay;
     player->name = "player";
