@@ -286,6 +286,13 @@ struct Game {
 
     int xres;
     int yres;
+    
+    /**
+     * Camera coordinates of the camera (default 0,0)
+     * Automatically adjusted to center player during gamePlay
+     * And not used for other scenes
+     */
+    Position camera;
 
     /**
      * Game Objects
@@ -293,6 +300,11 @@ struct Game {
      * objectType attribute found in Object struct
      */
     std::vector<Object*> objects;
+    
+    /**
+     * The player object instance, of type ObjectTypePlayer
+     */
+    Object* player;
 
 };
 
