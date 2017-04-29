@@ -174,7 +174,7 @@ void stepPhysics(float stepDuration)
      * No physical effects are apply
      * unless the game scene loaded is play
      */
-    if (game.scene == GameScenePlay) {
+    if (game.scene & GameScenePlay) {
 
         stepMapBoundsIteration();
 
@@ -321,7 +321,14 @@ void applyObjectCollisions(Object* obj)
 
 void applyPlayerOceanFloorCollision(Object* player)
 {
-    if (player->pos.y < getOceanFloorUpperBound(player->pos.x)) {
-        player->pos.y = getOceanFloorUpperBound(player->pos.x);
+    if (player->pos.y < getOceanFloorUpperBound(player->pos.x) + player->avgRadius * PIXEL_TO_METER) {
+        player->pos.y = getOceanFloorUpperBound(player->pos.x) + player->avgRadius * PIXEL_TO_METER;
     }
+    
+    //Only let player move left left from position game.xres/2
+    if(player->pos.x < game.cameraXMin) {
+        player->pos.x = game.cameraXMin;
+        player->vel.x = -player->vel.x;
+    }
+    
 }

@@ -199,7 +199,6 @@ void uninitX11()
 {
     XDestroyWindow(game.display, game.win);
     XCloseDisplay(game.display);
-
 }
 
 void uninitGL()
@@ -211,7 +210,7 @@ void uninitGL()
 
 void initScenes()
 {
-    srand(time(NULL));    
+    srand(time(NULL));
     initScenePlay();
     initSceneMenu();
     initScenePlayPause();
@@ -275,13 +274,13 @@ void initSceneMenu()
 }
 
 void initScenePlay()
-{   
+{
     Object* player = new Object();
     player->scene = GameScenePlay;
     player->name = "player";
     player->objectType = ObjectTypePlayer;
     player->pos.y = 150;
-    player->pos.x = 200;
+    player->pos.x = game.xres/2 + 5;
     player->mass = 1;
     player->dim.x = -60; //
     player->dim.y = 40; //
@@ -290,11 +289,13 @@ void initScenePlay()
     player->avgRadius = 0.25;
     mapTexture(player, "./images/bigfoot.ppm");
     game.objects.push_back(player);
+    game.player = player;
+
 
     Object* ui = new Object();
-    ui->scene = GameScenePlay;
+    ui->scene = GameSceneHUD;
     ui->name = "ui";
-    ui->objectType = ObjectTypeNeutral;
+    ui->objectType = ObjectTypeTexture;
     ui->pos.y = 0;
     ui->pos.x = 0;
     ui->mass = 0;
@@ -306,9 +307,9 @@ void initScenePlay()
 
 
     Object* sun = new Object();
-    sun->scene = GameScenePlay;
+    sun->scene = GameSceneHUD;
     sun->name = "sun";
-    sun->objectType = ObjectTypeNeutral;
+    sun->objectType = ObjectTypeTexture;
     sun->pos.y = 550;
     sun->pos.x = 750;
     sun->mass = 0;
@@ -321,20 +322,20 @@ void initScenePlay()
 
 
     //Game Diagnostics Text
-	Object* hRec = new Object();
-    hRec->scene = GameScenePlay;
+    Object* hRec = new Object();
+    hRec->scene = GameSceneHUD;
     hRec->objectType = ObjectTypeRectangle;
     hRec->color = Color(255, 0, 0, 255);
     hRec->pos.y = game.yres - 42;
     hRec->pos.x = 385;
-	hRec->dim.x = 140;
-	hRec->dim.y = 20;
+    hRec->dim.x = 140;
+    hRec->dim.y = 20;
     hRec->name = "healthBar";
     game.objects.push_back(hRec);
 
-	
+
     Object* healthText = new Object();
-    healthText->scene = GameScenePlay;
+    healthText->scene = GameSceneHUD;
     healthText->objectType = ObjectTypeText;
     healthText->style = plain16;
     healthText->color = Color(0, 0, 0);
@@ -344,19 +345,19 @@ void initScenePlay()
     healthText->name = "100";
     game.objects.push_back(healthText);
 
-	Object* expRec = new Object();
-    expRec->scene = GameScenePlay;
+    Object* expRec = new Object();
+    expRec->scene = GameSceneHUD;
     expRec->objectType = ObjectTypeRectangle;
     expRec->color = Color(5, 255, 5, 255);
     expRec->pos.y = game.yres - 70;
     expRec->pos.x = 385;
-	expRec->dim.x = 0;
-	expRec->dim.y = 20;
+    expRec->dim.x = 0;
+    expRec->dim.y = 20;
     expRec->name = "healthBar";
     game.objects.push_back(expRec);
 
     Object* expText = new Object();
-    expText->scene = GameScenePlay;
+    expText->scene = GameSceneHUD;
     expText->objectType = ObjectTypeText;
     expText->style = plain16;
     expText->color = Color(0, 0, 0);
@@ -367,7 +368,7 @@ void initScenePlay()
     game.objects.push_back(expText);
 
     Object* versionText = new Object();
-    versionText->scene = GameScenePlay;
+    versionText->scene = GameSceneHUD;
     versionText->name = "Version 0.3";
     versionText->objectType = ObjectTypeText;
     versionText->style = plain16;
@@ -375,45 +376,45 @@ void initScenePlay()
     versionText->pos.y = 10;
     versionText->pos.x = 670;
     game.objects.push_back(versionText);
-    
+
     //generateFloorObjects(10);
-	//Stationary Mines? Deals Large Damage 50 Health?
-	for(int i = 0; i < 5; i++) {
-		char name[12];
-		int posx = rand() % 799;
-		int posy = (rand() % (int)(((getOceanUpperBound(posx)-20)
-							 -(getOceanFloorUpperBound(posx)+20)))
-							 + (int)getOceanFloorUpperBound(posx));
-		sprintf(name, "mine%d", i);
-		Object* mine = new Object();
-		mine->scene = GameScenePlay;
-		mine->name = name;
-		mine->objectType = ObjectTypeSphere;
-		mine->color = Color(0, 0, 0);
-		mine->pos.x = posx;
-		mine->pos.y = posy;
-		mine->avgRadius = 0.50;
-		game.objects.push_back(mine);
-	}
-	
-	for(int i = 0; i < 40; i++) {
-		//char name[12];
-		int posx = rand() % 799;
-		int posy = (rand() % (int)(((getOceanUpperBound(posx)-20)
-							 -(getOceanFloorUpperBound(posx)+20)))
-							 + (int)getOceanFloorUpperBound(posx));
-		//sprintf(name, "exp%d", i);
-		Object* exp = new Object();
-		exp->scene = GameScenePlay;
-		exp->name = "exp";
-		exp->objectType = ObjectTypeSphere;
-		exp->color = Color(0, 255, 0);
-		exp->pos.x = posx;
-		exp->pos.y = posy;
-		exp->avgRadius = 0.10;
-		game.objects.push_back(exp);
-	}
-		
+    //Stationary Mines? Deals Large Damage 50 Health?
+    for (int i = 0; i < 5; i++) {
+        char name[12];
+        int posx = rand() % 799;
+        int posy = (rand() % (int) (((getOceanUpperBound(posx) - 20)
+                -(getOceanFloorUpperBound(posx) + 20)))
+                + (int) getOceanFloorUpperBound(posx));
+        sprintf(name, "mine%d", i);
+        Object* mine = new Object();
+        mine->scene = GameScenePlay;
+        mine->name = name;
+        mine->objectType = ObjectTypeSphere;
+        mine->color = Color(0, 0, 0);
+        mine->pos.x = posx;
+        mine->pos.y = posy;
+        mine->avgRadius = 0.50;
+        game.objects.push_back(mine);
+    }
+
+    for (int i = 0; i < 40; i++) {
+        //char name[12];
+        int posx = rand() % 799;
+        int posy = (rand() % (int) (((getOceanUpperBound(posx) - 20)
+                -(getOceanFloorUpperBound(posx) + 20)))
+                + (int) getOceanFloorUpperBound(posx));
+        //sprintf(name, "exp%d", i);
+        Object* exp = new Object();
+        exp->scene = GameScenePlay;
+        exp->name = "exp";
+        exp->objectType = ObjectTypeSphere;
+        exp->color = Color(0, 255, 0);
+        exp->pos.x = posx;
+        exp->pos.y = posy;
+        exp->avgRadius = 0.10;
+        game.objects.push_back(exp);
+    }
+
 
 }
 
@@ -438,38 +439,24 @@ void initSceneCredits()
         nameText->scene = GameSceneCredits;
         nameText->name = names[i];
         nameText->objectType = ObjectTypeText;
-        if(i == 0) {
+        if (i == 0) {
             nameText->color = Color(255, 255, 255);
             nameText->style = plain17;
         } else {
             nameText->color = Color(255, 182, 193);
             nameText->style = plain40;
-        }        
+        }
         nameText->pos.y = 120 + i * 100;
         nameText->pos.x = 300;
         game.objects.push_back(nameText);
     }
 }
 
-void renderAll()
-{
-    glClear(GL_COLOR_BUFFER_BIT); // Clear the color buffer (background)
-
-    /**
-     * If the game is paused, the background is still
-     * rendered
-     */
-    if (game.scene == GameScenePlay ||
-            game.scene == GameScenePlayPause) {
-
-        renderMap();
-
-    }
-
+void renderObjects(int scenesToRender) {
     //Rendered in order and let's hope it works
     for (int i = 0, l = game.objects.size(); i < l; ++i) {
         Object* obj = game.objects[i];
-        if (game.scene == obj->scene) {
+        if (scenesToRender & obj->scene) {
             switch (obj->objectType) {
             case ObjectTypeEnemy:
             case ObjectTypeFriendly:
@@ -494,21 +481,31 @@ void renderAll()
             }
         }
     }
-    if (game.scene == GameScenePlay) { //Render UI LAST
-        for (int i = 1; i <= 7; i++) {
-            Object* obj = game.objects[i];
-            switch (obj->objectType) {
-            case ObjectTypeText:
-                renderText(obj);
-                break;
-			case ObjectTypeRectangle:
-				renderRectangle(obj);
-				break;
-            default: renderTexture(obj);
-                break;
-            }
-        }
+}
+void renderAll()
+{
+    glClear(GL_COLOR_BUFFER_BIT); // Clear the color buffer (background)
+    /**
+     * If the game is paused, the background is still
+     * rendered
+     */
 
+
+    bool isGamePlayScene =
+            (game.scene & GameScenePlay) |
+            (game.scene & GameSceneHUD);
+
+    if (isGamePlayScene) {
+        glPushMatrix();
+        game.cameraXMin = std::max(game.cameraXMin, game.player->pos.x - game.xres / 2);
+        game.camera.x = std::max(game.cameraXMin, game.player->pos.x - game.xres / 2);
+        glTranslatef(-game.camera.x, -game.camera.y, -game.camera.z);
+        renderMap();
+        renderObjects(GameScenePlay);
+        glPopMatrix();
+        renderObjects(GameSceneHUD);
+    } else {
+        renderObjects(game.scene);
     }
 
     glXSwapBuffers(game.display, game.win);
@@ -516,7 +513,7 @@ void renderAll()
 
 void renderMap()
 {
-    for (int x = 0; x < 800; ++x) {
+    for (int x = game.camera.x; x < game.xres + game.camera.x; ++x) {
         glBegin(GL_LINES);
         glColor3ub(239, 245, 250);
         glVertex2d(x, getSkyUpperBound(x));
@@ -570,24 +567,24 @@ void renderTexture(Object* obj)
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255, 255, 255, 255);
     glBindTexture(GL_TEXTURE_2D, obj->texId);
-    glBegin(GL_QUADS);       
-    float       offsetX = obj->offset.x,
-                offsetY = obj->offset.x,
-                posX = obj->pos.x,
-                posY = obj->pos.y,
-                dimX = obj->dim.x,
-                dimY = obj->dim.y;   
-    if(dimX < 0) {
+    glBegin(GL_QUADS);
+    float offsetX = obj->offset.x,
+            offsetY = obj->offset.x,
+            posX = obj->pos.x,
+            posY = obj->pos.y,
+            dimX = obj->dim.x,
+            dimY = obj->dim.y;
+    if (dimX < 0) {
         offsetX *= -1;
     }
-    if(dimY < 0) {
+    if (dimY < 0) {
         offsetY *= -1;
-    }    
-    glTexCoord2f(0.0f, 1.0f); 
+    }
+    glTexCoord2f(0.0f, 1.0f);
     glVertex2i(posX - offsetX, posY - offsetY);
-    glTexCoord2f(0.0f, 0.0f); 
+    glTexCoord2f(0.0f, 0.0f);
     glVertex2i(posX - offsetX, posY - offsetY + dimY);
-    glTexCoord2f(1.0f, 0.0f); 
+    glTexCoord2f(1.0f, 0.0f);
     glVertex2i(posX - offsetX + dimX, posY - offsetY + dimY);
     glTexCoord2f(1.0f, 1.0f);
     glVertex2i(posX - offsetX + dimX, posY - offsetY);
@@ -649,9 +646,9 @@ void mapTexture(Object* obj, const char* textureFile)
 
     //TRANSPARENCY
     unsigned char *texAlphaData = buildAlphaData(
-        obj->tex, 
-        obj->texTransUsingFirstPixel
-    );
+            obj->tex,
+            obj->texTransUsingFirstPixel
+            );
     glTexImage2D(
             GL_TEXTURE_2D, 0,
             GL_RGBA, w, h, 0,

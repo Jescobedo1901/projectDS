@@ -244,7 +244,6 @@ struct Object {
         }
         return cum;
     }
-
 };
 
 //Game struct
@@ -293,6 +292,12 @@ struct Game {
      * And not used for other scenes
      */
     Position camera;
+    
+    /**
+     * The minimum x coordinate that the camera can show
+     * Is incremented over time as the player moves right
+     */
+    float cameraXMin;
 
     /**
      * Game Objects
@@ -342,6 +347,7 @@ void gameLoop();
 //Rendering+
 void renderAll();
 void renderMap();
+void renderObjects(int scenesToRender);
 void renderSphere(Object*);
 void renderRectangle(Object*);
 void renderTexture(Object*);

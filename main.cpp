@@ -44,7 +44,10 @@ mapBoundsIteration(0),
 playerMovementDirectionMask(0),
 xres(800),
 yres(600),
-objects()
+camera(),
+cameraXMin(),
+objects(),
+player(NULL)
 {
 }
 
@@ -85,7 +88,7 @@ void handleClickMenuItems(const XEvent& event)
                         x >= obj->pos.x && x <= (obj->pos.x + obj->dim.x)) {
                     //then this button was pressed. Change state    
                     if (obj->name == "New Game") {
-                        game.scene = GameScenePlay;
+                        game.scene = GameScenePlay | GameSceneHUD;
                     } else if (obj->name == "Restart") {
                         //TBD
                     } else if (obj->name == "Credits") {
