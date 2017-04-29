@@ -73,27 +73,18 @@ void handleESC(const XEvent& event)
     if (event.type == KeyPress) {
         int key = XLookupKeysym(const_cast<XKeyEvent*> (&event.xkey), 0);
         if (key == XK_Escape) {
-            switch (game.scene) {
-            case GameSceneMenu:
+            if(game.scene & GameSceneMenu) {
                 if (game.isGamePaused) {
-                    game.scene = GameScenePlay;
+                    game.scene = GameScenePlay | GameSceneHUD;
                     game.isGamePaused = false;
                 } else {
                     game.done = true;
                 }
-                break;
-            case GameScenePlay:
+            } else if(game.scene & GameScenePlay) {
                 game.scene = GameSceneMenu;
                 game.isGamePaused = true;
-                break;
-                //                case GameScenePlayPause:
-                //                    game.scene = GameScenePlay;
-                //                    game.isGamePaused = false;
-            case GameSceneCredits:
-                game.scene = GameSceneMenu;
-                break;
-            default:
-                break;
+            } else if(game.scene & GameSceneCredits) {
+                game.scene = GameSceneMenu;               
             }
         }
     }

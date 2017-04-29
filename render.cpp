@@ -485,17 +485,8 @@ void renderObjects(int scenesToRender) {
 void renderAll()
 {
     glClear(GL_COLOR_BUFFER_BIT); // Clear the color buffer (background)
-    /**
-     * If the game is paused, the background is still
-     * rendered
-     */
 
-
-    bool isGamePlayScene =
-            (game.scene & GameScenePlay) |
-            (game.scene & GameSceneHUD);
-
-    if (isGamePlayScene) {
+    if (game.scene & GameScenePlay) {
         glPushMatrix();
         game.cameraXMin = std::max(game.cameraXMin, game.player->pos.x - game.xres / 2);
         game.camera.x = std::max(game.cameraXMin, game.player->pos.x - game.xres / 2);
@@ -503,7 +494,9 @@ void renderAll()
         renderMap();
         renderObjects(GameScenePlay);
         glPopMatrix();
-        renderObjects(GameSceneHUD);
+        if(game.scene & GameSceneHUD) {
+            renderObjects(GameSceneHUD);
+        }
     } else {
         renderObjects(game.scene);
     }
