@@ -36,3 +36,27 @@ void handlePlayerMovement(const XEvent& event)
         }
     }
 }
+
+bool isOffscreen(Object* obj)
+{
+    return obj->pos.x <= game.player->pos.x - game.xres;
+}
+
+void applyObjectLifetimePolicies(Object* obj)
+{
+    switch(obj->objectType) {
+    case ObjectTypeFriendly:
+    case ObjectTypeNeutral:
+    case ObjectTypeEnemy:
+        if(isOffscreen(obj)) {
+            game.objects.erase(
+                std::remove(game.objects.begin(), game.objects.end(), obj)
+            );
+            delete obj;
+        }
+        break;
+    default: 
+        break;
+    }
+    
+}
