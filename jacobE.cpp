@@ -22,7 +22,6 @@ void applySpawnRate(float stepDuration)
     //
     double probabilityPerStep = ratePerSecond * stepDuration;
     
-    printf("RatePerSecond: %f\n: SpawnRatePerStep%f\n", ratePerSecond, probabilityPerStep);
     if(rnd < probabilityPerStep) {
         spawnEnemy();
     }
