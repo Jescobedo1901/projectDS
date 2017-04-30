@@ -384,29 +384,34 @@ void handleMouseClicks(const XEvent& event);
 void handleClickMenuItems(const XEvent& event);
 void handleESC(const XEvent& event);
 
+
 //Audio
 //Add audio handling functions here
 
 //Physics
 void stepPhysics(float stepDuration);
 void stepMapBoundsIteration();
+
 void applyNewtonianPhysics(Object* obj, float stepDuration);
 void applyGravity(Object*);
 void applyStokesApprox(Object*);
 void applyBuoyancyApprox(Object*);
 void applyPlayerMovement(Object*);
 void applyPlayerDirChange(Object*);
-void applyObjectCollisions(Object*);
 void applySpawnRate(float stepDuration);
+void applyPlayerOceanFloorCollision(Object*);
 void spawnEnemy();
 void spawnFriendly();
+
+float dimToAvgRadius(Dimension dim);
+float avgRadiusTOEstMass(float);
 
 /**
  * Handle and detect player collisions
  * Implemented by Jacob
  */
-void applyPlayerEnemyCollision(Object*);
-void applyPlayerOceanFloorCollision(Object*);
+void checkObjectCollisions();
+
 
 
 /**

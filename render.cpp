@@ -305,8 +305,8 @@ void initSceneMenu()
         btnTextShadow->color = Color(0, 0, 0);
         btnTextShadow->pos.y = 124 + i * 100;
         btnTextShadow->pos.x = 304;
-        game.objects.push_back(btnTextShadow); 
-        
+        game.objects.push_back(btnTextShadow);
+
         Object* btnText = new Object();
         btnText->scene = GameSceneMenu;
         btnText->name = buttons[3 - i];
@@ -316,7 +316,7 @@ void initSceneMenu()
         btnText->pos.y = 120 + i * 100;
         btnText->pos.x = 300;
         game.objects.push_back(btnText);
-        
+
     }
 
 }
@@ -329,16 +329,16 @@ void initScenePlay()
     player->objectType = ObjectTypePlayer;
     player->pos.y = 150;
     player->pos.x = game.xres/2 + 5;
-    player->mass = 1;
     player->dim.x = -60; //
     player->dim.y = 40; //
     player->offset.x = 30;
     player->offset.y = 20;
-    player->avgRadius = 0.25;
+    player->avgRadius = dimToAvgRadius(player->dim);
+    player->mass = avgRadiusTOEstMass(player->avgRadius);
     mapTexture(player, "./images/bigfoot.ppm");
     game.objects.push_back(player);
     game.player = player;
-    
+
     Object* infoBg = new Object();
     infoBg->scene = GameSceneHUD;
     infoBg->objectType = ObjectTypeRectangle;
@@ -360,7 +360,7 @@ void initScenePlay()
     healthLabel->name = "HP: ";
     game.objects.push_back(healthLabel);
     game.healthTxt = healthLabel;
-    
+
     Object* healthValue = new Object();
     healthValue->scene = GameSceneHUD;
     healthValue->objectType = ObjectTypeText;
@@ -372,7 +372,7 @@ void initScenePlay()
     healthValue->name = "100";
     game.objects.push_back(healthValue);
     game.healthTxt = healthValue;
-    
+
     Object* healthBgBack = new Object();
     healthBgBack->scene = GameSceneHUD;
     healthBgBack->objectType = ObjectTypeRectangle;
@@ -381,8 +381,9 @@ void initScenePlay()
     healthBgBack->pos.x = 55;
     healthBgBack->dim.x = 100;
     healthBgBack->dim.y = 17;
-    game.objects.push_back(healthBgBack);  
-    
+    game.objects.push_back(healthBgBack);
+    game.healthBar = healthBgBack;
+
     Object* healthBg = new Object();
     healthBg->scene = GameSceneHUD;
     healthBg->objectType = ObjectTypeRectangle;
@@ -391,8 +392,7 @@ void initScenePlay()
     healthBg->pos.x = 55;
     healthBg->dim.x = 100;
     healthBg->dim.y = 3;
-    game.objects.push_back(healthBg);   
-    game.healthBar = healthBg;
+    game.objects.push_back(healthBg);
 
     Object* pointsLabel = new Object();
     pointsLabel->scene = GameSceneHUD;
@@ -404,7 +404,7 @@ void initScenePlay()
     pointsLabel->pos.x = 10;
     pointsLabel->name = "Points: ";
     game.objects.push_back(pointsLabel);
-    
+
     Object* pointsValue = new Object();
     pointsValue->scene = GameSceneHUD;
     pointsValue->objectType = ObjectTypeText;
@@ -416,12 +416,12 @@ void initScenePlay()
     pointsValue->name = "0";
     game.objects.push_back(pointsValue);
     game.pointsTxt = pointsValue;
-    
+
 }
 
 void initScenePlayPause()
 {
-    
+
 }
 
 void initSceneCredits()
@@ -458,10 +458,7 @@ void renderObjects(int scenesToRender) {
     for (int i = 0, l = game.objects.size(); i < l; ++i) {
         Object* obj = game.objects[i];
         if (scenesToRender & obj->scene) {
-            switch (obj->objectType) {            
-            case ObjectTypeFriendly:
-                renderSphere(obj);
-                break;
+            switch (obj->objectType) {
             case ObjectTypeSphere:
                 renderSphere(obj);
                 break;
@@ -469,6 +466,7 @@ void renderObjects(int scenesToRender) {
                 renderRectangle(obj);
                 break;
             case ObjectTypeEnemy:
+            case ObjectTypeFriendly:
             case ObjectTypePlayer:
             case ObjectTypeNeutral:
             case ObjectTypeTexture:
@@ -485,7 +483,7 @@ void renderObjects(int scenesToRender) {
 }
 
 void renderAll()
-{       
+{
     glClear(GL_COLOR_BUFFER_BIT); // Clear the color buffer (background)
     if (game.scene & GameScenePlay || game.isGamePaused) {
         glPushMatrix();
@@ -497,8 +495,8 @@ void renderAll()
         glPopMatrix();
         if(game.scene & GameSceneHUD) {
             renderObjects(GameSceneHUD);
-        }        
-    } 
+        }
+    }
     if(game.scene & ~(GameScenePlay | GameSceneHUD)) {
         renderMap();
         renderObjects(game.scene);
@@ -547,7 +545,7 @@ void renderSphere(Object* obj)
 }
 
 void renderRectangle(Object* obj)
-{    
+{
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     obj->color.glChangeColor();
@@ -556,7 +554,7 @@ void renderRectangle(Object* obj)
             obj->pos.y,
             obj->pos.x + obj->dim.x,
             obj->pos.y + obj->dim.y
-    );    
+    );
     glDisable(GL_BLEND);
 }
 
@@ -638,8 +636,8 @@ void renderText(Object* obj)
 
 void mapTexture(Object* obj, const char* textureFile)
 {
-    glEnable(GL_TEXTURE_2D);    
-    //If textureFile does not end with .ppm, 
+    glEnable(GL_TEXTURE_2D);
+    //If textureFile does not end with .ppm,
     //we must map it to the generated .ppm first
     std::string ext(".ppm"), texFile(textureFile);
     if(     texFile.size() > ext.size() &&

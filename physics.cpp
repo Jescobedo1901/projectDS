@@ -1,3 +1,5 @@
+#include <complex>
+
 #include "game.h"
 
 //Vec3 implementation - BEGIN
@@ -13,7 +15,7 @@ Vec3::Vec3(float x, float y, float z)
 
 float Vec3::magnitude() const
 {
-    return cbrtf(x * x + y * y + z * z);
+    return sqrt(x * x + y * y + z * z);
 }
 
 Vec3 Vec3::norm() const
@@ -197,16 +199,18 @@ void stepPhysics(float stepDuration)
                 break;
             }
             applyNewtonianPhysics(obj, stepDuration);
-            applyObjectCollisions(obj);
             switch (obj->objectType) {
             case ObjectTypePlayer:
                 applyPlayerMovement(obj);
                 applyPlayerDirChange(obj);
+                applyPlayerOceanFloorCollision(obj);
                 break;
             default:
                 break;
             }
         }
+        //Broad collision handling separately
+        checkObjectCollisions();
     }
 }
 
@@ -293,7 +297,7 @@ void stepMapBoundsIteration()
 void applyPlayerMovement(Object* obj)
 {
     if (obj->pos.y < getOceanUpperBound(obj->pos.x)) {
-        float thrust = 40 * obj->mass;
+        float thrust = 100 * obj->mass;
         if (game.playerMovementDirectionMask & DirUp)
             obj->forces.push_back(Vec3(0, thrust, 0));
         if (game.playerMovementDirectionMask & DirDown) {
@@ -322,7 +326,6 @@ void applyObjectCollisions(Object* obj)
 {
     switch (obj->objectType) {
     case ObjectTypePlayer:
-        applyPlayerEnemyCollision(obj);
         applyPlayerOceanFloorCollision(obj);
         break;
     default:
@@ -341,5 +344,15 @@ void applyPlayerOceanFloorCollision(Object* player)
         player->pos.x = game.cameraXMin;
         player->vel.x = -player->vel.x;
     }
-    
+}
+
+float dimToAvgRadius(Dimension dim)
+{
+    return (std::abs(dim.x) + std::abs(dim.y)) / 5.0f / PIXEL_TO_METER;
+}
+
+float avgRadiusTOEstMass(float avgRadius)
+{
+    float r = std::abs(avgRadius);
+    return 2.5 * 4.0 / 3.0 * r * r * r * M_PI;
 }
