@@ -238,7 +238,7 @@ void initResources()
                 //If textureFile does not end with .ppm, we must convert it to .ppm first
                 if(texFile.size() > ext.size() && (texFile.compare(texFile.size() - ext.size(), ext.size(), ext) != 0 && texFile.find_first_of(".") != 0)) {
                     std::string newFile = "./images/" + texFile + ext;
-                    std::string command = "convert ./images/" + texFile + " " + newFile;
+                    std::string command = "convert \"./images/" + texFile + "\" \"" + newFile + "\"";
                     system(command.c_str());
                 }
             }
