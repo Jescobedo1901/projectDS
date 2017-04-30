@@ -58,7 +58,7 @@ unsigned char *buildAlphaData(
         *(ptr + 0) = a;
         *(ptr + 1) = b;
         *(ptr + 2) = c;
-        *(ptr + 3) = !(a == ta && a == tb && c == tc);
+        *(ptr + 3) = !(a == ta && b == tb && c == tc);
         ptr += 4;
         data += 3;
     }
