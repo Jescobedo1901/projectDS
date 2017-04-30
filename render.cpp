@@ -186,8 +186,6 @@ void initGL()
     glEnable(GL_BLEND);
     //glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glEnable(GL_MULTISAMPLE);
-
     //Clear the screen to black
     glClearColor(0.0, 0.0, 0.0, 1.0);
 
@@ -261,7 +259,7 @@ void initSceneMenu()
     Object* screenBg = new Object();
     screenBg->scene = GameSceneMenu;
     screenBg->objectType = ObjectTypeRectangle;
-    screenBg->color = Color(0, 0, 0, 50);
+    screenBg->color = Color(0, 0, 0, 128);
     screenBg->pos.y = 0;
     screenBg->pos.x = 0;
     screenBg->dim.x = game.xres;
@@ -271,7 +269,7 @@ void initSceneMenu()
     Object* menuBg = new Object();
     menuBg->scene = GameSceneMenu;
     menuBg->objectType = ObjectTypeRectangle;
-    menuBg->color = Color(50, 50, 50, 150);
+    menuBg->color = Color(75, 75, 75, 128);
     menuBg->pos.y = 50;
     menuBg->pos.x = 200;
     menuBg->dim.x = 400;
@@ -292,22 +290,33 @@ void initSceneMenu()
         //handling logic
         btnBg->name = buttons[3 - i];
         btnBg->objectType = ObjectTypeRectangle;
-        btnBg->color = Color(25, 25, 25, 255);
+        btnBg->color = Color(0, 0, 0, 32);
         btnBg->pos.y = 100 + i * 100;
         btnBg->pos.x = 250;
         btnBg->dim.x = 300;
         btnBg->dim.y = 90;
         game.objects.push_back(btnBg);
 
+        Object* btnTextShadow = new Object();
+        btnTextShadow->scene = GameSceneMenu;
+        btnTextShadow->name = buttons[3 - i];
+        btnTextShadow->objectType = ObjectTypeText;
+        btnTextShadow->style = plain40;
+        btnTextShadow->color = Color(0, 0, 0);
+        btnTextShadow->pos.y = 124 + i * 100;
+        btnTextShadow->pos.x = 304;
+        game.objects.push_back(btnTextShadow); 
+        
         Object* btnText = new Object();
         btnText->scene = GameSceneMenu;
         btnText->name = buttons[3 - i];
         btnText->objectType = ObjectTypeText;
         btnText->style = plain40;
-        btnText->color = Color(210, 210, 210, 255);
+        btnText->color = Color(210, 210, 210);
         btnText->pos.y = 120 + i * 100;
         btnText->pos.x = 300;
         game.objects.push_back(btnText);
+        
     }
 
 }
@@ -329,70 +338,90 @@ void initScenePlay()
     mapTexture(player, "./images/bigfoot.ppm");
     game.objects.push_back(player);
     game.player = player;
+    
+    Object* infoBg = new Object();
+    infoBg->scene = GameSceneHUD;
+    infoBg->objectType = ObjectTypeRectangle;
+    infoBg->color = Color(0, 0, 0, 128);
+    infoBg->pos.y = game.yres - 67;
+    infoBg->pos.x = 3;
+    infoBg->dim.x = 160;
+    infoBg->dim.y = 65;
+    game.objects.push_back(infoBg);
 
-    //Game Diagnostics Text
-    Object* hRec = new Object();
-    hRec->scene = GameSceneHUD;
-    hRec->objectType = ObjectTypeRectangle;
-    hRec->color = Color(255, 0, 0, 255);
-    hRec->pos.y = game.yres - 42;
-    hRec->pos.x = 385;
-    hRec->dim.x = 140;
-    hRec->dim.y = 20;
-    hRec->name = "healthBar";
-    game.objects.push_back(hRec);
+    Object* healthLabel = new Object();
+    healthLabel->scene = GameSceneHUD;
+    healthLabel->objectType = ObjectTypeText;
+    healthLabel->style = plain16;
+    healthLabel->color = Color(225, 0, 0);
+    healthLabel->intAttribute1 = 100;
+    healthLabel->pos.y = game.yres - 35;
+    healthLabel->pos.x = 10;
+    healthLabel->name = "HP: ";
+    game.objects.push_back(healthLabel);
+    game.healthTxt = healthLabel;
+    
+    Object* healthValue = new Object();
+    healthValue->scene = GameSceneHUD;
+    healthValue->objectType = ObjectTypeText;
+    healthValue->style = plain16;
+    healthValue->color = Color(255, 255, 255);
+    healthValue->intAttribute1 = 100;
+    healthValue->pos.y = game.yres - 35;
+    healthValue->pos.x = 70;
+    healthValue->name = "100";
+    game.objects.push_back(healthValue);
+    game.healthTxt = healthValue;
+    
+    Object* healthBgBack = new Object();
+    healthBgBack->scene = GameSceneHUD;
+    healthBgBack->objectType = ObjectTypeRectangle;
+    healthBgBack->color = Color(255, 0, 0, 128);
+    healthBgBack->pos.y = game.yres - 32;
+    healthBgBack->pos.x = 55;
+    healthBgBack->dim.x = 100;
+    healthBgBack->dim.y = 17;
+    game.objects.push_back(healthBgBack);  
+    
+    Object* healthBg = new Object();
+    healthBg->scene = GameSceneHUD;
+    healthBg->objectType = ObjectTypeRectangle;
+    healthBg->color = Color(0, 0, 0, 128);
+    healthBg->pos.y = game.yres - 35;
+    healthBg->pos.x = 55;
+    healthBg->dim.x = 100;
+    healthBg->dim.y = 3;
+    game.objects.push_back(healthBg);   
+    game.healthBar = healthBg;
 
-
-    Object* healthText = new Object();
-    healthText->scene = GameSceneHUD;
-    healthText->objectType = ObjectTypeText;
-    healthText->style = plain16;
-    healthText->color = Color(0, 0, 0);
-    healthText->intAttribute1 = 100;
-    healthText->pos.y = game.yres - 45;
-    healthText->pos.x = 440;
-    healthText->name = "100";
-    game.objects.push_back(healthText);
-    game.health = healthText;
-
-    Object* expRec = new Object();
-    expRec->scene = GameSceneHUD;
-    expRec->objectType = ObjectTypeRectangle;
-    expRec->color = Color(5, 255, 5, 255);
-    expRec->pos.y = game.yres - 70;
-    expRec->pos.x = 385;
-    expRec->dim.x = 0;
-    expRec->dim.y = 20;
-    expRec->name = "healthBar";
-    game.objects.push_back(expRec);
-
-    Object* expText = new Object();
-    expText->scene = GameSceneHUD;
-    expText->objectType = ObjectTypeText;
-    expText->style = plain16;
-    expText->color = Color(0, 0, 0);
-    expText->intAttribute1 = 0;
-    expText->pos.y = game.yres - 72;
-    expText->pos.x = 440;
-    expText->name = "0";
-    game.objects.push_back(expText);
-    game.exp = expText;
-
-    Object* versionText = new Object();
-    versionText->scene = GameSceneHUD;
-    versionText->name = "Version 0.3";
-    versionText->objectType = ObjectTypeText;
-    versionText->style = plain16;
-    versionText->color = Color(210, 210, 210, 255);
-    versionText->pos.y = 10;
-    versionText->pos.x = 670;
-    game.objects.push_back(versionText);
+    Object* pointsLabel = new Object();
+    pointsLabel->scene = GameSceneHUD;
+    pointsLabel->objectType = ObjectTypeText;
+    pointsLabel->style = plain16;
+    pointsLabel->color = Color(0, 0, 225);
+    pointsLabel->intAttribute1 = 0;
+    pointsLabel->pos.y = game.yres - 62;
+    pointsLabel->pos.x = 10;
+    pointsLabel->name = "Points: ";
+    game.objects.push_back(pointsLabel);
+    
+    Object* pointsValue = new Object();
+    pointsValue->scene = GameSceneHUD;
+    pointsValue->objectType = ObjectTypeText;
+    pointsValue->style = plain16;
+    pointsValue->color = Color(0, 0, 255);
+    pointsValue->intAttribute1 = 0;
+    pointsValue->pos.y = game.yres - 62;
+    pointsValue->pos.x = 70;
+    pointsValue->name = "0";
+    game.objects.push_back(pointsValue);
+    game.pointsTxt = pointsValue;
     
 }
 
 void initScenePlayPause()
 {
-
+    
 }
 
 void initSceneCredits()
@@ -454,11 +483,11 @@ void renderObjects(int scenesToRender) {
         }
     }
 }
-void renderAll()
-{
-    glClear(GL_COLOR_BUFFER_BIT); // Clear the color buffer (background)
 
-    if (game.scene & GameScenePlay) {
+void renderAll()
+{       
+    glClear(GL_COLOR_BUFFER_BIT); // Clear the color buffer (background)
+    if (game.scene & GameScenePlay || game.isGamePaused) {
         glPushMatrix();
         game.cameraXMin = std::max(game.cameraXMin, game.player->pos.x - game.xres / 2);
         game.camera.x = std::max(game.cameraXMin, game.player->pos.x - game.xres / 4);
@@ -468,8 +497,10 @@ void renderAll()
         glPopMatrix();
         if(game.scene & GameSceneHUD) {
             renderObjects(GameSceneHUD);
-        }
-    } else {
+        }        
+    } 
+    if(game.scene & ~(GameScenePlay | GameSceneHUD)) {
+        renderMap();
         renderObjects(game.scene);
     }
 
@@ -516,18 +547,22 @@ void renderSphere(Object* obj)
 }
 
 void renderRectangle(Object* obj)
-{
+{    
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     obj->color.glChangeColor();
     glRectf(
             obj->pos.x,
             obj->pos.y,
             obj->pos.x + obj->dim.x,
             obj->pos.y + obj->dim.y
-            );
+    );    
+    glDisable(GL_BLEND);
 }
 
 void renderTexture(Object* obj)
 {
+    glEnable(GL_TEXTURE_2D);
     glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255, 255, 255, 255);
@@ -555,10 +590,12 @@ void renderTexture(Object* obj)
     glVertex2i(posX - offsetX + dimX, posY - offsetY);
     glEnd();
     glDisable(GL_ALPHA_TEST);
+    glDisable(GL_TEXTURE_2D);
 }
 
 void renderText(Object* obj)
 {
+    glEnable(GL_TEXTURE_2D);
     Rect rect;
     rect.bot = obj->pos.y;
     rect.left = obj->pos.x;
@@ -596,10 +633,12 @@ void renderText(Object* obj)
         ggprint06(&rect, 0, cref, obj->name.c_str());
         break;
     }
+    glDisable(GL_TEXTURE_2D);
 }
 
 void mapTexture(Object* obj, const char* textureFile)
 {
+    glEnable(GL_TEXTURE_2D);    
     //If textureFile does not end with .ppm, 
     //we must map it to the generated .ppm first
     std::string ext(".ppm"), texFile(textureFile);
@@ -631,6 +670,7 @@ void mapTexture(Object* obj, const char* textureFile)
             texAlphaData
             );
     free(texAlphaData);
+    glDisable(GL_TEXTURE_2D);
 }
 
 float getSkyUpperBound(int x)

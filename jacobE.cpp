@@ -13,7 +13,7 @@ void applySpawnRate(float stepDuration)
     double scale = 1.0;
     double pmax= 10000.0;
     double step = 100.0;
-    int p = game.exp->intAttribute1; //bigger of the two
+    int p = game.pointsTxt->intAttribute1; //bigger of the two
     
     //Calculate rate per second
     double ratePerSecond =      scale * (((p % 100)/ pmax) * ((p % 100)/  pmax))

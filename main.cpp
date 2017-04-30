@@ -53,8 +53,9 @@ camera(),
 cameraXMin(),
 objects(),
 player(NULL),
-health(NULL),
-exp(NULL)
+healthTxt(NULL),
+healthBar(NULL),
+pointsTxt(NULL)
 {
 }
 
@@ -120,4 +121,10 @@ void handlePlayerClickExit(const XEvent& event)
             game.done = true;
         }
     }
+}
+
+
+void updateGameStats() {
+    //Link the health bar to the health text int attribute
+    game.healthBar->dim.x = game.healthTxt->intAttribute1;
 }

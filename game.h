@@ -313,9 +313,11 @@ struct Game {
      */
     Object* player;
     
-    Object* health;
+    Object* healthTxt;
     
-    Object* exp;
+    Object* healthBar;
+    
+    Object* pointsTxt;
 
 };
 
@@ -351,6 +353,8 @@ void initSceneCredits();
 
 //Core API
 void gameLoop();
+
+void updateGameStats();
 
 //Rendering+
 void renderAll();
@@ -410,9 +414,7 @@ void applyPlayerOceanFloorCollision(Object*);
  * that are not handled manually, e.g. scrolling objects
  * @param 
  */
-inline void applyObjectLifetimePolicies(Object*)
-{
-}
+void applyObjectLifetimePolicies(Object*);
 
 //Audio
 

@@ -149,6 +149,8 @@ void gameLoop()
 
     while (!game.done) {
 
+        updateGameStats();
+        
         //render frame
         renderAll();
 
