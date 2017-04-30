@@ -335,8 +335,11 @@ enum Direction {
 //Setup & Teardown
 void initX11();
 void initGL();
+void initAudio();
 void uninitX11();
 void uninitGL();
+void uninitAudio();
+
 void uninitResources();
 
 void initResources();
@@ -376,6 +379,9 @@ void handlePlayerClickExit(const XEvent& event);
 void handleMouseClicks(const XEvent& event);
 void handleClickMenuItems(const XEvent& event);
 void handleESC(const XEvent& event);
+
+//Audio
+//Add audio handling functions here
 
 //Physics
 void stepPhysics(float stepDuration);

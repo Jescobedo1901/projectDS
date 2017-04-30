@@ -15,12 +15,14 @@ int main(int argc, char** argv)
     //and stops playing the game
     initX11();
     initGL();
+    initAudio();
     initResources();
     initScenes();
     gameLoop();
     //@TODO enable later, after changing all textures to alternate
     //formats to PPM
     //uninitResources();
+    uninitAudio();
     uninitGL();
     uninitX11();
 
