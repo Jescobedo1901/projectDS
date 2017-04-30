@@ -330,36 +330,6 @@ void initScenePlay()
     game.objects.push_back(player);
     game.player = player;
 
-
-    Object* ui = new Object();
-    ui->scene = GameSceneHUD;
-    ui->name = "ui";
-    ui->objectType = ObjectTypeTexture;
-    ui->pos.y = 0;
-    ui->pos.x = 0;
-    ui->mass = 0;
-    ui->dim.x = 800;
-    ui->dim.y = 600;
-    mapTexture(ui, "./images/ui.ppm");
-    game.objects.push_back(ui);
-
-
-
-    Object* sun = new Object();
-    sun->scene = GameSceneHUD;
-    sun->name = "sun";
-    sun->objectType = ObjectTypeTexture;
-    sun->pos.y = 550;
-    sun->pos.x = 750;
-    sun->mass = 0;
-    sun->dim.x = 100;
-    sun->dim.y = 100;
-    sun->avgRadius = 0.25;
-    mapTexture(sun, "./images/sun.ppm");
-    game.objects.push_back(sun);
-
-
-
     //Game Diagnostics Text
     Object* hRec = new Object();
     hRec->scene = GameSceneHUD;
@@ -417,46 +387,7 @@ void initScenePlay()
     versionText->pos.y = 10;
     versionText->pos.x = 670;
     game.objects.push_back(versionText);
-
-    //generateFloorObjects(10);
-    //Stationary Mines? Deals Large Damage 50 Health?
-    for (int i = 0; i < 5; i++) {
-        char name[12];
-        int posx = rand() % 799;
-        int posy = (rand() % (int) (((getOceanUpperBound(posx) - 20)
-                -(getOceanFloorUpperBound(posx) + 20)))
-                + (int) getOceanFloorUpperBound(posx));
-        sprintf(name, "mine%d", i);
-        Object* mine = new Object();
-        mine->scene = GameScenePlay;
-        mine->name = name;
-        mine->objectType = ObjectTypeSphere;
-        mine->color = Color(0, 0, 0);
-        mine->pos.x = posx;
-        mine->pos.y = posy;
-        mine->avgRadius = 0.50;
-        game.objects.push_back(mine);
-    }
-
-    for (int i = 0; i < 40; i++) {
-        //char name[12];
-        int posx = rand() % 799;
-        int posy = (rand() % (int) (((getOceanUpperBound(posx) - 20)
-                -(getOceanFloorUpperBound(posx) + 20)))
-                + (int) getOceanFloorUpperBound(posx));
-        //sprintf(name, "exp%d", i);
-        Object* exp = new Object();
-        exp->scene = GameScenePlay;
-        exp->name = "exp";
-        exp->objectType = ObjectTypeSphere;
-        exp->color = Color(0, 255, 0);
-        exp->pos.x = posx;
-        exp->pos.y = posy;
-        exp->avgRadius = 0.10;
-        game.objects.push_back(exp);
-    }
-
-
+    
 }
 
 void initScenePlayPause()
