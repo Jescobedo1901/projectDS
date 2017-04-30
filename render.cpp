@@ -208,6 +208,45 @@ void uninitGL()
     glXDestroyContext(game.display, game.glc);
 }
 
+void uninitResources() {
+    DIR *d;
+    struct dirent *dir;
+    d = opendir("./images");
+    if (d) {
+        while ((dir = readdir(d)) != NULL) {
+            if (dir->d_type == DT_REG) {
+                std::string ext(".ppm"), texFile(dir->d_name);
+                //If textureFile does not end with .ppm, we must convert it to .ppm first
+                if(texFile.size() > ext.size() && texFile.compare(texFile.size() - ext.size(), ext.size(), ext) == 0) {
+                    std::string removingFile = std::string("./images/") + dir->d_name;
+                    remove(removingFile.c_str());
+                }
+            }
+        }
+    }
+}
+
+void initResources()
+{
+    DIR *d;
+    struct dirent *dir;
+    d = opendir("./images");
+    if (d) {
+        while ((dir = readdir(d)) != NULL) {
+            if (dir->d_type == DT_REG) {
+                std::string ext(".ppm"), texFile(dir->d_name);
+                //If textureFile does not end with .ppm, we must convert it to .ppm first
+                if(texFile.size() > ext.size() && (texFile.compare(texFile.size() - ext.size(), ext.size(), ext) != 0 && texFile.find_first_of(".") != 0)) {
+                    std::string newFile = "./images/" + texFile + ext;
+                    std::string command = "convert ./images/" + texFile + " " + newFile;
+                    system(command.c_str());
+                }
+            }
+        }
+        closedir(d);
+    }
+}
+
 void initScenes()
 {
     srand(time(NULL));
@@ -344,6 +383,7 @@ void initScenePlay()
     healthText->pos.x = 440;
     healthText->name = "100";
     game.objects.push_back(healthText);
+    game.health = healthText;
 
     Object* expRec = new Object();
     expRec->scene = GameSceneHUD;
@@ -366,6 +406,7 @@ void initScenePlay()
     expText->pos.x = 440;
     expText->name = "0";
     game.objects.push_back(expText);
+    game.exp = expText;
 
     Object* versionText = new Object();
     versionText->scene = GameSceneHUD;
@@ -457,8 +498,7 @@ void renderObjects(int scenesToRender) {
     for (int i = 0, l = game.objects.size(); i < l; ++i) {
         Object* obj = game.objects[i];
         if (scenesToRender & obj->scene) {
-            switch (obj->objectType) {
-            case ObjectTypeEnemy:
+            switch (obj->objectType) {            
             case ObjectTypeFriendly:
                 renderSphere(obj);
                 break;
@@ -468,6 +508,7 @@ void renderObjects(int scenesToRender) {
             case ObjectTypeRectangle:
                 renderRectangle(obj);
                 break;
+            case ObjectTypeEnemy:
             case ObjectTypePlayer:
             case ObjectTypeNeutral:
             case ObjectTypeTexture:
@@ -628,8 +669,17 @@ void renderText(Object* obj)
 
 void mapTexture(Object* obj, const char* textureFile)
 {
-    //@TODO handle multiple file types? PPM, JPEG? ETC?
-    obj->tex = ppm6GetImage(textureFile);
+    //If textureFile does not end with .ppm, 
+    //we must map it to the generated .ppm first
+    std::string ext(".ppm"), texFile(textureFile);
+    if(     texFile.size() > ext.size() &&
+            texFile.compare(texFile.size() - ext.size(), ext.size(), ext)
+            != 0) {
+        std::string mappedFile = texFile + ext;
+        obj->tex = ppm6GetImage(mappedFile.c_str());
+    } else {
+        obj->tex = ppm6GetImage(textureFile);
+    }
     glGenTextures(1, &obj->texId);
     int w = obj->tex->width;
     int h = obj->tex->height;

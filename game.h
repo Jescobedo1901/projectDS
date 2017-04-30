@@ -25,6 +25,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
+#include <dirent.h>
 
 //other
 #include "fonts.h"
@@ -233,7 +234,7 @@ struct Object {
     Ppmimage *tex;
     GLuint texId;
     bool texTransUsingFirstPixel;
-
+    
     inline Force cumForces() const
     {
         Force cum;
@@ -310,6 +311,10 @@ struct Game {
      * The player object instance, of type ObjectTypePlayer
      */
     Object* player;
+    
+    Object* health;
+    
+    Object* exp;
 
 };
 
@@ -331,10 +336,9 @@ void initX11();
 void initGL();
 void uninitX11();
 void uninitGL();
+void uninitResources();
 
-inline void initResources()
-{
-}
+void initResources();
 void initScenes();
 void initSceneMenu();
 void initScenePlay();

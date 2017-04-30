@@ -18,6 +18,9 @@ int main(int argc, char** argv)
     initResources();
     initScenes();
     gameLoop();
+    //@TODO enable later, after changing all textures to alternate
+    //formats to PPM
+    //uninitResources();
     uninitGL();
     uninitX11();
 
@@ -47,7 +50,9 @@ yres(600),
 camera(),
 cameraXMin(),
 objects(),
-player(NULL)
+player(NULL),
+health(NULL),
+exp(NULL)
 {
 }
 

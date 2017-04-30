@@ -138,7 +138,7 @@ double diff(timespec& start, timespec& end)
 
 void gameLoop()
 {
-    const double tickSeconds = 1.0 / 120.0;
+    const double tickSeconds = 1.0 / 180.0;
 
     //Used to measure the timer expiration
     struct timespec prev, curr;
@@ -177,15 +177,24 @@ void stepPhysics(float stepDuration)
     if (game.scene & GameScenePlay) {
 
         stepMapBoundsIteration();
-
+        applySpawnRate(stepDuration);
+        
         for (int i = 0, l = game.objects.size(); i < l; ++i) {
             Object* obj = game.objects[i];
-            applyObjectLifetimePolicies(obj);            
-            applyGravity(obj);
-            applyStokesApprox(obj);
-            applyBuoyancyApprox(obj);
+            applyObjectLifetimePolicies(obj);      
+            //Apply to all except object type enemy
+            switch(obj->objectType) {
+                case ObjectTypeEnemy:
+                case ObjectTypeFriendly:
+                case ObjectTypeNeutral: 
+                    break; //Just break, don't apply
+            default:
+                applyGravity(obj);
+                applyStokesApprox(obj);
+                applyBuoyancyApprox(obj);
+                break;
+            }
             applyNewtonianPhysics(obj, stepDuration);
-
             applyObjectCollisions(obj);
             switch (obj->objectType) {
             case ObjectTypePlayer:
