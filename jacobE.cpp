@@ -4,6 +4,57 @@
 
 #include "game.h"
 
+void applySpawnRate(float stepDuration)
+{   
+    /// random value between 0 and 1.0
+    double rnd = (double)rand() / (double)RAND_MAX;
+    
+    //Setup equation
+    double scale = 1.0;
+    double pmax= 10000.0;
+    double step = 100.0;
+    int p = game.exp->intAttribute1; //bigger of the two
+    
+    //Calculate rate per second
+    double ratePerSecond =      scale * (((p % 100)/ pmax) * ((p % 100)/  pmax))
+                                + ((p * scale) / step) + 1;
+//                            ;    
+    //
+    double probabilityPerStep = ratePerSecond * stepDuration;
+    
+    printf("RatePerSecond: %f\n: SpawnRatePerStep%f\n", ratePerSecond, probabilityPerStep);
+    if(rnd < probabilityPerStep) {
+        spawnEnemy();
+    }
+    
+    
+}
+
+void spawnEnemy() {
+    Object* enemy = new Object();
+    enemy->scene = GameScenePlay;
+    enemy->objectType = ObjectTypeEnemy;
+    enemy->pos.x = game.player->pos.x + game.xres*2;
+    // rand for [min,max] = rand() % (max - min) + min
+    int max = getOceanUpperBound(enemy->pos.x);
+    int min = getOceanFloorUpperBound(enemy->pos.x);
+    enemy->pos.y = rand() % ( max - min) + min;
+    enemy->mass = 1;
+    enemy->vel.x = -( rand() % 7 + 3);
+    enemy->dim.x = 60;
+    enemy->dim.y = 60;
+    enemy->offset = Position(30, 30, 0);
+    enemy->avgRadius = 1;
+    enemy->intAttribute1 = 10; //hard coded for now
+    enemy->texTransUsingFirstPixel = true;
+    mapTexture(enemy, "./images/ojFish.jpg.ppm");
+    game.objects.push_back(enemy);
+}
+
+void spawnFriendly() {
+    
+}
+
 void applyPlayerEnemyCollision(Object* player)
 {
 	Object* healthBar = game.objects[3];
@@ -29,12 +80,6 @@ void applyPlayerEnemyCollision(Object* player)
 			}
 			}
             switch (other->objectType) {
-            case ObjectTypeEnemy:
-                if (isColliding) {
-                    game.objects.erase(game.objects.begin() + i);
-                    delete other;
-                }
-                break;
 			case ObjectTypeSphere: //50 Damage Mine
 					if(circleCollision) {
 						char newname[10];

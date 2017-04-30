@@ -224,6 +224,7 @@ struct Object {
     /**
      * (OPTIONAL)
      * Optional integer attribute
+     * If the type is ObjectTypeEenemy, then this is the amount of damage it inflicts
      */
     int intAttribute1;
 
@@ -386,6 +387,10 @@ void applyBuoyancyApprox(Object*);
 void applyPlayerMovement(Object*);
 void applyPlayerDirChange(Object*);
 void applyObjectCollisions(Object*);
+void applySpawnRate(float stepDuration);
+void spawnEnemy();
+void spawnFriendly();
+
 /**
  * Handle and detect player collisions
  * Implemented by Jacob

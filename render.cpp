@@ -530,7 +530,7 @@ void renderAll()
     if (game.scene & GameScenePlay) {
         glPushMatrix();
         game.cameraXMin = std::max(game.cameraXMin, game.player->pos.x - game.xres / 2);
-        game.camera.x = std::max(game.cameraXMin, game.player->pos.x - game.xres / 2);
+        game.camera.x = std::max(game.cameraXMin, game.player->pos.x - game.xres / 4);
         glTranslatef(-game.camera.x, -game.camera.y, -game.camera.z);
         renderMap();
         renderObjects(GameScenePlay);
