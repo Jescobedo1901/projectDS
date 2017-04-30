@@ -51,4 +51,4 @@ audio.o: audio.cpp $(HEADERS)
 	$(CXX) $(CFLAGS) -c audio.cpp -o audio.o
 
 clean:
-	-rm -f $(TARGET) *.o
+	-rm -f $(TARGET) $(TARGET_NO_AUDIO) *.o
