@@ -49,7 +49,7 @@ unsigned char *buildAlphaData(
     //Let's use top right corner pixel color to distinct texture transparenc
     unsigned char ta = 0, tb = 0, tc = 0;
     if (useFirstPixelToDetermineTransparencyColor && img->width > 0 && img->height > 0) {
-        ta = *(data + 0), tb = *(data + 0), tc = *(data + 0);
+        ta = *(data + 0), tb = *(data + 1), tc = *(data + 2);
     }
     for (i = 0; i < img->width * img->height * 3; i += 3) {
         a = *(data + 0);
