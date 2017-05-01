@@ -39,25 +39,48 @@ void spawnEnemy()
     //double rnd = (double) rand() / (double) RAND_MAX;
     float rndPos = (float) rand() / (float) RAND_MAX;
     float rndNum = (float) rand() / (float) RAND_MAX;
-    Object* enemy = new Object();
-    enemy->scene = GameScenePlay;
-    enemy->objectType = ObjectTypeEnemy;
-    enemy->pos.x = game.player->pos.x + game.xres * 2;
-    // rand for [min,max] = rand() % (max - min) + min
-    int max = getOceanUpperBound(enemy->pos.x);
-    int min = getOceanFloorUpperBound(enemy->pos.x);
-    float rnd = (float) rand() / (float) RAND_MAX;
-    enemy->pos.y = rand() % (max - min) + min;
-    enemy->vel.x = -(rndPos * 3 + 3);
-    enemy->dim.x = 60;
-    enemy->dim.y = 60;
-    enemy->offset = Position(30, 30, 0);
-    enemy->avgRadius = dimToAvgRadius(enemy->dim);
-    enemy->mass = avgRadiusTOEstMass(enemy->avgRadius);
-    enemy->intAttribute1 = 10; //hard coded for now
-    enemy->texTransUsingFirstPixel = true;
-    mapTexture(enemy, "./images/ojFish.jpg.ppm");
-    game.objects.push_back(enemy);
+    
+    if (rndNum < .2) {
+        Object* enemy2 = new Object();
+        enemy2->scene = GameScenePlay;
+        enemy2->objectType = ObjectTypeEnemy;
+        enemy2->pos.x = game.player->pos.x + game.xres * 2;
+        // rand for [min,max] = rand() % (max - min) + min
+        int max = getOceanUpperBound(enemy2->pos.x);
+        int min = getOceanFloorUpperBound(enemy2->pos.x);
+        //float rnd = (float) rand() / (float) RAND_MAX;
+        enemy2->pos.y = rand() % (max - min) + min;
+        enemy2->vel.x = -(rndPos * 3 + 3);
+        enemy2->dim.x = 60;
+        enemy2->dim.y = 60;
+        enemy2->offset = Position(30, 30, 0);
+        enemy2->avgRadius = dimToAvgRadius(enemy2->dim);
+        enemy2->mass = avgRadiusTOEstMass(enemy2->avgRadius);
+        enemy2->intAttribute1 = 20; //hard coded for now
+        enemy2->texTransUsingFirstPixel = true;
+        mapTexture(enemy2, "./images/anglerFish.jpg.ppm");
+        game.objects.push_back(enemy2);
+    } else {
+        Object* enemy1 = new Object();
+        enemy1->scene = GameScenePlay;
+        enemy1->objectType = ObjectTypeEnemy;
+        enemy1->pos.x = game.player->pos.x + game.xres * 2;
+        // rand for [min,max] = rand() % (max - min) + min
+        int max = getOceanUpperBound(enemy1->pos.x);
+        int min = getOceanFloorUpperBound(enemy1->pos.x);
+        float rnd = (float) rand() / (float) RAND_MAX;
+        enemy1->pos.y = rand() % (max - min) + min;
+        enemy1->vel.x = -(rndPos * 3 + 3);
+        enemy1->dim.x = 60;
+        enemy1->dim.y = 60;
+        enemy1->offset = Position(30, 30, 0);
+        enemy1->avgRadius = dimToAvgRadius(enemy1->dim);
+        enemy1->mass = avgRadiusTOEstMass(enemy1->avgRadius);
+        enemy1->intAttribute1 = 10; //hard coded for now
+        enemy1->texTransUsingFirstPixel = true;
+        mapTexture(enemy1, "./images/ojFish.jpg.ppm");
+        game.objects.push_back(enemy1);
+    }
 }
 
 void spawnFriendly()
@@ -75,7 +98,7 @@ void spawnFriendly()
         int min = getOceanFloorUpperBound(friendly1->pos.x);
         //float rnd = (float) rand() / (float) RAND_MAX;
         friendly1->pos.y = rand() % (max - min) + min;
-        friendly1->vel.x = -(rndPos * 2 + 0.25);
+        friendly1->vel.x = -(rndPos * 1.1+ 0.25);
         friendly1->dim.x = 64;
         friendly1->dim.y = 64;
         friendly1->offset = Position(32, 32, 0);
@@ -136,7 +159,25 @@ void applyEnemyCollision(
         Object* enemy, Object* other,
         std::set<Object*>& removeBag)
 {
-
+    switch (other->objectType) {
+    case ObjectTypePlayer:
+        game.healthTxt->intAttribute1 -= enemy->intAttribute1;
+        break;
+    case ObjectTypeEnemy:
+        enemy->intAttribute1 += other->intAttribute1;
+        removeBag.insert(other);
+        break;
+    case ObjectTypeFriendly:
+        //game.pointsTxt->intAttribute1 += other->intAttribute1;
+        //removeBag.insert(other);
+        break;
+    case ObjectTypeNeutral:
+        //player->vel = (player->vel) / 2;
+        //removeBag.insert(other);
+        break;
+    default:
+        break;
+    }
 }
 
 void applyFriendlyCollision(

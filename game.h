@@ -128,7 +128,8 @@ enum GameScene {
     GameSceneHUD = 8,
     GameScenePlayPause = 16,
     GameSceneCredits = 32,
-    GameSceneHelp = 64
+    GameSceneHelp = 64,
+    GameSceneUpgrades = 128
 };
 
 enum TextStyle {
@@ -352,6 +353,7 @@ void initScenePlay();
 void initSceneHelp();
 void initScenePlayPause();
 void initSceneCredits();
+void initSceneUpgrades();
 
 //Core API
 void gameLoop();

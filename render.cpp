@@ -253,6 +253,7 @@ void initScenes()
     initSceneHelp();
     initScenePlayPause();
     initSceneCredits();
+    initSceneUpgrades();
 }
 
 void initSceneMenu()
@@ -485,6 +486,11 @@ void initSceneCredits()
         nameText->pos.x = 300;
         game.objects.push_back(nameText);
     }
+}
+
+void initSceneUpgrades()
+{
+    //handlePlayerUpgrades();
 }
 
 void renderObjects(int scenesToRender) {
