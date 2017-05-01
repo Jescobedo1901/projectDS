@@ -127,6 +127,9 @@ void handlePlayerClickExit(const XEvent& event)
 
 void updateGameStats() {
     //Link the health bar to the health text int attribute
+    if(game.healthTxt->intAttribute1 <= 0) {
+        game.scene = GameSceneMenu | GameSceneLost;
+    }
     game.healthBar->dim.x = game.healthTxt->intAttribute1;
     std::stringstream ss; ss << game.healthTxt->intAttribute1;
     game.healthTxt->name = ss.str();

@@ -33,38 +33,6 @@ GLint Color::toRGBInt()
 }
 //Color class implementation - END
 
-//ALPHA DATA FUNCTION
-
-unsigned char *buildAlphaData(
-        Ppmimage *img,
-        bool firstPixel)
-{
-    //add 4th component to RGB stream...
-    int i;
-    int a, b, c;
-    unsigned char *newdata, *ptr;
-    unsigned char *data = (unsigned char *) img->data;
-    newdata = (unsigned char *) malloc(img->width * img->height * 4);
-    ptr = newdata;
-    //Let's use top right corner pixel color to distinct texture transparenc
-    unsigned char ta = 0, tb = 0, tc = 0;
-    if (firstPixel && img->width > 0 && img->height > 0) {
-        ta = *(data + 0), tb = *(data + 1), tc = *(data + 2);
-    }
-    for (i = 0; i < img->width * img->height * 3; i += 3) {
-        a = *(data + 0);
-        b = *(data + 1);
-        c = *(data + 2);
-        *(ptr + 0) = a;
-        *(ptr + 1) = b;
-        *(ptr + 2) = c;
-        *(ptr + 3) = !(a == ta && b == tb && c == tc);
-        ptr += 4;
-        data += 3;
-    }
-    return newdata;
-}
-
 void initX11()
 {
 
@@ -237,12 +205,12 @@ void uninitResources() {
 }
 
 //Helper function to map and initialize resources, only used by initResources
-void addRes(std::string name, std::string path, float optFps = 10.0) {
+void addRes(std::string name, std::string path, int tolerance = 0, float optFps = 10.0) {
     if(path.find_first_of("*") == std::string::npos) {
-        game.resourceMap[name] = new TextureResource(path);
+        game.resourceMap[name] = new TextureResource(path, tolerance);
     } else {
-        game.resourceMap[name] = new FlipBook(path, optFps);
-    }    
+        game.resourceMap[name] = new FlipBook(path, tolerance, optFps);
+    }
 }
 
 void initResources()
@@ -271,17 +239,17 @@ void initResources()
         }
         closedir(d);
     }
-    
+
     addRes("images/player", "./images/bigfoot.ppm");
-    addRes("images/enemy1", "./images/ojFish.jpg");
-    addRes("images/enemy2", "./images/anglerFish.jpg");  
-    addRes("images/friendly2", "./images/goldCoin*.png");
+    addRes("images/enemy1", "./images/ojFish.jpg", 75);
+    addRes("images/enemy2", "./images/anglerFish.jpg", 10);
+    addRes("images/friendly2", "./images/goldCoin*.png", 50, 2);
     addRes("images/cheeseburger", "./images/Cheeseburger.jpg");
     addRes("images/rock1", "./images/rock1.ppm");
     addRes("images/coral1", "./images/coral1.ppm");
     addRes("images/coral2", "./images/coral2.ppm");
     addRes("images/coral3", "./images/coral3.ppm");
-    
+    addRes("images/lost", "./images/lost.jpeg", 150);
 }
 
 void initScenes()
@@ -297,6 +265,16 @@ void initScenes()
 
 void initSceneMenu()
 {
+    Object* lostTxt = new Object();
+    lostTxt->scene = GameSceneLost;
+    lostTxt->objectType = ObjectTypeTexture;
+    lostTxt->pos.x = 50;
+    lostTxt->pos.y = -100;
+    lostTxt->dim.x = 800;
+    lostTxt->dim.y = 800;
+    mapResource(lostTxt, "images/lost");
+    game.objects.push_back(lostTxt);
+
     Object* screenBg = new Object();
     screenBg->scene = GameSceneMenu;
     screenBg->objectType = ObjectTypeRectangle;

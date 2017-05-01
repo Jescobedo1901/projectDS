@@ -131,7 +131,8 @@ enum GameScene {
     GameScenePlayPause = 16,
     GameSceneCredits = 32,
     GameSceneHelp = 64,
-    GameSceneUpgrades = 128
+    GameSceneUpgrades = 128,
+    GameSceneLost = 256
 };
 
 enum TextStyle {
@@ -167,13 +168,14 @@ struct Resource {
  * @param texFile
  */
 struct TextureResource : Resource {
-    TextureResource(std::string texFile);
+    TextureResource(std::string texFile, int tol = 0);
     ~TextureResource();
     virtual GLuint getResourceId();
 protected:
     Ppmimage *tex;
     GLuint texId;
     bool texTransUsingFirstPixel;
+    int tolerance;
 };
 
 /**
@@ -181,7 +183,7 @@ protected:
  * Composition of multiple TextureResource
  */
 struct FlipBook : Resource {
-    FlipBook(std::string pathWildcard, float fps);
+    FlipBook(std::string pathWildcard, float fps, int tol = 0);
     ~FlipBook();
     void step(float stepDuration);
     virtual GLuint getResourceId();
@@ -415,7 +417,7 @@ void generateFloorObjects(int x);
  */
 void mapResource(Object* obj, const char* resourceName);
 
-unsigned char *buildAlphaData(Ppmimage *,bool = true);
+unsigned char *buildAlphaData(Ppmimage *,bool = true, int = 0);
 
 
 //SkyBounds for rendering map

@@ -70,9 +70,10 @@ Resource::~Resource()
 {
 }
 
-TextureResource::TextureResource(std::string texFile)
+TextureResource::TextureResource(std::string texFile, int tol)
     : Resource(texFile),
-    tex(NULL), texId(), texTransUsingFirstPixel(true)
+    tex(NULL), texId(), texTransUsingFirstPixel(true),
+    tolerance(tol)
 {
     glEnable(GL_TEXTURE_2D);
     //If textureFile does not end with .ppm,
@@ -95,9 +96,10 @@ TextureResource::TextureResource(std::string texFile)
 
     //TRANSPARENCY
     unsigned char *texAlphaData = buildAlphaData(
-            this->tex,
-            this->texTransUsingFirstPixel
-            );
+        this->tex,
+        this->texTransUsingFirstPixel,
+        this->tolerance
+    );
     glTexImage2D(
         GL_TEXTURE_2D, 0,
         GL_RGBA, w, h, 0,
@@ -106,7 +108,7 @@ TextureResource::TextureResource(std::string texFile)
         texAlphaData
     );
     ppm6CleanupImage(tex);
-    free(texAlphaData);    
+    free(texAlphaData);
     glDisable(GL_TEXTURE_2D);
 }
 
@@ -122,7 +124,10 @@ GLuint TextureResource::getResourceId() {
  * Maps multiple textures into a flip book
  * @param pathWildcard
  */
-FlipBook::FlipBook(std::string pathWildcard, float framesPerSeconds)
+FlipBook::FlipBook(
+        std::string pathWildcard,
+        float framesPerSeconds,
+        int tolerance)
     : Resource(pathWildcard), duration(), fps(framesPerSeconds),
     current(NULL), book() {
     //find matching textures file with glob
@@ -131,7 +136,7 @@ FlipBook::FlipBook(std::string pathWildcard, float framesPerSeconds)
         initFailure(("Failed globbing textures for: " + pathWildcard).c_str());
     } else {
         for (size_t i = 0; i < results.gl_pathc; i++) {
-            this->book.push_back(new TextureResource(results.gl_pathv[i]));
+            this->book.push_back(new TextureResource(results.gl_pathv[i], tolerance));
         }
         globfree(& results);
         if(this->book.size() > 0) {
@@ -189,12 +194,55 @@ void stepFlipBooks(float stepDuration)
     for (ResourceMap::iterator it = game.resourceMap.begin(),
             end =game.resourceMap.end();
             it != end;
-            ++it) {        
+            ++it) {
         FlipBook* fp = dynamic_cast<FlipBook*>((*it).second);
         if(fp) {
             fp->step(stepDuration);
         }
     }
-    
-    
+
+
+}
+
+//ALPHA DATA FUNCTION
+
+/**
+ * Builds transparency texture using non-transparent
+ * image data
+ *
+ * @param img
+ * @param firstPixel If true, it uses the first pixel to determine the
+ * color that is transparent
+ * @param tol the tolerance of that pixel
+ * @return
+ */
+unsigned char *buildAlphaData(
+        Ppmimage *img,
+        bool firstPixel,
+        int tol )
+{
+    //add 4th component to RGB stream...
+    int i;
+    int a, b, c;
+    unsigned char *newdata, *ptr;
+    unsigned char *data = (unsigned char *) img->data;
+    newdata = (unsigned char *) malloc(img->width * img->height * 4);
+    ptr = newdata;
+    //Let's use top right corner pixel color to distinct texture transparenc
+    unsigned char ta = 0, tb = 0, tc = 0;
+    if (firstPixel && img->width > 0 && img->height > 0) {
+        ta = *(data + 0), tb = *(data + 1), tc = *(data + 2);
+    }
+    for (i = 0; i < img->width * img->height * 3; i += 3) {
+        a = *(data + 0);
+        b = *(data + 1);
+        c = *(data + 2);
+        *(ptr + 0) = a;
+        *(ptr + 1) = b;
+        *(ptr + 2) = c;
+        *(ptr + 3) = !(std::abs(a - ta) <= tol && std::abs(b - tb) <= tol && std::abs(c - tc) <= tol);
+        ptr += 4;
+        data += 3;
+    }
+    return newdata;
 }
