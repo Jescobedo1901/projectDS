@@ -57,8 +57,7 @@ void spawnEnemy()
         enemy2->avgRadius = dimToAvgRadius(enemy2->dim);
         enemy2->mass = avgRadiusTOEstMass(enemy2->avgRadius);
         enemy2->intAttribute1 = 20; //hard coded for now
-        enemy2->texTransUsingFirstPixel = true;
-        mapTexture(enemy2, "./images/anglerFish.jpg.ppm");
+	mapResource(enemy2, "images/enemy2");
         game.objects.push_back(enemy2);
     } else {
         Object* enemy1 = new Object();
@@ -77,8 +76,7 @@ void spawnEnemy()
         enemy1->avgRadius = dimToAvgRadius(enemy1->dim);
         enemy1->mass = avgRadiusTOEstMass(enemy1->avgRadius);
         enemy1->intAttribute1 = 10; //hard coded for now
-        enemy1->texTransUsingFirstPixel = true;
-        mapTexture(enemy1, "./images/ojFish.jpg.ppm");
+        mapResource(enemy1, "images/enemy1");
         game.objects.push_back(enemy1);
     }
 }
@@ -105,8 +103,7 @@ void spawnFriendly()
         friendly1->avgRadius = dimToAvgRadius(friendly1->dim);
         friendly1->mass = avgRadiusTOEstMass(friendly1->avgRadius);
         friendly1->intAttribute1 = 10; //hard coded for now
-        friendly1->texTransUsingFirstPixel = true;
-        mapTexture(friendly1, "./images/Cheeseburger.jpg");
+        mapResource(friendly1, "images/friendly1");
         game.objects.push_back(friendly1);
     }
     else {
@@ -126,8 +123,7 @@ void spawnFriendly()
         friendly2->avgRadius = dimToAvgRadius(friendly2->dim);
         friendly2->mass = avgRadiusTOEstMass(friendly2->avgRadius);
         friendly2->intAttribute1 = 1; //hard coded for now
-        friendly2->texTransUsingFirstPixel = true;
-        mapTexture(friendly2, "./images/goldCoin1.png");
+        mapResource(friendly2, "images/friendly2");
         game.objects.push_back(friendly2);
     }
 }
@@ -204,11 +200,7 @@ void checkObjectCollisions()
         for (int j = 0; j < l; j++) {
             Object* left = game.objects[i];
             Object* right = game.objects[j];
-            if(left == NULL || right == NULL) {
-                printf("Hey we found an ull pointer at i = %d and j = %d]\n", i, j);
-            }
-                  
-                    
+            
             //they are colliding...
             //Left will increment, handle from left perspective
             switch (left->objectType) {

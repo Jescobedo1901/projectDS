@@ -55,7 +55,8 @@ objects(),
 player(NULL),
 healthTxt(NULL),
 healthBar(NULL),
-pointsTxt(NULL)
+pointsTxt(NULL),
+resourceMap()
 {
 }
 

@@ -18,6 +18,7 @@
 #include <cmath>
 #include <sstream>
 #include <set>
+#include <map>
 #include <utility>
 #include <algorithm>
 #include <climits>
@@ -26,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <dirent.h>
+#include <glob.h>
 
 //other
 #include "fonts.h"
@@ -146,6 +148,50 @@ enum TextStyle {
 };
 //ENUM declarations - END
 
+/*
+ * Generic resource class
+ */
+struct Resource {
+
+    Resource(std::string p);
+
+    virtual ~Resource();
+
+    virtual GLuint getResourceId() = 0;
+
+    const std::string path;
+};
+
+/**
+ * Single texture resource
+ * @param texFile
+ */
+struct TextureResource : Resource {
+    TextureResource(std::string texFile);
+    ~TextureResource();
+    virtual GLuint getResourceId();
+protected:
+    Ppmimage *tex;
+    GLuint texId;
+    bool texTransUsingFirstPixel;
+};
+
+/**
+ * Allows mapping multiple textures into a Flip Book
+ * Composition of multiple TextureResource
+ */
+struct FlipBook : Resource {
+    FlipBook(std::string pathWildcard, float fps);
+    ~FlipBook();
+    void step(float stepDuration);
+    virtual GLuint getResourceId();
+protected:
+    float duration;
+    float fps;
+    TextureResource* current;
+    std::vector<TextureResource*> book;
+};
+
 struct Object {
 
     Object()
@@ -154,15 +200,12 @@ struct Object {
     mass(), forces(0), color(), style(),
     dim(), offset(),
     intAttribute1(),
-    tex(NULL),
-    texId(),
-    texTransUsingFirstPixel(true)
+    resource(NULL)
     {
     }
 
     ~Object()
     {
-        delete tex;
     }
 
 
@@ -230,14 +273,8 @@ struct Object {
      */
     int intAttribute1;
 
-    /**
-     * (OPTIONAL)
-     * The texture Ppmimage and GLint texture id of this object, if meaningful to the object type
-     */
-    Ppmimage *tex;
-    GLuint texId;
-    bool texTransUsingFirstPixel;
-    
+    Resource* resource;
+
     inline Force cumForces() const
     {
         Force cum;
@@ -251,6 +288,7 @@ struct Object {
 };
 
 //Game struct
+typedef std::map<std::string, Resource*> ResourceMap;
 
 struct Game {
     //Initializes variables to null/default values
@@ -289,14 +327,14 @@ struct Game {
 
     int xres;
     int yres;
-    
+
     /**
      * Camera coordinates of the camera (default 0,0)
      * Automatically adjusted to center player during gamePlay
      * And not used for other scenes
      */
     Position camera;
-    
+
     /**
      * The minimum x coordinate that the camera can show
      * Is incremented over time as the player moves right
@@ -309,18 +347,19 @@ struct Game {
      * objectType attribute found in Object struct
      */
     std::vector<Object*> objects;
-    
+
     /**
      * The player object instance, of type ObjectTypePlayer
      */
     Object* player;
-    
+
     Object* healthTxt;
-    
+
     Object* healthBar;
-    
+
     Object* pointsTxt;
 
+    ResourceMap resourceMap;
 };
 
 extern Game game;
@@ -333,7 +372,6 @@ enum Direction {
     DirUp = 4,
     DirDown = 8,
     DirNone = 16
-
 };
 
 //Setup & Teardown
@@ -370,8 +408,15 @@ void renderTexture(Object*);
 void renderText(Object*);
 void generateFloorObjects(int x);
 
-//Allows simple mapping of texture file to an Object file
-void mapTexture(Object* obj, const char* textureFile);
+/**
+ * This function maps a resource to an object
+ * @param obj the object to map the resource to
+ * @param resourceName
+ */
+void mapResource(Object* obj, const char* resourceName);
+
+unsigned char *buildAlphaData(Ppmimage *,bool = true);
+
 
 //SkyBounds for rendering map
 float getSkyUpperBound(int x);
@@ -395,6 +440,7 @@ void handleESC(const XEvent& event);
 //Physics
 void stepPhysics(float stepDuration);
 void stepMapBoundsIteration();
+void stepFlipBooks(float stepDuration);
 
 void applyNewtonianPhysics(Object* obj, float stepDuration);
 void applyGravity(Object*);
@@ -421,7 +467,7 @@ void checkObjectCollisions();
 /**
  * This function should call any object specific handlers to release resources
  * that are not handled manually, e.g. scrolling objects
- * @param 
+ * @param
  */
 void applyObjectLifetimePolicies(Object*);
 

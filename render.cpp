@@ -37,7 +37,7 @@ GLint Color::toRGBInt()
 
 unsigned char *buildAlphaData(
         Ppmimage *img,
-        bool useFirstPixelToDetermineTransparencyColor = true)
+        bool firstPixel)
 {
     //add 4th component to RGB stream...
     int i;
@@ -48,7 +48,7 @@ unsigned char *buildAlphaData(
     ptr = newdata;
     //Let's use top right corner pixel color to distinct texture transparenc
     unsigned char ta = 0, tb = 0, tc = 0;
-    if (useFirstPixelToDetermineTransparencyColor && img->width > 0 && img->height > 0) {
+    if (firstPixel && img->width > 0 && img->height > 0) {
         ta = *(data + 0), tb = *(data + 1), tc = *(data + 2);
     }
     for (i = 0; i < img->width * img->height * 3; i += 3) {
@@ -214,14 +214,35 @@ void uninitResources() {
         while ((dir = readdir(d)) != NULL) {
             if (dir->d_type == DT_REG) {
                 std::string ext(".ppm"), texFile(dir->d_name);
-                //If textureFile does not end with .ppm, we must convert it to .ppm first
-                if(texFile.size() > ext.size() && texFile.compare(texFile.size() - ext.size(), ext.size(), ext) == 0) {
-                    std::string removingFile = std::string("./images/") + dir->d_name;
+                //If textureFile does not end with .ppm, we must convert 
+                //it to .ppm first
+                if(texFile.size() > ext.size() && 
+                        texFile.compare(
+                            texFile.size() - ext.size(), ext.size(), ext
+                        ) == 0) {
+                    std::string removingFile = std::string("./images/") + 
+                            dir->d_name;
                     remove(removingFile.c_str());
                 }
             }
         }
     }
+    for(ResourceMap::iterator it = 
+            game.resourceMap.begin(), 
+            end = game.resourceMap.end(); 
+            it != end; 
+            ++it) {
+        delete (*it).second;
+    }
+}
+
+//Helper function to map and initialize resources, only used by initResources
+void addRes(std::string name, std::string path, float optFps = 10.0) {
+    if(path.find_first_of("*") == std::string::npos) {
+        game.resourceMap[name] = new TextureResource(path);
+    } else {
+        game.resourceMap[name] = new FlipBook(path, optFps);
+    }    
 }
 
 void initResources()
@@ -233,16 +254,34 @@ void initResources()
         while ((dir = readdir(d)) != NULL) {
             if (dir->d_type == DT_REG) {
                 std::string ext(".ppm"), texFile(dir->d_name);
-                //If textureFile does not end with .ppm, we must convert it to .ppm first
-                if(texFile.size() > ext.size() && (texFile.compare(texFile.size() - ext.size(), ext.size(), ext) != 0 && texFile.find_first_of(".") != 0)) {
+                //If textureFile does not end with .ppm, we must convert it 
+                //to .ppm first
+                if( texFile.size() > ext.size() && 
+                        (texFile.compare(
+                            texFile.size() - ext.size(), ext.size(), ext
+                        ) != 0 && 
+                        texFile.find_first_of(".") != 0)) {
                     std::string newFile = "./images/" + texFile + ext;
-                    std::string command = "convert \"./images/" + texFile + "\" \"" + newFile + "\"";
+                    std::string command = 
+                            "convert \"./images/" + texFile + "\" \"" + 
+                            newFile + "\"";
                     system(command.c_str());
                 }
             }
         }
         closedir(d);
     }
+    
+    addRes("images/player", "./images/bigfoot.ppm");
+    addRes("images/enemy1", "./images/ojFish.jpg");
+    addRes("images/enemy2", "./images/anglerFish.jpg");  
+    addRes("images/friendly2", "./images/goldCoin*.png");
+    addRes("images/cheeseburger", "./images/Cheeseburger.jpg");
+    addRes("images/rock1", "./images/rock1.ppm");
+    addRes("images/coral1", "./images/coral1.ppm");
+    addRes("images/coral2", "./images/coral2.ppm");
+    addRes("images/coral3", "./images/coral3.ppm");
+    
 }
 
 void initScenes()
@@ -337,7 +376,7 @@ void initScenePlay()
     player->offset.y = 20;
     player->avgRadius = dimToAvgRadius(player->dim);
     player->mass = avgRadiusTOEstMass(player->avgRadius);
-    mapTexture(player, "./images/bigfoot.ppm");
+    mapResource(player, "images/player");
     game.objects.push_back(player);
     game.player = player;
 
@@ -527,8 +566,12 @@ void renderAll()
     glClear(GL_COLOR_BUFFER_BIT); // Clear the color buffer (background)
     if (game.scene & GameScenePlay || game.isGamePaused) {
         glPushMatrix();
-        game.cameraXMin = std::max(game.cameraXMin, game.player->pos.x - game.xres / 2);
-        game.camera.x = std::max(game.cameraXMin, game.player->pos.x - game.xres / 4);
+        game.cameraXMin = std::max(
+            game.cameraXMin, game.player->pos.x - game.xres / 2
+        );
+        game.camera.x = std::max(
+            game.cameraXMin, game.player->pos.x - game.xres / 4
+        );
         glTranslatef(-game.camera.x, -game.camera.y, -game.camera.z);
         renderMap();
         renderObjects(GameScenePlay);
@@ -604,7 +647,7 @@ void renderTexture(Object* obj)
     glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255, 255, 255, 255);
-    glBindTexture(GL_TEXTURE_2D, obj->texId);
+    glBindTexture(GL_TEXTURE_2D, obj->resource->getResourceId());
     glBegin(GL_QUADS);
     float offsetX = obj->offset.x,
             offsetY = obj->offset.x,
@@ -671,43 +714,6 @@ void renderText(Object* obj)
         ggprint06(&rect, 0, cref, obj->name.c_str());
         break;
     }
-    glDisable(GL_TEXTURE_2D);
-}
-
-void mapTexture(Object* obj, const char* textureFile)
-{
-    glEnable(GL_TEXTURE_2D);
-    //If textureFile does not end with .ppm,
-    //we must map it to the generated .ppm first
-    std::string ext(".ppm"), texFile(textureFile);
-    if(     texFile.size() > ext.size() &&
-            texFile.compare(texFile.size() - ext.size(), ext.size(), ext)
-            != 0) {
-        std::string mappedFile = texFile + ext;
-        obj->tex = ppm6GetImage(mappedFile.c_str());
-    } else {
-        obj->tex = ppm6GetImage(textureFile);
-    }
-    glGenTextures(1, &obj->texId);
-    int w = obj->tex->width;
-    int h = obj->tex->height;
-    glBindTexture(GL_TEXTURE_2D, obj->texId);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-    //TRANSPARENCY
-    unsigned char *texAlphaData = buildAlphaData(
-            obj->tex,
-            obj->texTransUsingFirstPixel
-            );
-    glTexImage2D(
-            GL_TEXTURE_2D, 0,
-            GL_RGBA, w, h, 0,
-            GL_RGBA,
-            GL_UNSIGNED_BYTE,
-            texAlphaData
-            );
-    free(texAlphaData);
     glDisable(GL_TEXTURE_2D);
 }
 

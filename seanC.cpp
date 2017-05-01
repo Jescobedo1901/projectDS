@@ -42,19 +42,19 @@ void generateFloorObjects(int numobj)
         neutral->dim.y = dimy;
         switch (type) {
         case 0: //rock
-            mapTexture(neutral, "./images/rock1.ppm");
+            mapResource(neutral, "images/rock1");
             break;
         case 1: //coral 1
-            mapTexture(neutral, "./images/coral1.ppm");
+            mapResource(neutral, "images/coral1");
             break;
         case 2: //coral 2
-            mapTexture(neutral, "./images/coral2.ppm");
+            mapResource(neutral, "images/coral2");
             break;
         case 3: //coral 3
-            mapTexture(neutral, "./images/coral3.ppm");
+            mapResource(neutral, "images/coral3");
             break;
         default: //rock
-            mapTexture(neutral, "./images/rock1.ppm");
+            mapResource(neutral, "/images/rock1");
             break;
         }
         game.objects.push_back(neutral);

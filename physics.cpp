@@ -140,7 +140,7 @@ double diff(timespec& start, timespec& end)
 
 void gameLoop()
 {
-    const double tickSeconds = 1.0 / 180.0;
+    const double tickSeconds = 1.0 / 120.0;
 
     //Used to measure the timer expiration
     struct timespec prev, curr;
@@ -151,10 +151,9 @@ void gameLoop()
 
     while (!game.done) {
 
-        updateGameStats();
+        handleEvents();
         
-        //render frame
-        renderAll();
+        updateGameStats();
 
         //tick game state
         clock_gettime(CLOCK_REALTIME, &now);
@@ -162,13 +161,17 @@ void gameLoop()
         double dt = diff(now, prev);
 
         while (dt >= tickSeconds) {
-            dt -= tickSeconds;
-            handleEvents();
+            dt -= tickSeconds;            
             stepPhysics(tickSeconds);
             applyAudio();
         }
 
+        //render frame
+        renderAll();
+        
         prev = now;
+        
+        glXSwapBuffers(game.display, game.win);
     }
 }
 
@@ -182,6 +185,8 @@ void stepPhysics(float stepDuration)
 
         stepMapBoundsIteration();
         applySpawnRate(stepDuration);
+        
+        stepFlipBooks(stepDuration);
         
         for (int i = 0, l = game.objects.size(); i < l; ++i) {
             Object* obj = game.objects[i];

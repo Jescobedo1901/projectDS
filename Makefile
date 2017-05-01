@@ -2,7 +2,8 @@
 CXX =		    g++
 
 CFLAGS =	    -g -std=c++03 -Wall -Wextra -Wpedantic \
-		    -Wno-unused-variable -Wno-unused-parameter
+		    -Wno-unused-variable -Wno-unused-parameter \
+		    -o2
 
 LFLAGS =	    -lpthread -lm -lGLU -lGL -lrt -lX11 ./libggfonts.a
 
