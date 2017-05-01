@@ -319,6 +319,8 @@ struct Game {
     int scene;
     bool isGamePaused;
 
+    int lastButton;
+	
 
     int mapBoundsIteration;
 
@@ -432,11 +434,16 @@ void handleEvents();
 void handlePlayerMovement(const XEvent& event);
 void handlePlayerClickExit(const XEvent& event);
 void handleMouseClicks(const XEvent& event);
+void handleMenuMouseMovement(const XEvent& event);
 void handleClickMenuItems(const XEvent& event);
 void handleESC(const XEvent& event);
 
 
 //Audio
+void playHover();
+void playClick();
+void audioLoop();
+void playPoint();
 //Add audio handling functions here
 
 //Physics
