@@ -426,6 +426,16 @@ void initScenePlayPause()
 
 void initSceneCredits()
 {
+    Object* screenBg = new Object();
+    screenBg->scene = GameSceneCredits;
+    screenBg->objectType = ObjectTypeRectangle;
+    screenBg->color = Color(0, 0, 0, 128);
+    screenBg->pos.y = 0;
+    screenBg->pos.x = 0;
+    screenBg->dim.x = game.xres;
+    screenBg->dim.y = game.yres;
+    game.objects.push_back(screenBg);
+    
     const char* names[5] = {
         "Press ESC key to exit!",
         "Sean C",

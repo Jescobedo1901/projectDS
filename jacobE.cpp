@@ -36,6 +36,9 @@ void applySpawnRate(float stepDuration)
 
 void spawnEnemy()
 {
+    //double rnd = (double) rand() / (double) RAND_MAX;
+    float rndPos = (float) rand() / (float) RAND_MAX;
+    float rndNum = (float) rand() / (float) RAND_MAX;
     Object* enemy = new Object();
     enemy->scene = GameScenePlay;
     enemy->objectType = ObjectTypeEnemy;
@@ -45,7 +48,7 @@ void spawnEnemy()
     int min = getOceanFloorUpperBound(enemy->pos.x);
     float rnd = (float) rand() / (float) RAND_MAX;
     enemy->pos.y = rand() % (max - min) + min;
-    enemy->vel.x = -(rnd * 3 + 3);
+    enemy->vel.x = -(rndPos * 3 + 3);
     enemy->dim.x = 60;
     enemy->dim.y = 60;
     enemy->offset = Position(30, 30, 0);
@@ -59,25 +62,51 @@ void spawnEnemy()
 
 void spawnFriendly()
 {
-    Object* enemy = new Object();
-    enemy->scene = GameScenePlay;
-    enemy->objectType = ObjectTypeFriendly;
-    enemy->pos.x = game.player->pos.x + game.xres * 2;
-    // rand for [min,max] = rand() % (max - min) + min
-    int max = getOceanUpperBound(enemy->pos.x);
-    int min = getOceanFloorUpperBound(enemy->pos.x);
-    float rnd = (float) rand() / (float) RAND_MAX;
-    enemy->pos.y = rand() % (max - min) + min;
-    enemy->vel.x = -(rnd * 2 + 0.25);
-    enemy->dim.x = 64;
-    enemy->dim.y = 64;
-    enemy->offset = Position(32, 32, 0);
-    enemy->avgRadius = dimToAvgRadius(enemy->dim);
-    enemy->mass = avgRadiusTOEstMass(enemy->avgRadius);
-    enemy->intAttribute1 = 10; //hard coded for now
-    enemy->texTransUsingFirstPixel = true;
-    mapTexture(enemy, "./images/Cheeseburger.jpg");
-    game.objects.push_back(enemy);
+    float rndPos = (float) rand() / (float) RAND_MAX;
+    float rndNum = (float) rand() / (float) RAND_MAX;
+    
+    if (rndNum < .01) {
+        Object* friendly1 = new Object();
+        friendly1->scene = GameScenePlay;
+        friendly1->objectType = ObjectTypeFriendly;
+        friendly1->pos.x = game.player->pos.x + game.xres * 2;
+        // rand for [min,max] = rand() % (max - min) + min
+        int max = getOceanUpperBound(friendly1->pos.x);
+        int min = getOceanFloorUpperBound(friendly1->pos.x);
+        //float rnd = (float) rand() / (float) RAND_MAX;
+        friendly1->pos.y = rand() % (max - min) + min;
+        friendly1->vel.x = -(rndPos * 2 + 0.25);
+        friendly1->dim.x = 64;
+        friendly1->dim.y = 64;
+        friendly1->offset = Position(32, 32, 0);
+        friendly1->avgRadius = dimToAvgRadius(friendly1->dim);
+        friendly1->mass = avgRadiusTOEstMass(friendly1->avgRadius);
+        friendly1->intAttribute1 = 10; //hard coded for now
+        friendly1->texTransUsingFirstPixel = true;
+        mapTexture(friendly1, "./images/Cheeseburger.jpg");
+        game.objects.push_back(friendly1);
+    }
+    else {
+        Object* friendly2 = new Object();
+        friendly2->scene = GameScenePlay;
+        friendly2->objectType = ObjectTypeFriendly;
+        friendly2->pos.x = game.player->pos.x + game.xres * 2;
+        // rand for [min,max] = rand() % (max - min) + min
+        int max = getOceanUpperBound(friendly2->pos.x);
+        int min = getOceanFloorUpperBound(friendly2->pos.x);
+        //float rnd = (float) rand() / (float) RAND_MAX;
+        friendly2->pos.y = rand() % (max - min) + min;
+        friendly2->vel.x = -(rndPos * 2 + 0.25);
+        friendly2->dim.x = 64;
+        friendly2->dim.y = 64;
+        friendly2->offset = Position(32, 32, 0);
+        friendly2->avgRadius = dimToAvgRadius(friendly2->dim);
+        friendly2->mass = avgRadiusTOEstMass(friendly2->avgRadius);
+        friendly2->intAttribute1 = 1; //hard coded for now
+        friendly2->texTransUsingFirstPixel = true;
+        mapTexture(friendly2, "./images/goldCoin1.png");
+        game.objects.push_back(friendly2);
+    }
 }
 
 void applyPlayerCollision(Object* player, Object* other,
