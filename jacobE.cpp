@@ -243,7 +243,14 @@ void handleESC(const XEvent& event)
                 game.isGamePaused = true;
             } else if (game.scene & GameSceneCredits) {
                 game.scene = GameSceneMenu;
+            } else if (game.scene & GameSceneHelp) {
+                game.scene = GameSceneMenu;
             }
         }
     }
+}
+
+void jHelpFunction()
+{
+    
 }

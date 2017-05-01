@@ -95,10 +95,10 @@ void handleClickMenuItems(const XEvent& event)
                 if (y >= obj->pos.y && y <= (obj->pos.y + obj->dim.y) &&
                         x >= obj->pos.x && x <= (obj->pos.x + obj->dim.x)) {
                     //then this button was pressed. Change state    
-                    if (obj->name == "New Game") {
+                    if (obj->name == "Play") {
                         game.scene = GameScenePlay | GameSceneHUD;
-                    } else if (obj->name == "Restart") {
-                        //TBD
+                    } else if (obj->name == "Help") {
+                        game.scene = GameSceneHelp;
                     } else if (obj->name == "Credits") {
                         game.scene = GameSceneCredits;
                     } else if (obj->name == "Exit") {
