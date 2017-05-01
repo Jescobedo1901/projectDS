@@ -45,6 +45,7 @@ glc(NULL),
 done(false),
 scene(GameSceneMenu), //initialize new game to menu
 isGamePaused(false),
+lastButton(0),
 mapBoundsIteration(0),
 playerMovementDirectionMask(0),
 xres(800),
@@ -66,9 +67,11 @@ void handleEvents()
     while (XPending(game.display) > 0) {
         XNextEvent(game.display, &event);
         handlePlayerMovement(event);
+		handleMenuMouseMovement(event);
         handlePlayerClickExit(event);
         handleESC(event);
         handleMouseClicks(event);
+		audioLoop();
     }
 }
 
@@ -82,6 +85,7 @@ void handleMouseClicks(const XEvent& event)
         break;
     }
 }
+
 
 void handleClickMenuItems(const XEvent& event)
 {
@@ -105,6 +109,7 @@ void handleClickMenuItems(const XEvent& event)
                     } else if (obj->name == "Exit") {
                         game.done = true;
                     }
+					playClick();
                     break;
                 }
             }

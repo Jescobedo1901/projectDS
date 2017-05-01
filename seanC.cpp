@@ -4,6 +4,8 @@
 
 #include "game.h"
 
+void playHover();
+
 void generateFloorObjects(int numobj)
 {
     srand(time(NULL));
@@ -59,5 +61,41 @@ void generateFloorObjects(int numobj)
         }
         game.objects.push_back(neutral);
     }
+}
+
+void handleMenuMouseMovement(const XEvent& event)
+{
+	#ifndef DISABLE_AUDIO
+	if(event.type == MotionNotify){
+			int x = event.xbutton.x;
+			int y = 600- event.xbutton.y;
+	
+	if(game.scene == 2 && game.lastButton == 0){
+			for(int i =0, l = game.objects.size(); i < l; ++i) {
+				Object* obj = game.objects[i];
+				if (obj->scene == GameSceneMenu && !obj->name.empty()) {
+					//printf("x: %d y: %d objx: %f oby: %f button:%d\n", x, y, obj->pos.x, obj->pos.y, game.lastButton);
+					if (y >= obj->pos.y && y <= (obj->pos.y + obj->dim.y) &&
+                        x >= obj->pos.x && x <= (obj->pos.x + obj->dim.x)) {
+						playHover();
+						obj->color = Color(51,51,51,32);
+						game.lastButton = i;
+					}
+				}
+			}
+	}else{
+				Object* obj = game.objects[game.lastButton];
+				if (obj->scene == GameSceneMenu && !obj->name.empty()) {
+					//printf("x: %d y: %d objx: %f oby: %f button:%d\n", x, y, obj->pos.x, obj->pos.y, game.lastButton);
+						if ((y <= obj->pos.y || y >= (obj->pos.y + obj->dim.y)) ||
+                        	(x <= obj->pos.x || x >= (obj->pos.x + obj->dim.x))) {
+								obj->color = Color(0,0,0,32);
+								game.lastButton = 0;
+						}
+						}
+			}
+	}
+	
+	#endif
 }
 

@@ -141,6 +141,7 @@ void applyPlayerCollision(Object* player, Object* other,
     case ObjectTypeFriendly:
         game.pointsTxt->intAttribute1 += other->intAttribute1;
         removeBag.insert(other);
+		playPoint();
         break;
     case ObjectTypeNeutral:
         player->vel = (player->vel) / 2;

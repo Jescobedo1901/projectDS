@@ -10,8 +10,8 @@
 #include <AL/alut.h>
 #include <AL/alc.h>
 
-ALuint alBuffer[2]; //Number of Files
-ALuint alSource[2];
+ALuint alBuffer[4]; //Number of Files
+ALuint alSource[4];
 ALint state;
 
 void initAudio()
@@ -29,36 +29,59 @@ void initAudio()
     alListenerf(AL_GAIN, 1.0f);
 
 
-////    alBuffer[0] = alutCreateBufferFromFile("./sound/menu.wav");
-////    alBuffer[1] = alutCreateBufferFromFile("./sound/swim.wma");
-////
-////
-////    alGenSources(2, alSource);
-////    alSourcei(alSource[0], AL_BUFFER, alBuffer[0]);
-////    alSourcei(alSource[1], AL_BUFFER, alBuffer[1]);
+	alBuffer[0] = alutCreateBufferFromFile("./sound/hover.wav"); //button hover
+	alBuffer[1] = alutCreateBufferFromFile("./sound/click.wav"); //button click
+	alBuffer[2] = alutCreateBufferFromFile("./sound/point.wav"); //point collection
+   	alBuffer[3] = alutCreateBufferFromFile("./sound/loop.wav");//main loop
+
+	
+  	alGenSources(4, alSource);
+    alSourcei(alSource[0], AL_BUFFER, alBuffer[0]);
+  	alSourcei(alSource[1], AL_BUFFER, alBuffer[1]);
+	alSourcei(alSource[2], AL_BUFFER, alBuffer[2]);
+  	alSourcei(alSource[3], AL_BUFFER, alBuffer[3]);
 //
-//    alSourcef(alSource[0], AL_GAIN, 1.0f);
-//    alSourcef(alSource[0], AL_PITCH, 1.0f);
-//    alSourcef(alSource[0], AL_LOOPING, AL_TRUE);
+  	alSourcef(alSource[0], AL_GAIN, 1.0f);
+ 	alSourcef(alSource[0], AL_PITCH, 1.0f);
+  	alSourcef(alSource[0], AL_LOOPING, AL_FALSE);
     if (alGetError() != AL_NO_ERROR) {
         printf("ERROR: settings\n");
     }
 
-//    alSourcef(alSource[1], AL_GAIN, 0.6f);
-//    alSourcef(alSource[1], AL_PITCH, 1.0f);
-//    alSourcef(alSource[1], AL_LOOPING, AL_TRUE);
+ 	alSourcef(alSource[1], AL_GAIN, 1.5f);
+  	alSourcef(alSource[1], AL_PITCH, 1.2f);
+  	alSourcef(alSource[1], AL_LOOPING, AL_FALSE);
     if (alGetError() != AL_NO_ERROR) {
         printf("ERROR: settings\n");
     }
+	
+	alSourcef(alSource[2], AL_GAIN, 0.8f);
+  	alSourcef(alSource[2], AL_PITCH, 1.0f);
+  	alSourcef(alSource[2], AL_LOOPING, AL_FALSE);
+    if (alGetError() != AL_NO_ERROR) {
+        printf("ERROR: settings\n");
+    }
+	alSourcef(alSource[3], AL_GAIN, 1.0f);
+  	alSourcef(alSource[3], AL_PITCH, 1.0f);
+  	alSourcef(alSource[3], AL_LOOPING, AL_TRUE);
+    if (alGetError() != AL_NO_ERROR) {
+        printf("ERROR: settings\n");
+    }
+	
 }
+
 
 void uninitAudio()
 {
     alDeleteSources(1, &alSource[0]);
     alDeleteSources(1, &alSource[1]);
+	alDeleteSources(1, &alSource[2]);
+    alDeleteSources(1, &alSource[3]);
     alDeleteBuffers(1, &alBuffer[0]);
     alDeleteBuffers(1, &alBuffer[1]);
-
+    alDeleteBuffers(1, &alBuffer[2]);
+    alDeleteBuffers(1, &alBuffer[3]);
+	
     ALCcontext *Context = alcGetCurrentContext();
     ALCdevice *Device = alcGetContextsDevice(Context);
     alcMakeContextCurrent(NULL);
@@ -67,24 +90,8 @@ void uninitAudio()
 
 }
 
-void handleAudio()
-{
-//    //printf("entering audio\n");
-//    alGetSourcei(alSource[0], AL_SOURCE_STATE, &state); // menu
-//
-//    if (game.scene == 2 && state != AL_PLAYING) {
-//        alGetSourcei(alSource[1], AL_SOURCE_STATE, &state); // game scene
-//        if (state == AL_PLAYING) {
-//            alSourceStop(alSource[1]);
-//        }
-//        alSourcePlay(alSource[0]);
-//    }
-//    if (game.scene != 2 && state == AL_PLAYING) {
-//        alSourceStop(alSource[0]);
-//    }
-}
-
 #else
+
 
 //dummies
 void initAudio()
@@ -97,3 +104,44 @@ void uninitAudio()
 }
 
 #endif
+
+void playHover()
+{
+	#ifndef DISABLE_AUDIO
+	alSourcePlay(alSource[0]);
+	#endif
+}
+
+void playClick()
+{
+	#ifndef DISABLE_AUDIO
+	alSourcePlay(alSource[1]);
+	#endif
+}
+
+void playPoint()
+{
+	#ifndef DISABLE_AUDIO
+	alSourcePlay(alSource[2]);
+	#endif
+}
+
+void audioLoop()
+{
+	//printf("audio\n");
+	#ifndef DISABLE_AUDIO
+	if(game.scene == 2){
+		alGetSourcei(alSource[3], AL_SOURCE_STATE, &state);
+		if(state == AL_PLAYING)
+			alSourceStop(alSource[3]);
+	}
+	if(game.scene == (GameScenePlay | GameSceneHUD)){
+		//printf("audio\n");
+		alGetSourcei(alSource[3], AL_SOURCE_STATE, &state);
+		if(state != AL_PLAYING)
+			alSourcePlay(alSource[3]);
+	}
+	
+	//alSourcePlay(alSource[3]);
+	#endif
+}

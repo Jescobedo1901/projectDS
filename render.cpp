@@ -562,7 +562,7 @@ void renderAll()
         renderMap();
         renderObjects(game.scene);
     }
-
+	//audioLoop();
     glXSwapBuffers(game.display, game.win);
 }
 
