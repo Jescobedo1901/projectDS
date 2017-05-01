@@ -188,9 +188,11 @@ void stepPhysics(float stepDuration)
         
         stepFlipBooks(stepDuration);
         
-        for (int i = 0, l = game.objects.size(); i < l; ++i) {
-            Object* obj = game.objects[i];
-            applyObjectLifetimePolicies(obj);      
+        for (std::vector<Object*>::iterator it = game.objects.begin(), end = game.objects.end(); it != end; ++it) {            
+            Object* obj = *it;
+            if(applyObjectLifetimePolicies(obj)) {
+                continue;
+            }
             //Apply to all except object type enemy
             switch(obj->objectType) {
                 case ObjectTypeEnemy:

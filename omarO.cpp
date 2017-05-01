@@ -42,7 +42,7 @@ bool isOffscreen(Object* obj)
     return obj->pos.x <= game.player->pos.x - game.xres;
 }
 
-void applyObjectLifetimePolicies(Object* obj)
+bool applyObjectLifetimePolicies(Object* obj)
 {
     switch (obj->objectType) {
     case ObjectTypeFriendly:
@@ -53,12 +53,13 @@ void applyObjectLifetimePolicies(Object* obj)
                     std::remove(game.objects.begin(), game.objects.end(), obj)
                     );
             delete obj;
+            return true;
         }
         break;
     default:
         break;
     }
-
+    return false;
 }
 
 Resource::Resource(std::string p)

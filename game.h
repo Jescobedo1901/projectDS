@@ -471,7 +471,7 @@ void checkObjectCollisions();
  * that are not handled manually, e.g. scrolling objects
  * @param
  */
-void applyObjectLifetimePolicies(Object*);
+bool applyObjectLifetimePolicies(Object*);
 
 //Audio
 
