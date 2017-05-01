@@ -170,8 +170,6 @@ void gameLoop()
         renderAll();
         
         prev = now;
-        
-        glXSwapBuffers(game.display, game.win);
     }
 }
 
