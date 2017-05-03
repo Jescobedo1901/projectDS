@@ -250,6 +250,7 @@ void initResources()
     addRes("images/coral2", "./images/coral2.ppm");
     addRes("images/coral3", "./images/coral3.ppm");
     addRes("images/lost", "./images/lost.jpeg", 150);
+    addRes("images/logo", "./images/logo.jpg", 75);
 }
 
 void initScenes()
@@ -296,11 +297,12 @@ void initSceneMenu()
     menuBg->dim.y = 450;
     game.objects.push_back(menuBg);
 
-    const char* buttons[4] = {
+    const char* buttons[5] = {
         "Play",
         "Help",
         "Credits",
-        "Exit"
+        "Exit",
+        "Mute"
     };
 
     for (int i = 0; i < 4; ++i) {
@@ -338,6 +340,49 @@ void initSceneMenu()
         game.objects.push_back(btnText);
 
     }
+
+    Object* logo = new Object();
+    logo->scene = GameSceneMenu;
+    logo->objectType = ObjectTypeTexture;
+    logo->pos.x = 100;
+    logo->pos.y = game.yres-120;
+    logo->dim.x = 600;
+    logo->dim.y = 150;
+    mapResource(logo, "images/logo");
+	//game.logo = logo;
+    game.objects.push_back(logo);
+	
+	Object* highScoreText = new Object();
+    highScoreText->scene = GameSceneMenu;
+    highScoreText->name = "High Score: ";
+    highScoreText->objectType = ObjectTypeText;
+    highScoreText->style = plain16;
+    highScoreText->color = Color(210, 210, 210);
+    highScoreText->pos.y = 70;
+    highScoreText->pos.x = 260;
+    game.objects.push_back(highScoreText);
+	
+	Object* highScoreValue = new Object();
+    highScoreValue->scene = GameSceneMenu;
+    highScoreValue->objectType = ObjectTypeText;
+    highScoreValue->style = plain16;
+    highScoreValue->color = Color(210, 210, 210);
+    highScoreValue->intAttribute1 = 0;
+    highScoreValue->pos.y = 70;
+    highScoreValue->pos.x = 450;
+    highScoreValue->name = "0";
+    game.objects.push_back(highScoreValue);
+    game.highScoreTxt = highScoreValue;
+	
+	Object* soundBg = new Object();
+    soundBg->scene = GameSceneMenu;
+    soundBg->objectType = ObjectTypeRectangle;
+    soundBg->color = Color(75, 75, 75, 128);
+    soundBg->pos.y = 5;
+    soundBg->pos.x = 200;
+    soundBg->dim.x = 400;
+    soundBg->dim.y = 40;
+    game.objects.push_back(soundBg);
 
     Object* menuBg2 = new Object();
     menuBg2->scene = GameSceneMenu;
@@ -517,6 +562,31 @@ void initScenePlay()
     pointsValue->name = "0";
     game.objects.push_back(pointsValue);
     game.pointsTxt = pointsValue;
+
+    Object* timeLabel = new Object();
+    timeLabel->scene = GameSceneHUD;
+    timeLabel->objectType = ObjectTypeText;
+    timeLabel->style = plain16;
+    timeLabel->color = Color(0, 0, 225);
+    timeLabel->intAttribute1 = 0;
+    timeLabel->pos.y = game.yres - 20;
+    timeLabel->pos.x = game.xres - 150;
+    timeLabel->name = "Time: ";
+    game.objects.push_back(timeLabel);
+
+    Object* timeValue = new Object();
+    timeValue->scene = GameSceneHUD;
+    timeValue->objectType = ObjectTypeText;
+    timeValue->style = plain16;
+    timeValue->color = Color(0, 0, 255);
+    timeValue->doubleAttribute1 = 0.0;
+    timeValue->pos.y = game.yres - 20;
+    timeValue->pos.x = game.xres - 100;
+    timeValue->name = "0.0";
+    game.objects.push_back(timeValue);
+    game.timeTxt = timeValue;
+	
+	
 
 }
 

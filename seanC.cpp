@@ -79,8 +79,12 @@ void handleMenuMouseMovement(const XEvent& event)
                     if (y >= obj->pos.y && y <= (obj->pos.y + obj->dim.y) &&
                             x >= obj->pos.x && x <= (obj->pos.x + obj->dim.x)) {
                         playHover();
+						if(obj->name != "Mute"){
                         obj->color = Color(51, 51, 51, 32);
                         game.lastButton = i;
+						}else{
+							game.lastButton = i;
+						}
                     }
                 }
             }
@@ -91,13 +95,26 @@ void handleMenuMouseMovement(const XEvent& event)
                 //obj->pos.x, obj->pos.y, game.lastButton);
                 if ((y <= obj->pos.y || y >= (obj->pos.y + obj->dim.y)) ||
                         (x <= obj->pos.x || x >= (obj->pos.x + obj->dim.x))) {
+					if(obj->name != "Mute"){
                     obj->color = Color(0, 0, 0, 32);
                     game.lastButton = 0;
+					}else{
+						game.lastButton = 0;
+					}
                 }
             }
         }
     }
 
 #endif
+}
+
+void elapsedTime()
+{
+	clock_t current = clock();
+	int elapsedSec = (int)(current - game.start) * 1000.0/ CLOCKS_PER_SEC;
+	elapsedSec = elapsedSec / 1000;
+	Object* obj = game.objects[9];
+	obj->doubleAttribute1 = elapsedSec;
 }
 

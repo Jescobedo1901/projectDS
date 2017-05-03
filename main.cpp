@@ -42,6 +42,7 @@ cmap(),
 swa(),
 gwa(),
 glc(NULL),
+start(0),
 done(false),
 scene(GameSceneMenu), //initialize new game to menu
 isGamePaused(false),
@@ -106,6 +107,7 @@ void handleClickMenuItems(const XEvent& event)
                     //then this button was pressed. Change state    
                     if (obj->name == "Play") {
                         game.scene = GameScenePlay | GameSceneHUD;
+                        game.start = clock();
                     } else if (obj->name == "Help") {
                         game.scene = GameSceneHelp;
                     } else if (obj->name == "Credits") {
@@ -114,7 +116,18 @@ void handleClickMenuItems(const XEvent& event)
                         game.done = true;
                     } else if (obj->name == "Upgrades") {
                         game.scene = GameSceneUpgrades;
-                    }
+                    } else if (obj->name == "Mute") {
+						if(obj->objectType == ObjectTypeRectangle){
+						if(obj->intAttribute1 == 0){
+							obj->color = Color(51,204,255);
+							obj->intAttribute1 = 1;
+						}else{
+							obj->color = Color(0,0,0,32);
+							obj->intAttribute1 = 0;
+					}
+						muteAudio();
+					}
+					}
                     playClick();
                     break;
                 }
@@ -139,6 +152,8 @@ void handlePlayerClickExit(const XEvent& event)
 void updateGameStats() {
     //Link the health bar to the health text int attribute
     if(game.healthTxt->intAttribute1 <= 0) {
+	audioLoop();
+	gameOver();
         game.scene = GameSceneMenu | GameSceneLost;
         game.lastScore = game.pointsTxt->intAttribute1;
         game.totalScore += game.lastScore;
@@ -155,6 +170,17 @@ void updateGameStats() {
         game.healthTxt->name = ss.str();
         ss.str(""); ss << game.pointsTxt->intAttribute1;
         game.pointsTxt->name = ss.str();
+	ss.str("");
+	if((game.timeTxt->doubleAttribute1 / 60) >= 1){
+		ss << (int)(game.timeTxt->doubleAttribute1 / 60);
+		ss << " m ";
+	}
+	ss << std::fmod((game.timeTxt->doubleAttribute1),60);
+	ss << " s";
+	game.timeTxt->name = ss.str();
+	ss.str("");
+	ss << game.highScoreTxt->intAttribute1;
+	game.highScoreTxt->name = ss.str();
     }
     if(game.scene & GameSceneLost) {
         std::stringstream ss; ss << game.lastScore;

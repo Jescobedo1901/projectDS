@@ -168,7 +168,7 @@ void gameLoop()
 
         //render frame
         renderAll();
-        
+        elapsedTime();
         prev = now;
     }
 }
