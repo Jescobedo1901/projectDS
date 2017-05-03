@@ -44,7 +44,7 @@ gwa(),
 glc(NULL),
 start(0),
 done(false),
-scene(GameSceneMenu), //initialize new game to menu
+scene(GameSceneMenu | GameSceneLogin), //initialize new game to menu
 isGamePaused(false),
 lastButton(0),
 mapBoundsIteration(0),
@@ -63,7 +63,8 @@ upgrade1(NULL),
 upgrade2(NULL),
 thrustModifier(100),
 resourceMap(),
-score()
+score(),
+username()
 {
 }
 
@@ -83,8 +84,11 @@ void handleEvents()
 
 void handleMouseClicks(const XEvent& event)
 {
-    if(game.scene & GameSceneMenu) {
+    if(game.scene & GameSceneMenu && !(game.scene & GameSceneLogin)) {
         handleClickMenuItems(event);
+    }
+    if(game.scene & GameSceneLogin) {
+        handleLoginInput(event);
     }
     if(game.scene & GameSceneUpgrades) {
         handleClickUpgradeItems(event);
@@ -101,7 +105,7 @@ void handleClickMenuItems(const XEvent& event)
             Object* obj = game.objects[i];
             //If object is in menu scene and has a name
             //then it menu label
-            if (obj->scene & (GameSceneMenu ) && !obj->name.empty()) {
+            if (obj->scene & (GameSceneMenu) && !obj->name.empty()) {
                 if (y >= obj->  pos.y && y <= (obj->pos.y + obj->dim.y) &&
                         x >= obj->pos.x && x <= (obj->pos.x + obj->dim.x)) {
                     //then this button was pressed. Change state    
@@ -114,6 +118,8 @@ void handleClickMenuItems(const XEvent& event)
                         game.scene = GameSceneCredits;
                     } else if (obj->name == "Exit") {
                         game.done = true;
+                    } else if (obj->name == "High Score") {
+                        game.scene = GameSceneScore;
                     } else if (obj->name == "Upgrades") {
                         game.scene = GameSceneUpgrades;
                     } else if (obj->name == "Mute") {
@@ -148,6 +154,28 @@ void handlePlayerClickExit(const XEvent& event)
     }
 }
 
+void handleLoginInput(const XEvent& event) {
+    if(event.type == KeyPress) {
+         int key = XLookupKeysym(const_cast<XKeyEvent*> (&event.xkey), 0);
+         if(key == XK_Return && game.loginTxt->name != "<Enter>" && game.loginTxt->name.size() >= 4) {
+             game.username = game.loginTxt->name;             
+             game.scene &= ~GameSceneLogin;
+             updateHighScores(game.username, 0);
+         } else if(key == XK_BackSpace && game.loginTxt->name != "<Enter>" && !game.loginTxt->name.empty()) {
+             game.loginTxt->name = game.loginTxt->name.substr(0, game.loginTxt->name.size()-1);
+             if(game.loginTxt->name.empty()) {
+                game.loginTxt->name = "<Enter>";
+             }
+         } else if(key >= XK_9 && key <= XK_z) {
+             if(game.loginTxt->name == "<Enter>") {
+                game.loginTxt->name = "";
+            }
+             if(game.loginTxt->name.size() < 20) {
+                game.loginTxt->name += key;
+             }
+         }                  
+    }
+}
 
 void updateGameStats() {
     //Link the health bar to the health text int attribute
@@ -157,6 +185,7 @@ void updateGameStats() {
         game.scene = GameSceneMenu | GameSceneLost;
         game.lastScore = game.pointsTxt->intAttribute1;
         game.totalScore += game.lastScore;
+        updateHighScores(game.username, game.lastScore);
 //        updateScore(game.pointsTxt->intAttribute1);
 //        game.scores[10].totalScore += game.lastScore;
 //        if(game.scores[10].highScore < game.lastScore) {

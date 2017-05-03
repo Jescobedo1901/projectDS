@@ -2,7 +2,16 @@
 //Group 4
 //DeepSea Survival Game
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <iostream>
+
 #include "game.h"
+
 
 void handlePlayerMovement(const XEvent& event)
 {
@@ -181,7 +190,7 @@ GLuint FlipBook::getResourceId()
 void mapResource(Object* obj, const char* resourceName)
 {
     ResourceMap::iterator it = game.resourceMap.find(resourceName);
-    if(it != game.resourceMap.end()) {        
+    if(it != game.resourceMap.end()) {
         obj->resource = (*it).second;
     } else {
         initFailure(
@@ -247,3 +256,115 @@ unsigned char *buildAlphaData(
     }
     return newdata;
 }
+
+int updateHighScores(std::string username, int latestHigh)
+{
+    const char* host = "sleipnir.cs.csub.edu";
+    const char* protocol = "http";
+    int sockfd;
+    struct addrinfo hints, *servinfo, *p;
+    int rv;
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC; // use AF_INET6 to force IPv6
+    hints.ai_socktype = SOCK_STREAM;
+
+    if ((rv = getaddrinfo(host, protocol, &hints, &servinfo)) != 0) {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+        return -1;
+    }
+
+    // loop through all the results and connect to the first we can
+    for(p = servinfo; p != NULL; p = p->ai_next) {
+        if ((sockfd = socket(p->ai_family, p->ai_socktype,
+                p->ai_protocol)
+                ) == -1) {
+            perror("socket");
+            continue;
+        }
+
+        if (connect(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
+            perror("connect");
+            close(sockfd);
+            continue;
+        }
+
+        break; // if we get here, we must have connected successfully
+    }
+
+    if (p == NULL) {
+        // looped off the end of the list with no connection
+        fprintf(stderr, "failed to connect\n");
+        return -1;
+    }
+
+    const char* page = "/~oomarsson/3350/server.php?username=";
+    const char* useragent = "projectDS-BETA";
+
+    std::stringstream ss;
+    ss  <<  "GET " << page << username 
+            << "&score=" << latestHigh << " HTTP/1.1\r\n"
+            << "Host: " << host
+        << "\r\nUser-Agent: " << useragent << "\r\n\r\n";
+    
+    std::cout << ss << std::endl;
+
+    std::string request = ss.str();
+    const char * requestGet = request.c_str();
+    
+    printf("Sending request:\n%s\n", requestGet);
+
+    int sent = 0;
+    int getReqSize = strlen(requestGet);
+   
+    while(sent < getReqSize) {
+        int sentBytes = write(sockfd, requestGet, strlen(requestGet));
+        if(sentBytes == -1) {
+            herror("Failed sending data");
+            return -1;
+        }
+        sent += getReqSize;
+    }
+
+    std::string result;
+    char buffer[1024 * 32] = { 0 };
+    int bytesRead = -1;
+    while((bytesRead = read(sockfd, buffer, sizeof(buffer))) != 0) {
+        if(bytesRead == -1) {
+            perror("Error");
+            return -1;
+        } else {
+            result += buffer;
+        }
+    }
+    
+    result = result.substr(result.find("\r\n\r\n") + 4);
+    
+    ss.str("");
+    
+    ss << result;
+    
+    std::string user;
+    int total, max;
+    
+    std::vector<Score> scores;
+    
+    while(ss >> user >> total >> max) {
+        scores.push_back(Score(user, total, max));
+    }
+    
+    if(!scores.empty()) {
+        Score last = *(scores.begin() + scores.size()-1);
+        scores.erase(scores.end());
+        game.highScoreTxt->intAttribute1 = last.highScore;
+        game.totalScore = last.totalScore;
+    }
+
+    game.score = scores;
+    
+    close(sockfd);
+    freeaddrinfo(servinfo);
+
+    return 0;
+}
+ 

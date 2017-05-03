@@ -134,7 +134,9 @@ enum GameScene {
     GameSceneCredits = 32,
     GameSceneHelp = 64,
     GameSceneUpgrades = 128,
-    GameSceneLost = 256
+    GameSceneLost = 256,
+    GameSceneLogin = 512,
+    GameSceneScore = 1024
 };
 
 enum TextStyle {
@@ -303,6 +305,10 @@ struct Object {
  highestScore will hold max score in one play*/
 
 struct Score {
+    Score(std::string name, int totalScore, int highScore) :
+    name(name), totalScore(totalScore), highScore(highScore) {
+    }
+    std::string name;
     int totalScore;
     int highScore;
 };
@@ -324,8 +330,8 @@ struct Game {
     XSetWindowAttributes swa;
     XWindowAttributes gwa;
     GLXContext glc;
-	
-	
+
+
 	clock_t start; //clock start of game
 
 
@@ -383,9 +389,9 @@ struct Game {
     Object* healthBar;
 
     Object* pointsTxt;
-	
+
 	Object* timeTxt;
-	
+
 	Object* highScoreTxt;
 
     Object* pointsLast;
@@ -393,6 +399,8 @@ struct Game {
     Object* upgrade1;
 
     Object* upgrade2;
+
+    Object* loginTxt;
 
     float thrustModifier;
 
@@ -408,6 +416,8 @@ struct Game {
 
     int lastScore;
     int totalScore;
+
+    std::string username;
 
 };
 
@@ -441,6 +451,7 @@ void initSceneHelp();
 void initScenePlayPause();
 void initSceneCredits();
 void initSceneUpgrades();
+void initSceneScore();
 
 void reset();
 
@@ -485,6 +496,7 @@ void handleMenuMouseMovement(const XEvent& event);
 void handleClickMenuItems(const XEvent& event);
 void handleClickUpgradeItems(const XEvent& event);
 void handleESC(const XEvent& event);
+void handleLoginInput(const XEvent& event);
 
 
 //Audio
@@ -522,6 +534,12 @@ float avgRadiusTOEstMass(float);
  */
 void checkObjectCollisions();
 
+
+/**
+ * Connects to the server, gets the latest high score.
+ * @return 0 on success, -1 on failure
+ */
+int updateHighScores(std::string name, int latestHigh);
 
 
 /**

@@ -262,7 +262,7 @@ void initScenes()
     initScenePlayPause();
     initSceneCredits();
     initSceneUpgrades();
-   // initSceneScores
+    initSceneScore();
 }
 
 void initSceneMenu()
@@ -351,7 +351,7 @@ void initSceneMenu()
     mapResource(logo, "images/logo");
 	//game.logo = logo;
     game.objects.push_back(logo);
-	
+
 	Object* highScoreText = new Object();
     highScoreText->scene = GameSceneMenu;
     highScoreText->name = "High Score: ";
@@ -361,7 +361,7 @@ void initSceneMenu()
     highScoreText->pos.y = 70;
     highScoreText->pos.x = 260;
     game.objects.push_back(highScoreText);
-	
+
 	Object* highScoreValue = new Object();
     highScoreValue->scene = GameSceneMenu;
     highScoreValue->objectType = ObjectTypeText;
@@ -373,7 +373,7 @@ void initSceneMenu()
     highScoreValue->name = "0";
     game.objects.push_back(highScoreValue);
     game.highScoreTxt = highScoreValue;
-	
+
 	Object* soundBg = new Object();
     soundBg->scene = GameSceneMenu;
     soundBg->objectType = ObjectTypeRectangle;
@@ -465,6 +465,48 @@ void initSceneMenu()
     pointsLast->name = "0";
     game.objects.push_back(pointsLast);
     game.pointsLast = pointsLast;
+
+
+    Object* loginBg = new Object();
+    loginBg->scene = GameSceneLogin;
+    loginBg->objectType = ObjectTypeRectangle;
+    loginBg->color = Color(0, 0, 0, 128);
+    loginBg->pos.y = 0;
+    loginBg->pos.x = 0;
+    loginBg->dim.x = game.xres;
+    loginBg->dim.y = game.yres;
+    game.objects.push_back(loginBg);
+
+    Object* loginBox = new Object();
+    loginBox->scene = GameSceneLogin;
+    loginBox->objectType = ObjectTypeRectangle;
+    loginBox->color = Color(0, 0, 0, 128);
+    loginBox->pos.y = game.yres/3.0;
+    loginBox->pos.x = game.xres/3.0;
+    loginBox->dim.x = game.xres/3.0;
+    loginBox->dim.y = game.yres/3.0;
+    game.objects.push_back(loginBox);
+
+    Object* useTxt = new Object();
+    useTxt->scene = GameSceneLogin;
+    useTxt->name = "Enter usename:";
+    useTxt->objectType = ObjectTypeText;
+    useTxt->style = plain17;
+    useTxt->color = Color(255, 255, 255);
+    useTxt->pos.y = game.yres/3.0+150;
+    useTxt->pos.x = game.xres/3.0+25;
+    game.objects.push_back(useTxt);
+
+    Object* userInputTxt = new Object();
+    userInputTxt->scene = GameSceneLogin;
+    userInputTxt->name = "<Enter>";
+    userInputTxt->objectType = ObjectTypeText;
+    userInputTxt->style = plain17;
+    userInputTxt->color = Color(255, 255, 255);
+    userInputTxt->pos.y = game.yres/3.0+50;
+    userInputTxt->pos.x = game.xres/3.0+25;
+    game.objects.push_back(userInputTxt);
+    game.loginTxt = userInputTxt;
 }
 
 void initScenePlay()
@@ -585,8 +627,8 @@ void initScenePlay()
     timeValue->name = "0.0";
     game.objects.push_back(timeValue);
     game.timeTxt = timeValue;
-	
-	
+
+
 
 }
 
@@ -657,10 +699,59 @@ void initSceneCredits()
     }
 }
 
-//void initSceneUpgrades()
-//{
-//
-//}
+void initSceneScore()
+{
+    Object* screenBg = new Object();
+    screenBg->scene = GameSceneScore;
+    screenBg->objectType = ObjectTypeRectangle;
+    screenBg->color = Color(0, 0, 0, 128);
+    screenBg->pos.y = 0;
+    screenBg->pos.x = 0;
+    screenBg->dim.x = game.xres;
+    screenBg->dim.y = game.yres;
+    game.objects.push_back(screenBg);
+
+    Object* menuBg = new Object();
+    menuBg->scene = GameSceneScore;
+    menuBg->objectType = ObjectTypeRectangle;
+    menuBg->color = Color(75, 75, 75, 128);
+    menuBg->pos.y = 75;
+    menuBg->pos.x = 25;
+    menuBg->dim.x = 350;
+    menuBg->dim.y = 450;
+    game.objects.push_back(menuBg);
+
+    for (unsigned int i = 0; i < 10; ++i) {
+        Object* scoreRect = new Object();
+        scoreRect->scene = GameSceneScore;
+        scoreRect->objectType = ObjectTypeRectangle;
+        scoreRect->color = Color(0, 0, 0, 32);
+        scoreRect->pos.y = 300 + i * 100;
+        scoreRect->pos.x = game.xres-350;
+        scoreRect->dim.x = 300;
+        scoreRect->dim.y = 90;
+        game.objects.push_back(scoreRect);
+
+        Object* leftButtsShadow = new Object();
+        leftButtsShadow->scene = GameSceneScore;
+        leftButtsShadow->objectType = ObjectTypeText;
+        leftButtsShadow->style = plain17;
+        leftButtsShadow->color = Color(0, 0, 0);
+        leftButtsShadow->pos.y = 324 + i * 100;
+        leftButtsShadow->pos.x = game.xres-296;
+        game.objects.push_back(leftButtsShadow);
+
+        Object* leftButtsText = new Object();
+        leftButtsText->scene = GameSceneScore;
+        leftButtsText->objectType = ObjectTypeText;
+        leftButtsText->style = plain17;
+        leftButtsText->color = Color(210, 210, 210);
+        leftButtsText->pos.y = 320 + i * 100;
+        leftButtsText->pos.x = game.xres-300;
+        game.objects.push_back(leftButtsText);
+    }
+
+}
 
 void renderObjects(int scenesToRender) {
     //Rendered in order and let's hope it works
@@ -836,6 +927,9 @@ void renderText(Object* obj)
         break;
     case plain16:
         ggprint16(&rect, 30, cref, obj->name.c_str());
+        break;
+    case plain17:
+        ggprint17(&rect, 30, cref, obj->name.c_str());
         break;
     case plain40:
         ggprint40(&rect, 0, cref, obj->name.c_str());
