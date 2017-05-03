@@ -67,11 +67,11 @@ void handleEvents()
     while (XPending(game.display) > 0) {
         XNextEvent(game.display, &event);
         handlePlayerMovement(event);
-		handleMenuMouseMovement(event);
+        handleMenuMouseMovement(event);
         handlePlayerClickExit(event);
         handleESC(event);
         handleMouseClicks(event);
-		audioLoop();
+        audioLoop();
     }
 }
 
@@ -109,7 +109,7 @@ void handleClickMenuItems(const XEvent& event)
                     } else if (obj->name == "Exit") {
                         game.done = true;
                     }
-					playClick();
+                    playClick();
                     break;
                 }
             }

@@ -289,6 +289,16 @@ struct Object {
     }
 };
 
+/**
+ Score struct for player
+ totalScore will hold aggregate score
+ highestScore will hold max score in one play*/
+
+struct Score {
+    int totalScore;
+    int highScore;
+};
+
 //Game struct
 typedef std::map<std::string, Resource*> ResourceMap;
 
@@ -370,16 +380,6 @@ struct Game {
      * See struct Score
      */
     std::vector<Score> score;
-};
-
-/**
- Score struct for player
- totalScore will hold aggregate score
- highestScore will hold max score in one play*/
-
-struct Score score {
-    int totalScore;
-    int highestScore;
 };
 
 extern Game game;
