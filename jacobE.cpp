@@ -20,7 +20,7 @@ void applySpawnRate(float stepDuration)
     //Calculate rate per second
     double ratePerSecond = scale * (((p % 100) / pmax) * ((p % 100) / pmax))
             + ((p * scale) / step) + 1;
-    //                            ;    
+    //                            ;
     //
     double probabilityPerStep = ratePerSecond * stepDuration;
 
@@ -28,7 +28,7 @@ void applySpawnRate(float stepDuration)
         spawnEnemy();
     }
 
-    if(rnd < probabilityPerStep * 0.33) { 
+    if(rnd < probabilityPerStep * 0.33) {
         spawnFriendly();
     }
 
@@ -39,7 +39,7 @@ void spawnEnemy()
     //double rnd = (double) rand() / (double) RAND_MAX;
     float rndPos = (float) rand() / (float) RAND_MAX;
     float rndNum = (float) rand() / (float) RAND_MAX;
-    
+
     if (rndNum < .2) {
         Object* enemy2 = new Object();
         enemy2->scene = GameScenePlay;
@@ -85,7 +85,7 @@ void spawnFriendly()
 {
     float rndPos = (float) rand() / (float) RAND_MAX;
     float rndNum = (float) rand() / (float) RAND_MAX;
-    
+
     if (rndNum < .01) {
         Object* friendly1 = new Object();
         friendly1->scene = GameScenePlay;
@@ -201,7 +201,7 @@ void checkObjectCollisions()
         for (int j = 0; j < l; j++) {
             Object* left = game.objects[i];
             Object* right = game.objects[j];
-            
+
             //they are colliding...
             //Left will increment, handle from left perspective
             switch (left->objectType) {
@@ -228,7 +228,7 @@ void checkObjectCollisions()
     }
     /* http://stackoverflow.com/questions/2874441/
        deleting-elements-from-stl-set-while-iterating*/
-   
+
     std::set<Object*>::iterator it = removeBag.begin();
     for (; it != removeBag.end(); it++) {
         game.objects.erase(std::remove(game.objects.begin(),
@@ -279,12 +279,139 @@ void handleESC(const XEvent& event)
                 game.scene = GameSceneMenu;
             } else if (game.scene & GameSceneHelp) {
                 game.scene = GameSceneMenu;
+            } else if (game.scene & GameSceneUpgrades) {
+                game.scene = GameSceneMenu;
             }
         }
     }
 }
 
-void jHelpFunction()
+void initSceneUpgrades()
 {
-    
+    Object* screenBg = new Object();
+    screenBg->scene = GameSceneUpgrades;
+    screenBg->objectType = ObjectTypeRectangle;
+    screenBg->color = Color(0, 0, 0, 220);
+    screenBg->pos.y = 0;
+    screenBg->pos.x = 0;
+    screenBg->dim.x = game.xres;
+    screenBg->dim.y = game.yres;
+    game.objects.push_back(screenBg);
+
+    for (int i = 0; i < 2; i++) {
+        Object* upgradesTitle = new Object();
+        upgradesTitle->scene = GameSceneUpgrades;
+        upgradesTitle->objectType = ObjectTypeText;
+            if (i == 0) {
+                upgradesTitle->name = "UPGRADES! ! ! !";
+                upgradesTitle->color = Color(25, 225, 25);
+                upgradesTitle->style = plain40;
+            } else {
+                upgradesTitle->name = "Press ESC to Exit!";
+                upgradesTitle->color = Color(255, 255, 255);
+                upgradesTitle->style = plain17;
+            }
+        upgradesTitle->pos.y = 525;
+        upgradesTitle->pos.x = 275-i*250;
+        game.objects.push_back(upgradesTitle);
+    }
+
+    Object* bonusBg = new Object();
+    bonusBg->scene = GameSceneUpgrades;
+    bonusBg->objectType = ObjectTypeRectangle;
+    bonusBg->color = Color(25, 225, 25, 50);
+    bonusBg->pos.y = 275;
+    bonusBg->pos.x = 25;
+    bonusBg->dim.x = 350;
+    bonusBg->dim.y = 250;
+    game.objects.push_back(bonusBg);
+
+    const char* buttonsUp[2] = {
+        "+ Speed",
+        "+ Health"
+    };
+
+    for (int i = 0; i < 2; ++i) {
+        Object* upgradeRect = new Object();
+        upgradeRect->scene = GameSceneUpgrades;
+        upgradeRect->name = buttonsUp[i];
+        upgradeRect->objectType = ObjectTypeRectangle;
+        upgradeRect->color = Color(0, 0, 0, 128);
+        upgradeRect->pos.y = 300 + i * 100;
+        upgradeRect->pos.x = 50;
+        upgradeRect->dim.x = 300;
+        upgradeRect->dim.y = 90;
+        game.objects.push_back(upgradeRect);
+
+        Object* upgradeShadow = new Object();
+        upgradeShadow->scene = GameSceneUpgrades;
+        upgradeShadow->name = buttonsUp[i];
+        upgradeShadow->objectType = ObjectTypeText;
+        upgradeShadow->style = plain40;
+        upgradeShadow->color = Color(0, 0, 0);
+        upgradeShadow->pos.y = 324 + i * 100;
+        upgradeShadow->pos.x = 79;
+        game.objects.push_back(upgradeShadow);
+
+        Object* upgradeTxt = new Object();
+        upgradeTxt->scene = GameSceneUpgrades;
+        upgradeTxt->name = buttonsUp[i];
+        upgradeTxt->objectType = ObjectTypeText;
+        upgradeTxt->style = plain40;
+
+        upgradeTxt->pos.y = 320 + i * 100;
+        upgradeTxt->pos.x = 75;
+        game.objects.push_back(upgradeTxt);
+
+        Object* upgradeType = new Object();
+        upgradeType->scene = GameSceneUpgrades;
+        upgradeType->objectType = ObjectTypeText;
+        upgradeType->style = plain40;
+
+        upgradeType->pos.y = 320 + i * 100;
+        upgradeType->pos.x = 250;
+
+        game.objects.push_back(upgradeType);
+
+        if (i == 0) {
+            upgradeTxt->color = Color(25, 25, 210);
+            upgradeType->color = Color(25, 25, 210);
+            upgradeType->name = "0";
+            game.upgrade1 = upgradeType;
+        } else {
+            upgradeTxt->color = Color(210, 25, 25);
+            upgradeType->color = Color(210, 25, 25);
+            upgradeType->name = "0";
+            game.upgrade2 = upgradeType;
+        }
+    }
+}
+
+void handleClickUpgradeItems(const XEvent& event)
+{
+    if (event.type == ButtonPress) {
+    int x = event.xbutton.x;
+    int y = 600 - event.xbutton.y;
+        for (int i = 0, l = game.objects.size(); i < l; ++i) {
+            Object* obj = game.objects[i];
+            //If object is in Upgrades Scene and has a name
+            //then it's an Upgrade Option
+            if (obj->scene & (GameSceneUpgrades) && !obj->name.empty()) {
+                if (y >= obj->  pos.y && y <= (obj->pos.y + obj->dim.y) &&
+                        x >= obj->pos.x && x <= (obj->pos.x + obj->dim.x)) {
+                    //then this button was pressed!
+                    if (obj->name == "+ Health") {
+                        game.upgrade2->intAttribute1++;
+                        game.healthTxt->intAttribute1 +=
+                                10 * game.upgrade2->intAttribute1;
+                    } else if (obj->name == "+ Speed") {
+                        game.upgrade1->intAttribute1++;
+                        game.thrustModifier = 100 * std::pow(1.05, game.upgrade1->intAttribute1);
+                    }
+                    playClick();
+                    break;
+                }
+            }
+        }
+    }
 }

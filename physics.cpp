@@ -302,17 +302,17 @@ void stepMapBoundsIteration()
 void applyPlayerMovement(Object* obj)
 {
     if (obj->pos.y < getOceanUpperBound(obj->pos.x)) {
-        float thrust = 100 * obj->mass;
+        float thrust = game.thrustModifier * obj->mass;
         if (game.playerMovementDirectionMask & DirUp)
             obj->forces.push_back(Vec3(0, thrust, 0));
         if (game.playerMovementDirectionMask & DirDown) {
-            obj->forces.push_back(Vec3(0, -thrust, 0));
+            obj->forces.push_back(Vec3(0, -(thrust), 0));
         }
         if (game.playerMovementDirectionMask & DirRight) {
             obj->forces.push_back(Vec3(thrust, 0, 0));
         }
         if (game.playerMovementDirectionMask & DirLeft) {
-            obj->forces.push_back(Vec3(-thrust, 0, 0));
+            obj->forces.push_back(Vec3(-(thrust), 0, 0));
         }
     }
 }

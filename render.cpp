@@ -182,23 +182,23 @@ void uninitResources() {
         while ((dir = readdir(d)) != NULL) {
             if (dir->d_type == DT_REG) {
                 std::string ext(".ppm"), texFile(dir->d_name);
-                //If textureFile does not end with .ppm, we must convert 
+                //If textureFile does not end with .ppm, we must convert
                 //it to .ppm first
-                if(texFile.size() > ext.size() && 
+                if(texFile.size() > ext.size() &&
                         texFile.compare(
                             texFile.size() - ext.size(), ext.size(), ext
                         ) == 0) {
-                    std::string removingFile = std::string("./images/") + 
+                    std::string removingFile = std::string("./images/") +
                             dir->d_name;
                     remove(removingFile.c_str());
                 }
             }
         }
     }
-    for(ResourceMap::iterator it = 
-            game.resourceMap.begin(), 
-            end = game.resourceMap.end(); 
-            it != end; 
+    for(ResourceMap::iterator it =
+            game.resourceMap.begin(),
+            end = game.resourceMap.end();
+            it != end;
             ++it) {
         delete (*it).second;
     }
@@ -222,16 +222,16 @@ void initResources()
         while ((dir = readdir(d)) != NULL) {
             if (dir->d_type == DT_REG) {
                 std::string ext(".ppm"), texFile(dir->d_name);
-                //If textureFile does not end with .ppm, we must convert it 
+                //If textureFile does not end with .ppm, we must convert it
                 //to .ppm first
-                if( texFile.size() > ext.size() && 
+                if( texFile.size() > ext.size() &&
                         (texFile.compare(
                             texFile.size() - ext.size(), ext.size(), ext
-                        ) != 0 && 
+                        ) != 0 &&
                         texFile.find_first_of(".") != 0)) {
                     std::string newFile = "./images/" + texFile + ext;
-                    std::string command = 
-                            "convert \"./images/" + texFile + "\" \"" + 
+                    std::string command =
+                            "convert \"./images/" + texFile + "\" \"" +
                             newFile + "\"";
                     system(command.c_str());
                 }
@@ -261,6 +261,7 @@ void initScenes()
     initScenePlayPause();
     initSceneCredits();
     initSceneUpgrades();
+   // initSceneScores
 }
 
 void initSceneMenu()
@@ -268,7 +269,7 @@ void initSceneMenu()
     Object* lostTxt = new Object();
     lostTxt->scene = GameSceneLost;
     lostTxt->objectType = ObjectTypeTexture;
-    lostTxt->pos.x = 50;
+    lostTxt->pos.x = 0;
     lostTxt->pos.y = -100;
     lostTxt->dim.x = 800;
     lostTxt->dim.y = 800;
@@ -289,10 +290,10 @@ void initSceneMenu()
     menuBg->scene = GameSceneMenu;
     menuBg->objectType = ObjectTypeRectangle;
     menuBg->color = Color(75, 75, 75, 128);
-    menuBg->pos.y = 50;
-    menuBg->pos.x = 200;
-    menuBg->dim.x = 400;
-    menuBg->dim.y = 500;
+    menuBg->pos.y = 75;
+    menuBg->pos.x = 25;
+    menuBg->dim.x = 350;
+    menuBg->dim.y = 450;
     game.objects.push_back(menuBg);
 
     const char* buttons[4] = {
@@ -311,7 +312,7 @@ void initSceneMenu()
         btnBg->objectType = ObjectTypeRectangle;
         btnBg->color = Color(0, 0, 0, 32);
         btnBg->pos.y = 100 + i * 100;
-        btnBg->pos.x = 250;
+        btnBg->pos.x = 50;
         btnBg->dim.x = 300;
         btnBg->dim.y = 90;
         game.objects.push_back(btnBg);
@@ -323,7 +324,7 @@ void initSceneMenu()
         btnTextShadow->style = plain40;
         btnTextShadow->color = Color(0, 0, 0);
         btnTextShadow->pos.y = 124 + i * 100;
-        btnTextShadow->pos.x = 304;
+        btnTextShadow->pos.x = 104;
         game.objects.push_back(btnTextShadow);
 
         Object* btnText = new Object();
@@ -333,11 +334,92 @@ void initSceneMenu()
         btnText->style = plain40;
         btnText->color = Color(210, 210, 210);
         btnText->pos.y = 120 + i * 100;
-        btnText->pos.x = 300;
+        btnText->pos.x = 100;
         game.objects.push_back(btnText);
 
     }
 
+    Object* menuBg2 = new Object();
+    menuBg2->scene = GameSceneMenu;
+    menuBg2->objectType = ObjectTypeRectangle;
+    menuBg2->color = Color(75, 75, 75, 128);
+    menuBg2->pos.y = 275;
+    menuBg2->pos.x = game.xres-375;
+    menuBg2->dim.x = 350;
+    menuBg2->dim.y = 250;
+    game.objects.push_back(menuBg2);
+
+    const char* buttonsLeft[2] = {
+        "Upgrades",
+        "High Score"
+    };
+
+    for (int i = 0; i < 2; ++i) {
+        Object* leftButts = new Object();
+        leftButts->scene = GameSceneMenu;
+        //Used to identify this box in the mouse click
+        //handling logic
+        leftButts->name = buttonsLeft[i];
+        leftButts->objectType = ObjectTypeRectangle;
+        leftButts->color = Color(0, 0, 0, 32);
+        leftButts->pos.y = 300 + i * 100;
+        leftButts->pos.x = game.xres-350;
+        leftButts->dim.x = 300;
+        leftButts->dim.y = 90;
+        game.objects.push_back(leftButts);
+
+        Object* leftButtsShadow = new Object();
+        leftButtsShadow->scene = GameSceneMenu;
+        leftButtsShadow->name = buttonsLeft[i];
+        leftButtsShadow->objectType = ObjectTypeText;
+        leftButtsShadow->style = plain40;
+        leftButtsShadow->color = Color(0, 0, 0);
+        leftButtsShadow->pos.y = 324 + i * 100;
+        leftButtsShadow->pos.x = game.xres-296;
+        game.objects.push_back(leftButtsShadow);
+
+        Object* leftButtsText = new Object();
+        leftButtsText->scene = GameSceneMenu;
+        leftButtsText->name = buttonsLeft[i];
+        leftButtsText->objectType = ObjectTypeText;
+        leftButtsText->style = plain40;
+        leftButtsText->color = Color(210, 210, 210);
+        leftButtsText->pos.y = 320 + i * 100;
+        leftButtsText->pos.x = game.xres-300;
+        game.objects.push_back(leftButtsText);
+    }
+
+    Object* endScoreShadow = new Object();
+    endScoreShadow->scene = GameSceneLost;
+    endScoreShadow->name = "Score: ";
+    endScoreShadow->objectType = ObjectTypeText;
+    endScoreShadow->style = plain40;
+    endScoreShadow->color = Color(255, 182, 193);
+    endScoreShadow->pos.y = 101;
+    endScoreShadow->pos.x = game.xres-373;
+    game.objects.push_back(endScoreShadow);
+
+    Object* endScore = new Object();
+    endScore->scene = GameSceneLost;
+    endScore->name = "Score: ";
+    endScore->objectType = ObjectTypeText;
+    endScore->style = plain40;
+    endScore->color = Color(10, 180, 73);
+    endScore->pos.y = 100;
+    endScore->pos.x = game.xres-375;
+    game.objects.push_back(endScore);
+
+    Object* pointsLast = new Object();
+    pointsLast->scene = GameSceneLost;
+    pointsLast->objectType = ObjectTypeText;
+    pointsLast->style = plain40;
+    pointsLast->color = Color(255, 0, 50);
+    pointsLast->intAttribute1 = game.lastScore;
+    pointsLast->pos.y = 100;
+    pointsLast->pos.x = game.xres-250;
+    pointsLast->name = "0";
+    game.objects.push_back(pointsLast);
+    game.pointsLast = pointsLast;
 }
 
 void initScenePlay()
@@ -449,7 +531,7 @@ void initSceneHelp()
     screenBg->dim.x = game.xres;
     screenBg->dim.y = game.yres;
     game.objects.push_back(screenBg);
-    
+
     Object* title = new Object();
     title->scene = GameSceneHelp;
     title->name = "This is a sparring program..";
@@ -463,7 +545,7 @@ void initSceneHelp()
 
 void initScenePlayPause()
 {
-    
+
 }
 
 void initSceneCredits()
@@ -477,7 +559,7 @@ void initSceneCredits()
     screenBg->dim.x = game.xres;
     screenBg->dim.y = game.yres;
     game.objects.push_back(screenBg);
-    
+
     const char* names[5] = {
         "Press ESC key to exit!",
         "Sean C",
@@ -505,10 +587,10 @@ void initSceneCredits()
     }
 }
 
-void initSceneUpgrades()
-{
-    //handlePlayerUpgrades();
-}
+//void initSceneUpgrades()
+//{
+//
+//}
 
 void renderObjects(int scenesToRender) {
     //Rendered in order and let's hope it works

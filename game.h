@@ -330,7 +330,7 @@ struct Game {
     bool isGamePaused;
 
     int lastButton;
-	
+
 
     int mapBoundsIteration;
 
@@ -373,13 +373,27 @@ struct Game {
 
     Object* pointsTxt;
 
+    Object* pointsLast;
+
+    Object* upgrade1;
+
+    Object* upgrade2;
+
+    float thrustModifier;
+
     ResourceMap resourceMap;
-    
+
     /**
      * Score struct for holding two score values for every player
      * See struct Score
+     * Elements 0-9 returned are top scores
+     * 10th element returned is personal score.
      */
     std::vector<Score> score;
+
+    int lastScore;
+    int totalScore;
+
 };
 
 extern Game game;
@@ -412,6 +426,8 @@ void initSceneHelp();
 void initScenePlayPause();
 void initSceneCredits();
 void initSceneUpgrades();
+
+void reset();
 
 //Core API
 void gameLoop();
@@ -452,6 +468,7 @@ void handlePlayerClickExit(const XEvent& event);
 void handleMouseClicks(const XEvent& event);
 void handleMenuMouseMovement(const XEvent& event);
 void handleClickMenuItems(const XEvent& event);
+void handleClickUpgradeItems(const XEvent& event);
 void handleESC(const XEvent& event);
 
 

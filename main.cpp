@@ -57,7 +57,12 @@ player(NULL),
 healthTxt(NULL),
 healthBar(NULL),
 pointsTxt(NULL),
-resourceMap()
+pointsLast(NULL),
+upgrade1(NULL),
+upgrade2(NULL),
+thrustModifier(100),
+resourceMap(),
+score()
 {
 }
 
@@ -77,12 +82,11 @@ void handleEvents()
 
 void handleMouseClicks(const XEvent& event)
 {
-    switch (game.scene) {
-    case GameSceneMenu:
+    if(game.scene & GameSceneMenu) {
         handleClickMenuItems(event);
-        break;
-    default:
-        break;
+    }
+    if(game.scene & GameSceneUpgrades) {
+        handleClickUpgradeItems(event);
     }
 }
 
@@ -96,8 +100,8 @@ void handleClickMenuItems(const XEvent& event)
             Object* obj = game.objects[i];
             //If object is in menu scene and has a name
             //then it menu label
-            if (obj->scene == GameSceneMenu && !obj->name.empty()) {
-                if (y >= obj->pos.y && y <= (obj->pos.y + obj->dim.y) &&
+            if (obj->scene & (GameSceneMenu ) && !obj->name.empty()) {
+                if (y >= obj->  pos.y && y <= (obj->pos.y + obj->dim.y) &&
                         x >= obj->pos.x && x <= (obj->pos.x + obj->dim.x)) {
                     //then this button was pressed. Change state    
                     if (obj->name == "Play") {
@@ -108,6 +112,8 @@ void handleClickMenuItems(const XEvent& event)
                         game.scene = GameSceneCredits;
                     } else if (obj->name == "Exit") {
                         game.done = true;
+                    } else if (obj->name == "Upgrades") {
+                        game.scene = GameSceneUpgrades;
                     }
                     playClick();
                     break;
@@ -134,10 +140,32 @@ void updateGameStats() {
     //Link the health bar to the health text int attribute
     if(game.healthTxt->intAttribute1 <= 0) {
         game.scene = GameSceneMenu | GameSceneLost;
+        game.lastScore = game.pointsTxt->intAttribute1;
+        game.totalScore += game.lastScore;
+//        updateScore(game.pointsTxt->intAttribute1);
+//        game.scores[10].totalScore += game.lastScore;
+//        if(game.scores[10].highScore < game.lastScore) {
+//            game.scores[10].highScore = game.lastScore;
+//        }
+        //reset();
     }
-    game.healthBar->dim.x = game.healthTxt->intAttribute1;
-    std::stringstream ss; ss << game.healthTxt->intAttribute1;
-    game.healthTxt->name = ss.str();
-    ss.str(""); ss << game.pointsTxt->intAttribute1;
-    game.pointsTxt->name = ss.str();
+    if(game.scene & GameScenePlay) {
+        game.healthBar->dim.x = game.healthTxt->intAttribute1;
+        std::stringstream ss; ss << game.healthTxt->intAttribute1;
+        game.healthTxt->name = ss.str();
+        ss.str(""); ss << game.pointsTxt->intAttribute1;
+        game.pointsTxt->name = ss.str();
+    }
+    if(game.scene & GameSceneLost) {
+        std::stringstream ss; ss << game.lastScore;
+        game.pointsLast->name = ss.str();
+    }
+    if(game.scene & GameSceneUpgrades) {
+        std::stringstream ss; ss << game.upgrade1->intAttribute1;
+        game.upgrade1->name = ss.str();
+    }
+    if(game.scene & GameSceneUpgrades) {
+        std::stringstream ss; ss << game.upgrade2->intAttribute1;
+        game.upgrade2->name = ss.str();
+    }
 }
