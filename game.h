@@ -392,8 +392,6 @@ struct Game {
 
 	Object* timeTxt;
 
-	Object* highScoreTxt;
-
     Object* pointsLast;
 
     Object* upgrade1;
@@ -402,23 +400,31 @@ struct Game {
 
     Object* loginTxt;
 
+    Object* highScoreTxt;
+
+    Object* totalScoreTxt;
+
     float thrustModifier;
 
     ResourceMap resourceMap;
+    
+    /**
+     * The score of the previous game
+     */
+    int lastScore;
 
     /**
-     * Score struct for holding two score values for every player
-     * See struct Score
-     * Elements 0-9 returned are top scores
-     * 10th element returned is personal score.
+     * Logged in player score info
      */
-    std::vector<Score> score;
+    Score playerInfo;
 
-    int lastScore;
-    int totalScore;
 
-    std::string username;
+    std::vector<std::vector<Object*> > scoreObjects;
 
+    /**
+     * Keeps track of how many objects are a part of initialization and should never be removed
+     */
+    int preservedObjects;
 };
 
 extern Game game;

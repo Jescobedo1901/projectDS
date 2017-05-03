@@ -263,6 +263,7 @@ void initScenes()
     initSceneCredits();
     initSceneUpgrades();
     initSceneScore();
+    game.preservedObjects = game.objects.size();
 }
 
 void initSceneMenu()
@@ -351,29 +352,7 @@ void initSceneMenu()
         game.objects.push_back(btnText);
 
     }
-	
-    Object* highScoreText = new Object();
-    highScoreText->scene = GameSceneMenu;
-    highScoreText->name = "High Score: ";
-    highScoreText->objectType = ObjectTypeText;
-    highScoreText->style = plain16;
-    highScoreText->color = Color(210, 210, 210);
-    highScoreText->pos.y = 70;
-    highScoreText->pos.x = 260;
-    game.objects.push_back(highScoreText);
-	
-    Object* highScoreValue = new Object();
-    highScoreValue->scene = GameSceneMenu;
-    highScoreValue->objectType = ObjectTypeText;
-    highScoreValue->style = plain16;
-    highScoreValue->color = Color(210, 210, 210);
-    highScoreValue->intAttribute1 = 0;
-    highScoreValue->pos.y = 70;
-    highScoreValue->pos.x = 450;
-    highScoreValue->name = "0";
-    game.objects.push_back(highScoreValue);
-    game.highScoreTxt = highScoreValue;
-	
+
     Object* soundBg = new Object();
     soundBg->scene = GameSceneMenu;
     soundBg->objectType = ObjectTypeRectangle;
@@ -661,8 +640,8 @@ void initScenePlay()
     timeValue->name = "0.0";
     game.objects.push_back(timeValue);
     game.timeTxt = timeValue;
-	
-	
+
+
 
 }
 
@@ -735,6 +714,10 @@ void initSceneCredits()
 
 void initSceneScore()
 {
+    int bottomOffset = game.yres / 6.0;
+    int lineHeight= 40;
+    int padLeft = game.xres / 4.0;
+
     Object* screenBg = new Object();
     screenBg->scene = GameSceneScore;
     screenBg->objectType = ObjectTypeRectangle;
@@ -745,45 +728,104 @@ void initSceneScore()
     screenBg->dim.y = game.yres;
     game.objects.push_back(screenBg);
 
-    Object* menuBg = new Object();
-    menuBg->scene = GameSceneScore;
-    menuBg->objectType = ObjectTypeRectangle;
-    menuBg->color = Color(75, 75, 75, 128);
-    menuBg->pos.y = 75;
-    menuBg->pos.x = 25;
-    menuBg->dim.x = 350;
-    menuBg->dim.y = 450;
-    game.objects.push_back(menuBg);
+    Object* highScores = new Object();
+    highScores->scene = GameSceneScore;
+    highScores->name = "High Scores";
+    highScores->objectType = ObjectTypeText;
+    highScores->style = plain40;
+    highScores->color = Color(0, 255, 255);
+    highScores->pos.y = game.yres - 80;
+    highScores->pos.x = padLeft;
+    game.objects.push_back(highScores);
 
     for (unsigned int i = 0; i < 10; ++i) {
+
         Object* scoreRect = new Object();
         scoreRect->scene = GameSceneScore;
         scoreRect->objectType = ObjectTypeRectangle;
         scoreRect->color = Color(0, 0, 0, 32);
-        scoreRect->pos.y = 300 + i * 100;
-        scoreRect->pos.x = game.xres-350;
-        scoreRect->dim.x = 300;
-        scoreRect->dim.y = 90;
+        scoreRect->pos.y = bottomOffset + i * lineHeight;
+        scoreRect->pos.x = padLeft;
+        scoreRect->dim.x = game.xres / 2.0;
+        scoreRect->dim.y = lineHeight - 10;
         game.objects.push_back(scoreRect);
 
-        Object* leftButtsShadow = new Object();
-        leftButtsShadow->scene = GameSceneScore;
-        leftButtsShadow->objectType = ObjectTypeText;
-        leftButtsShadow->style = plain17;
-        leftButtsShadow->color = Color(0, 0, 0);
-        leftButtsShadow->pos.y = 324 + i * 100;
-        leftButtsShadow->pos.x = game.xres-296;
-        game.objects.push_back(leftButtsShadow);
+        Object* tsName = new Object();
+        tsName->scene = GameSceneScore;
+        tsName->objectType = ObjectTypeText;
+        tsName->style = plain17;
+        tsName->color = Color(210, 210, 210);
+        tsName->pos.y = bottomOffset + i * lineHeight;
+        tsName->pos.x = padLeft;
+        game.objects.push_back(tsName);
 
-        Object* leftButtsText = new Object();
-        leftButtsText->scene = GameSceneScore;
-        leftButtsText->objectType = ObjectTypeText;
-        leftButtsText->style = plain17;
-        leftButtsText->color = Color(210, 210, 210);
-        leftButtsText->pos.y = 320 + i * 100;
-        leftButtsText->pos.x = game.xres-300;
-        game.objects.push_back(leftButtsText);
+        Object* tsMax = new Object();
+        tsMax->scene = GameSceneScore;
+        tsMax->objectType = ObjectTypeText;
+        tsMax->style = plain17;
+        tsMax->color = Color(210, 210, 210);
+        tsMax->pos.y = bottomOffset + i * lineHeight;
+        tsMax->pos.x = padLeft + 175;
+        game.objects.push_back(tsMax);
+
+        Object* tsTotal = new Object();
+        tsTotal->scene = GameSceneScore;
+        tsTotal->objectType = ObjectTypeText;
+        tsTotal->style = plain17;
+        tsTotal->color = Color(210, 210, 210);
+        tsTotal->pos.y = bottomOffset + i * lineHeight;
+        tsTotal->pos.x = padLeft + 300;
+        game.objects.push_back(tsTotal);
+
+        std::vector<Object*> vecs;
+        vecs.push_back(tsName);
+        vecs.push_back(tsMax);
+        vecs.push_back(tsTotal);
+        game.scoreObjects.push_back(vecs);
     }
+
+    Object* yourScoreBg = new Object();
+    yourScoreBg->scene = GameSceneScore;
+    yourScoreBg->objectType = ObjectTypeRectangle;
+    yourScoreBg->color = Color(0, 50, 0, 128);
+    yourScoreBg->pos.y = 40;
+    yourScoreBg->pos.x = padLeft;
+    yourScoreBg->dim.x = game.xres / 2.0;
+    yourScoreBg->dim.y = 40;
+    game.objects.push_back(yourScoreBg);
+
+
+    Object* yourScoreTxtLbl = new Object();
+    yourScoreTxtLbl->scene = GameSceneScore;
+    yourScoreTxtLbl->objectType = ObjectTypeText;
+    yourScoreTxtLbl->name = "You:";
+    yourScoreTxtLbl->style = plain17;
+    yourScoreTxtLbl->color = Color(210, 210, 210);
+    yourScoreTxtLbl->pos.y = 45;
+    yourScoreTxtLbl->pos.x = padLeft;
+    game.objects.push_back(yourScoreTxtLbl);
+
+    Object* yourScoreTxtVal = new Object();
+    yourScoreTxtVal->scene = GameSceneScore;
+    yourScoreTxtVal->objectType = ObjectTypeText;
+    yourScoreTxtVal->name = "5123";
+    yourScoreTxtVal->style = plain17;
+    yourScoreTxtVal->color = Color(210, 210, 210);
+    yourScoreTxtVal->pos.y = 45;
+    yourScoreTxtVal->pos.x = padLeft + 175;
+    game.objects.push_back(yourScoreTxtVal);
+    game.highScoreTxt = yourScoreTxtVal;
+
+    Object* yourScoreTxtVal2 = new Object();
+    yourScoreTxtVal2->scene = GameSceneScore;
+    yourScoreTxtVal2->objectType = ObjectTypeText;
+    yourScoreTxtVal2->name = "123";
+    yourScoreTxtVal2->style = plain17;
+    yourScoreTxtVal2->color = Color(210, 210, 210);
+    yourScoreTxtVal2->pos.y = 45;
+    yourScoreTxtVal2->pos.x = padLeft + 300;
+    game.objects.push_back(yourScoreTxtVal2);
+    game.totalScoreTxt = yourScoreTxtVal2;
 
 }
 

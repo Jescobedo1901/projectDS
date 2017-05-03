@@ -282,6 +282,8 @@ void handleESC(const XEvent& event)
                 game.scene = GameSceneMenu;
             } else if (game.scene & GameSceneUpgrades) {
                 game.scene = GameSceneMenu;
+            } else if (game.scene & GameSceneScore) {
+                game.scene = GameSceneMenu;
             }
         }
     }

@@ -61,10 +61,14 @@ pointsTxt(NULL),
 pointsLast(NULL),
 upgrade1(NULL),
 upgrade2(NULL),
+highScoreTxt(NULL),
+totalScoreTxt(NULL),
 thrustModifier(100),
 resourceMap(),
-score(),
-username()
+lastScore(),
+playerInfo("", 0, 0),
+scoreObjects(),
+preservedObjects()
 {
 }
 
@@ -108,7 +112,7 @@ void handleClickMenuItems(const XEvent& event)
             if (obj->scene & (GameSceneMenu) && !obj->name.empty()) {
                 if (y >= obj->  pos.y && y <= (obj->pos.y + obj->dim.y) &&
                         x >= obj->pos.x && x <= (obj->pos.x + obj->dim.x)) {
-                    //then this button was pressed. Change state    
+                    //then this button was pressed. Change state
                     if (obj->name == "Play") {
                         game.scene = GameScenePlay | GameSceneHUD;
                         game.start = clock();
@@ -154,26 +158,34 @@ void handlePlayerClickExit(const XEvent& event)
     }
 }
 
-void handleLoginInput(const XEvent& event) {
-    if(event.type == KeyPress) {
-         int key = XLookupKeysym(const_cast<XKeyEvent*> (&event.xkey), 0);
-         if(key == XK_Return && game.loginTxt->name != "<Enter>" && game.loginTxt->name.size() >= 4) {
-             game.username = game.loginTxt->name;             
-             game.scene &= ~GameSceneLogin;
-             updateHighScores(game.username, 0);
-         } else if(key == XK_BackSpace && game.loginTxt->name != "<Enter>" && !game.loginTxt->name.empty()) {
-             game.loginTxt->name = game.loginTxt->name.substr(0, game.loginTxt->name.size()-1);
-             if(game.loginTxt->name.empty()) {
-                game.loginTxt->name = "<Enter>";
-             }
-         } else if(key >= XK_9 && key <= XK_z) {
-             if(game.loginTxt->name == "<Enter>") {
-                game.loginTxt->name = "";
+void handleLoginInput(const XEvent& event)
+{
+    if (event.type == KeyPress) {
+        char seq[32];
+        KeySym keysym;
+        int key = XLookupKeysym(const_cast<XKeyEvent*> (&event.xkey), 0);
+        int len = XLookupString(const_cast<XKeyEvent*> (&event.xkey), seq, 25, &keysym, NULL);
+        if (len > 0) {
+            if (key == XK_Return && game.loginTxt->name != "<Enter>" && game.loginTxt->name.size() >= 4) {
+                game.playerInfo.name = game.loginTxt->name;
+                game.scene &= ~GameSceneLogin;
+                updateHighScores(game.playerInfo.name, 0);
+            } else if (key == XK_BackSpace && game.loginTxt->name != "<Enter>" && !game.loginTxt->name.empty()) {
+                game.loginTxt->name = game.loginTxt->name.substr(0, game.loginTxt->name.size() - 1);
+                if (game.loginTxt->name.empty()) {
+                    game.loginTxt->name = "<Enter>";
+                }
+            } else if ( ('0' <= seq[0] && seq[0] <= '9') ||
+                        ('A' <= seq[0] && seq[0] <= 'Z') ||
+                        ('a' <= seq[0] && seq[0] <= 'z')) {
+                if (game.loginTxt->name == "<Enter>") {
+                    game.loginTxt->name = "";
+                }
+                if (game.loginTxt->name.size() < 20) {
+                    game.loginTxt->name += seq[0];
+                }
             }
-             if(game.loginTxt->name.size() < 20) {
-                game.loginTxt->name += key;
-             }
-         }                  
+        }
     }
 }
 
@@ -184,14 +196,15 @@ void updateGameStats() {
 	gameOver();
         game.scene = GameSceneMenu | GameSceneLost;
         game.lastScore = game.pointsTxt->intAttribute1;
-        game.totalScore += game.lastScore;
-        updateHighScores(game.username, game.lastScore);
-//        updateScore(game.pointsTxt->intAttribute1);
-//        game.scores[10].totalScore += game.lastScore;
-//        if(game.scores[10].highScore < game.lastScore) {
-//            game.scores[10].highScore = game.lastScore;
-//        }
-        //reset();
+        updateHighScores(game.playerInfo.name, game.lastScore);
+        
+        for(int i = game.preservedObjects, l = game.objects.size(); i < l; ++i) {
+            delete game.objects[i];            
+        }
+        game.objects.erase(game.objects.begin() + game.preservedObjects, game.objects.end());
+        game.healthTxt->intAttribute1 = 100;
+        game.pointsTxt->intAttribute1 = 0;
+        game.isGamePaused = true;
     }
     if(game.scene & GameScenePlay) {
         game.healthBar->dim.x = game.healthTxt->intAttribute1;
@@ -222,5 +235,13 @@ void updateGameStats() {
     if(game.scene & GameSceneUpgrades) {
         std::stringstream ss; ss << game.upgrade2->intAttribute1;
         game.upgrade2->name = ss.str();
+    }
+    if(game.scene & GameSceneScore) {
+        std::stringstream ss;
+        ss << game.playerInfo.highScore;
+        game.highScoreTxt->name = ss.str();
+        ss.str("");
+        ss << game.playerInfo.totalScore;
+        game.totalScoreTxt->name = ss.str();
     }
 }

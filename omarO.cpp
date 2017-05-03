@@ -8,7 +8,8 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#include <iostream>
+#include <netinet/tcp.h>
+#include <iomanip>
 
 #include "game.h"
 
@@ -266,14 +267,13 @@ int updateHighScores(std::string username, int latestHigh)
     int rv;
 
     memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC; // use AF_INET6 to force IPv6
+    hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
     if ((rv = getaddrinfo(host, protocol, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return -1;
     }
-
     // loop through all the results and connect to the first we can
     for(p = servinfo; p != NULL; p = p->ai_next) {
         if ((sockfd = socket(p->ai_family, p->ai_socktype,
@@ -302,21 +302,17 @@ int updateHighScores(std::string username, int latestHigh)
     const char* useragent = "projectDS-BETA";
 
     std::stringstream ss;
-    ss  <<  "GET " << page << username 
-            << "&score=" << latestHigh << " HTTP/1.1\r\n"
-            << "Host: " << host
-        << "\r\nUser-Agent: " << useragent << "\r\n\r\n";
-    
-    std::cout << ss << std::endl;
+    ss      << "GET " << page << username
+            << "&score=" << latestHigh
+            << " HTTP/1.0\r\nHost: " << host <<
+            "\r\nUser-Agent: " << useragent << "\r\n\r\n";
 
     std::string request = ss.str();
     const char * requestGet = request.c_str();
-    
-    printf("Sending request:\n%s\n", requestGet);
 
     int sent = 0;
     int getReqSize = strlen(requestGet);
-   
+
     while(sent < getReqSize) {
         int sentBytes = write(sockfd, requestGet, strlen(requestGet));
         if(sentBytes == -1) {
@@ -329,42 +325,68 @@ int updateHighScores(std::string username, int latestHigh)
     std::string result;
     char buffer[1024 * 32] = { 0 };
     int bytesRead = -1;
-    while((bytesRead = read(sockfd, buffer, sizeof(buffer))) != 0) {
-        if(bytesRead == -1) {
-            perror("Error");
-            return -1;
-        } else {
+
+    do {
+        bytesRead = recv(sockfd, buffer, sizeof(buffer)-1, 0);
+        if(bytesRead > 0) {
             result += buffer;
+            bzero(buffer, sizeof(buffer));
         }
-    }
-    
-    result = result.substr(result.find("\r\n\r\n") + 4);
-    
-    ss.str("");
-    
-    ss << result;
-    
-    std::string user;
-    int total, max;
-    
-    std::vector<Score> scores;
-    
-    while(ss >> user >> total >> max) {
-        scores.push_back(Score(user, total, max));
-    }
-    
-    if(!scores.empty()) {
-        Score last = *(scores.begin() + scores.size()-1);
-        scores.erase(scores.end());
-        game.highScoreTxt->intAttribute1 = last.highScore;
-        game.totalScore = last.totalScore;
+    }while (bytesRead > 0);
+
+    unsigned int subidx = result.find("\r\n\r\n") + 4;
+
+    if(subidx < result.size()) {
+        result = result.substr(subidx);
+        ss.str("");
+        ss << result;
+        std::string user;
+        int total, max;
+
+        std::vector<Score> scores;
+
+        while(ss >> user >> total >> max) {
+            scores.push_back(Score(user, total, max));
+        }
+
+        if(!scores.empty()) {
+            Score last = *(scores.begin() + scores.size()-1);
+            scores.erase(scores.end());
+            game.playerInfo.highScore = last.highScore;
+            game.playerInfo.totalScore = last.totalScore;
+        }
+
+        std::vector<Score>::iterator scoresIt = scores.begin();
+
+        //Copy results into objects for rendering
+        //Traverse through all objects in reverse/
+        //find all objects of type text and on game scene score
+        //then set them one by one to the values retrieved
+        std::stringstream ss;
+        for(int i = game.scoreObjects.size()-1; i >= 0; --i) {
+            if(scoresIt != scores.end()) {
+                std::vector<Object*>& vec = game.scoreObjects[i];
+                Score& s = *scoresIt;
+                ss.str("");
+                ss << s.name;
+                vec[0]->name = ss.str();
+
+                ss.str("");
+                ss << s.highScore;
+                vec[1]->name = ss.str();
+                ss.str("");
+                ss << s.totalScore;
+                vec[2]->name = ss.str();
+
+                ++scoresIt;
+            }
+        }
+    } else {
+        printf("Error seeking data");
     }
 
-    game.score = scores;
-    
     close(sockfd);
     freeaddrinfo(servinfo);
 
     return 0;
 }
- 
