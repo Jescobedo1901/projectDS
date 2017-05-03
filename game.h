@@ -28,6 +28,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <glob.h>
+#include <ctime>
 
 //other
 #include "fonts.h"
@@ -274,6 +275,12 @@ struct Object {
      * If the type is ObjectTypeEenemy, then this is the amount of damage it inflicts
      */
     int intAttribute1;
+	 /**
+     * (OPTIONAL)
+     * Optional Double attribute
+     * Used for floats
+     */
+	double doubleAttribute1;
 
     Resource* resource;
 
@@ -316,6 +323,9 @@ struct Game {
     XSetWindowAttributes swa;
     XWindowAttributes gwa;
     GLXContext glc;
+	
+	
+	clock_t start; //clock start of game
 
 
     //Set to true to exit the game
@@ -372,6 +382,8 @@ struct Game {
     Object* healthBar;
 
     Object* pointsTxt;
+	
+	Object* timeTxt;
 
     ResourceMap resourceMap;
     
@@ -415,7 +427,7 @@ void initSceneUpgrades();
 
 //Core API
 void gameLoop();
-
+void elapsedTime();
 void updateGameStats();
 
 //Rendering+
@@ -460,6 +472,7 @@ void playHover();
 void playClick();
 void audioLoop();
 void playPoint();
+void playDmg();
 //Add audio handling functions here
 
 //Physics

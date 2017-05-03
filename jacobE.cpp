@@ -137,6 +137,7 @@ void applyPlayerCollision(Object* player, Object* other,
     case ObjectTypeEnemy:
         game.healthTxt->intAttribute1 -= other->intAttribute1;
         removeBag.insert(other);
+		playDmg();
         break;
     case ObjectTypeFriendly:
         game.pointsTxt->intAttribute1 += other->intAttribute1;

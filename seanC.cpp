@@ -101,3 +101,12 @@ void handleMenuMouseMovement(const XEvent& event)
 #endif
 }
 
+void elapsedTime()
+{
+	clock_t current = clock();
+	int elapsedSec = (int)(current - game.start) * 1000.0/ CLOCKS_PER_SEC;
+	elapsedSec = elapsedSec / 1000;
+	Object* obj = game.objects[9];
+	obj->doubleAttribute1 = elapsedSec;
+}
+

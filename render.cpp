@@ -435,6 +435,31 @@ void initScenePlay()
     pointsValue->name = "0";
     game.objects.push_back(pointsValue);
     game.pointsTxt = pointsValue;
+	
+	Object* timeLabel = new Object();
+    timeLabel->scene = GameSceneHUD;
+    timeLabel->objectType = ObjectTypeText;
+    timeLabel->style = plain16;
+    timeLabel->color = Color(0, 0, 225);
+    timeLabel->intAttribute1 = 0;
+    timeLabel->pos.y = game.yres - 20;
+    timeLabel->pos.x = game.xres - 150;
+    timeLabel->name = "Time: ";
+    game.objects.push_back(timeLabel);
+
+    Object* timeValue = new Object();
+    timeValue->scene = GameSceneHUD;
+    timeValue->objectType = ObjectTypeText;
+    timeValue->style = plain16;
+    timeValue->color = Color(0, 0, 255);
+    timeValue->doubleAttribute1 = 0.0;
+    timeValue->pos.y = game.yres - 20;
+    timeValue->pos.x = game.xres - 100;
+    timeValue->name = "0.0";
+    game.objects.push_back(timeValue);
+    game.timeTxt = timeValue;
+	
+	
 
 }
 

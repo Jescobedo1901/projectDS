@@ -42,6 +42,7 @@ cmap(),
 swa(),
 gwa(),
 glc(NULL),
+start(0),
 done(false),
 scene(GameSceneMenu), //initialize new game to menu
 isGamePaused(false),
@@ -102,6 +103,7 @@ void handleClickMenuItems(const XEvent& event)
                     //then this button was pressed. Change state    
                     if (obj->name == "Play") {
                         game.scene = GameScenePlay | GameSceneHUD;
+						game.start = clock();
                     } else if (obj->name == "Help") {
                         game.scene = GameSceneHelp;
                     } else if (obj->name == "Credits") {
@@ -139,5 +141,14 @@ void updateGameStats() {
     std::stringstream ss; ss << game.healthTxt->intAttribute1;
     game.healthTxt->name = ss.str();
     ss.str(""); ss << game.pointsTxt->intAttribute1;
-    game.pointsTxt->name = ss.str();
+    game.pointsTxt->name = ss.str();ss.str("");
+	ss << fmod((game.timeTxt->doubleAttribute1),60);
+	std::stringstream min;
+	if((game.timeTxt->doubleAttribute1 / 60) >= 1){
+		min << (int)(game.timeTxt->doubleAttribute1 / 60);
+		//printf("%d\n", (int)(game.timeTxt->doubleAttribute1 / 60));
+		game.timeTxt->name = (min.str() + " m " + ss.str() + " s");
+	}else{
+		game.timeTxt->name = (ss.str() + " s");
+	}
 }
