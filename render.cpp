@@ -298,11 +298,12 @@ void initSceneMenu()
     menuBg->dim.y = 500;
     game.objects.push_back(menuBg);
 
-    const char* buttons[4] = {
+    const char* buttons[5] = {
         "Play",
         "Help",
         "Credits",
-        "Exit"
+        "Exit",
+		"Mute"
     };
 
     for (int i = 0; i < 4; ++i) {
@@ -350,7 +351,72 @@ void initSceneMenu()
     mapResource(logo, "images/logo");
 	//game.logo = logo;
     game.objects.push_back(logo);
+	
+	Object* highScoreText = new Object();
+    highScoreText->scene = GameSceneMenu;
+    highScoreText->name = "High Score: ";
+    highScoreText->objectType = ObjectTypeText;
+    highScoreText->style = plain16;
+    highScoreText->color = Color(210, 210, 210);
+    highScoreText->pos.y = 70;
+    highScoreText->pos.x = 260;
+    game.objects.push_back(highScoreText);
+	
+	Object* highScoreValue = new Object();
+    highScoreValue->scene = GameSceneMenu;
+    highScoreValue->objectType = ObjectTypeText;
+    highScoreValue->style = plain16;
+    highScoreValue->color = Color(210, 210, 210);
+    highScoreValue->intAttribute1 = 0;
+    highScoreValue->pos.y = 70;
+    highScoreValue->pos.x = 450;
+    highScoreValue->name = "0";
+    game.objects.push_back(highScoreValue);
+    game.highScoreTxt = highScoreValue;
+	
+	Object* soundBg = new Object();
+    soundBg->scene = GameSceneMenu;
+    soundBg->objectType = ObjectTypeRectangle;
+    soundBg->color = Color(75, 75, 75, 128);
+    soundBg->pos.y = 5;
+    soundBg->pos.x = 200;
+    soundBg->dim.x = 400;
+    soundBg->dim.y = 40;
+    game.objects.push_back(soundBg);
 
+	Object* soundText = new Object();
+    soundText->scene = GameSceneMenu;
+    soundText->name = "Sound Option:";
+    soundText->objectType = ObjectTypeText;
+    soundText->style = plain16;
+    soundText->color = Color(210, 210, 210);
+    soundText->pos.y = 10;
+    soundText->pos.x = 260;
+    game.objects.push_back(soundText);
+	
+	Object* btnBg = new Object();
+    btnBg->scene = GameSceneMenu;
+    //Used to identify this box in the mouse click
+    //handling logic
+    btnBg->name = buttons[4];
+    btnBg->objectType = ObjectTypeRectangle;
+    btnBg->color = Color(0, 0, 0, 32);
+	btnBg->intAttribute1 = 0;
+    btnBg->pos.y = 8;
+    btnBg->pos.x = 441;
+    btnBg->dim.x = 65;
+    btnBg->dim.y = 34;
+    game.objects.push_back(btnBg);
+	
+	Object* muteText = new Object();
+    muteText->scene = GameSceneMenu;
+    muteText->name = buttons[4];
+    muteText->objectType = ObjectTypeText;
+    muteText->style = plain16;
+    muteText->color = Color(210, 210, 210);
+    muteText->pos.y = 10;
+    muteText->pos.x = 455;
+    game.objects.push_back(muteText);
 }
 
 void initScenePlay()

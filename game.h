@@ -28,6 +28,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <glob.h>
+#include <unistd.h>
 #include <ctime>
 
 //other
@@ -384,6 +385,8 @@ struct Game {
     Object* pointsTxt;
 	
 	Object* timeTxt;
+	
+	Object* highScoreTxt;
 
     ResourceMap resourceMap;
     
@@ -474,6 +477,7 @@ void audioLoop();
 void playPoint();
 void playDmg();
 void gameOver();
+void muteAudio();
 //Add audio handling functions here
 
 //Physics

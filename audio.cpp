@@ -12,7 +12,8 @@
 
 ALuint alBuffer[6]; //Number of Files
 ALuint alSource[6];
-bool played= false;
+bool played = false;
+bool muted = false;
 ALint state;
 
 void initAudio()
@@ -88,6 +89,42 @@ void initAudio()
 	
 }
 
+void muteAudio()
+{
+	if(!muted)
+	{
+		playClick();
+		//usleep(3000000);
+		alSourcef(alSource[0], AL_GAIN, 0.0f);
+
+ 		alSourcef(alSource[1], AL_GAIN, 0.0f);
+	
+		alSourcef(alSource[2], AL_GAIN, 0.0f);
+
+		alSourcef(alSource[3], AL_GAIN, 0.0f);
+
+		alSourcef(alSource[4], AL_GAIN, 0.0f);
+
+		alSourcef(alSource[5], AL_GAIN, 0.0f);
+		muted = true;
+	}else{
+		alSourcef(alSource[0], AL_GAIN, 1.0f);
+
+ 		alSourcef(alSource[1], AL_GAIN, 1.0f);
+	
+		alSourcef(alSource[2], AL_GAIN, 1.0f);
+
+		alSourcef(alSource[3], AL_GAIN, 1.0f);
+
+		alSourcef(alSource[4], AL_GAIN, 5.0f);
+
+		alSourcef(alSource[5], AL_GAIN, 1.0f);
+		muted = false;
+	}
+
+	
+}
+
 
 void uninitAudio()
 {
@@ -112,6 +149,7 @@ void uninitAudio()
     alcCloseDevice(Device);
 
 }
+
 
 
 void playHover()
@@ -199,6 +237,10 @@ void playDmg()
 }
 
 void gameOver()
+{
+}
+
+void muteAudio()
 {
 }
 

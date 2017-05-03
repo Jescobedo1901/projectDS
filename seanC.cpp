@@ -79,8 +79,12 @@ void handleMenuMouseMovement(const XEvent& event)
                     if (y >= obj->pos.y && y <= (obj->pos.y + obj->dim.y) &&
                             x >= obj->pos.x && x <= (obj->pos.x + obj->dim.x)) {
                         playHover();
+						if(obj->name != "Mute"){
                         obj->color = Color(51, 51, 51, 32);
                         game.lastButton = i;
+						}else{
+							game.lastButton = i;
+						}
                     }
                 }
             }
@@ -91,8 +95,12 @@ void handleMenuMouseMovement(const XEvent& event)
                 //obj->pos.x, obj->pos.y, game.lastButton);
                 if ((y <= obj->pos.y || y >= (obj->pos.y + obj->dim.y)) ||
                         (x <= obj->pos.x || x >= (obj->pos.x + obj->dim.x))) {
+					if(obj->name != "Mute"){
                     obj->color = Color(0, 0, 0, 32);
                     game.lastButton = 0;
+					}else{
+						game.lastButton = 0;
+					}
                 }
             }
         }

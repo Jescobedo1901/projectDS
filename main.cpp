@@ -110,7 +110,18 @@ void handleClickMenuItems(const XEvent& event)
                         game.scene = GameSceneCredits;
                     } else if (obj->name == "Exit") {
                         game.done = true;
-                    }
+                    } else if (obj->name == "Mute") {
+						if(obj->objectType == ObjectTypeRectangle){
+						if(obj->intAttribute1 == 0){
+							obj->color = Color(51,204,255);
+							obj->intAttribute1 = 1;
+						}else{
+							obj->color = Color(0,0,0,32);
+							obj->intAttribute1 = 0;
+					}
+						muteAudio();
+					}
+					}
                     playClick();
                     break;
                 }
@@ -153,4 +164,6 @@ void updateGameStats() {
 	}else{
 		game.timeTxt->name = (ss.str() + " s");
 	}
+	ss.str("");ss << game.highScoreTxt->intAttribute1;
+	game.highScoreTxt->name = ss.str();
 }
