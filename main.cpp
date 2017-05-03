@@ -136,6 +136,8 @@ void updateGameStats() {
     //Link the health bar to the health text int attribute
     if(game.healthTxt->intAttribute1 <= 0) {
         game.scene = GameSceneMenu | GameSceneLost;
+		audioLoop();
+		gameOver();
     }
     game.healthBar->dim.x = game.healthTxt->intAttribute1;
     std::stringstream ss; ss << game.healthTxt->intAttribute1;

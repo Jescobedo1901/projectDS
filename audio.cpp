@@ -10,8 +10,9 @@
 #include <AL/alut.h>
 #include <AL/alc.h>
 
-ALuint alBuffer[5]; //Number of Files
-ALuint alSource[5];
+ALuint alBuffer[6]; //Number of Files
+ALuint alSource[6];
+bool played= false;
 ALint state;
 
 void initAudio()
@@ -34,14 +35,16 @@ void initAudio()
 	alBuffer[2] = alutCreateBufferFromFile("./sound/point.wav"); //point collection
    	alBuffer[3] = alutCreateBufferFromFile("./sound/loop.wav");//main loop
 	alBuffer[4] = alutCreateBufferFromFile("./sound/dmg.wav");//Dmg
+	alBuffer[5] = alutCreateBufferFromFile("./sound/gameover.wav");//Game over
 
 	
-  	alGenSources(5, alSource);
+  	alGenSources(6, alSource);
     alSourcei(alSource[0], AL_BUFFER, alBuffer[0]);
   	alSourcei(alSource[1], AL_BUFFER, alBuffer[1]);
 	alSourcei(alSource[2], AL_BUFFER, alBuffer[2]);
   	alSourcei(alSource[3], AL_BUFFER, alBuffer[3]);
 	alSourcei(alSource[4], AL_BUFFER, alBuffer[4]);
+	alSourcei(alSource[5], AL_BUFFER, alBuffer[5]);
 //
   	alSourcef(alSource[0], AL_GAIN, 1.0f);
  	alSourcef(alSource[0], AL_PITCH, 1.0f);
@@ -76,6 +79,13 @@ void initAudio()
         printf("ERROR: settings\n");
     }
 	
+	alSourcef(alSource[5], AL_GAIN, 1.0f);
+ 	alSourcef(alSource[5], AL_PITCH, 1.0f);
+  	alSourcef(alSource[5], AL_LOOPING, AL_FALSE);
+    if (alGetError() != AL_NO_ERROR) {
+        printf("ERROR: settings\n");
+    }
+	
 }
 
 
@@ -86,12 +96,14 @@ void uninitAudio()
 	alDeleteSources(1, &alSource[2]);
     alDeleteSources(1, &alSource[3]);
 	alDeleteSources(1, &alSource[4]);
+	alDeleteSources(1, &alSource[5]);
 	
     alDeleteBuffers(1, &alBuffer[0]);
     alDeleteBuffers(1, &alBuffer[1]);
     alDeleteBuffers(1, &alBuffer[2]);
     alDeleteBuffers(1, &alBuffer[3]);
 	alDeleteBuffers(1, &alBuffer[4]);
+	alDeleteBuffers(1, &alBuffer[5]);
 	
     ALCcontext *Context = alcGetCurrentContext();
     ALCdevice *Device = alcGetContextsDevice(Context);
@@ -128,11 +140,20 @@ void playDmg()
 	alSourcePlay(alSource[4]);
 }
 
+void gameOver()
+{
+	alGetSourcei(alSource[5], AL_SOURCE_STATE, &state);
+	if(played == false){
+		alSourcePlay(alSource[5]);
+		played = true;
+	}
+}
+
 void audioLoop()
 {
 	//printf("audio\n");
 
-	if(game.scene == 2){
+	if(game.scene == (GameSceneMenu | GameSceneLost)){
 		alGetSourcei(alSource[3], AL_SOURCE_STATE, &state);
 		if(state == AL_PLAYING)
 			alSourceStop(alSource[3]);
@@ -174,6 +195,10 @@ void playPoint()
 }
 
 void playDmg()
+{
+}
+
+void gameOver()
 {
 }
 

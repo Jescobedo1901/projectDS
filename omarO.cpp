@@ -8,30 +8,30 @@ void handlePlayerMovement(const XEvent& event)
 {
     if (event.type == KeyPress) {
         int key = XLookupKeysym(const_cast<XKeyEvent*> (&event.xkey), 0);
-        if (key == XK_Up) {
+        if (key == XK_Up || key == XK_w) {
             game.playerMovementDirectionMask |= DirUp;
         }
-        if (key == XK_Down) {
+        if (key == XK_Down || key == XK_s) {
             game.playerMovementDirectionMask |= DirDown;
         }
-        if (key == XK_Left) {
+        if (key == XK_Left || key == XK_a) {
             game.playerMovementDirectionMask |= DirLeft;
         }
-        if (key == XK_Right) {
+        if (key == XK_Right || key == XK_d) {
             game.playerMovementDirectionMask |= DirRight;
         }
     } else if (event.type == KeyRelease) {
         int key = XLookupKeysym(const_cast<XKeyEvent*> (&event.xkey), 0);
-        if (key == XK_Up) {
+        if (key == XK_Up || key == XK_w) {
             game.playerMovementDirectionMask &= ~DirUp;
         }
-        if (key == XK_Down) {
+        if (key == XK_Down || key == XK_s) {
             game.playerMovementDirectionMask &= ~DirDown;
         }
-        if (key == XK_Left) {
+        if (key == XK_Left || key == XK_a) {
             game.playerMovementDirectionMask &= ~DirLeft;
         }
-        if (key == XK_Right) {
+        if (key == XK_Right || key == XK_d) {
             game.playerMovementDirectionMask &= ~DirRight;
         }
     }

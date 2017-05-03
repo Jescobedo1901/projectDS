@@ -249,7 +249,8 @@ void initResources()
     addRes("images/coral1", "./images/coral1.ppm");
     addRes("images/coral2", "./images/coral2.ppm");
     addRes("images/coral3", "./images/coral3.ppm");
-    addRes("images/lost", "./images/lost.jpeg", 150);
+    addRes("images/lost", "./images/lost.jpg", 150);
+	addRes("images/logo", "./images/logo.jpg", 75);
 }
 
 void initScenes()
@@ -265,13 +266,15 @@ void initScenes()
 
 void initSceneMenu()
 {
+	
+	
     Object* lostTxt = new Object();
     lostTxt->scene = GameSceneLost;
     lostTxt->objectType = ObjectTypeTexture;
-    lostTxt->pos.x = 50;
-    lostTxt->pos.y = -100;
-    lostTxt->dim.x = 800;
-    lostTxt->dim.y = 800;
+    lostTxt->pos.x = 100;
+    lostTxt->pos.y = 200;
+    lostTxt->dim.x = 600;
+    lostTxt->dim.y = 200;
     mapResource(lostTxt, "images/lost");
     game.objects.push_back(lostTxt);
 
@@ -337,6 +340,16 @@ void initSceneMenu()
         game.objects.push_back(btnText);
 
     }
+	Object* logo = new Object();
+    logo->scene = GameSceneMenu;
+    logo->objectType = ObjectTypeTexture;
+    logo->pos.x = 100;
+    logo->pos.y = game.yres-120;
+    logo->dim.x = 600;
+    logo->dim.y = 150;
+    mapResource(logo, "images/logo");
+	//game.logo = logo;
+    game.objects.push_back(logo);
 
 }
 

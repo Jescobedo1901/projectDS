@@ -473,6 +473,7 @@ void playClick();
 void audioLoop();
 void playPoint();
 void playDmg();
+void gameOver();
 //Add audio handling functions here
 
 //Physics
