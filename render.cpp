@@ -249,7 +249,7 @@ void initResources()
     addRes("images/coral1", "./images/coral1.ppm");
     addRes("images/coral2", "./images/coral2.ppm");
     addRes("images/coral3", "./images/coral3.ppm");
-    addRes("images/lost", "./images/lost.jpeg", 150);
+    addRes("images/lost", "./images/lost.jpg", 150);
     addRes("images/logo", "./images/logo.jpg", 75);
 }
 

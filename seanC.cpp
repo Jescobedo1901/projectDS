@@ -70,7 +70,7 @@ void handleMenuMouseMovement(const XEvent& event)
         int x = event.xbutton.x;
         int y = 600 - event.xbutton.y;
 
-        if (game.scene == 2 && game.lastButton == 0) {
+        if (game.scene & GameSceneMenu  && !(game.scene & GameSceneLogin) && game.lastButton == 0) {
             for (int i = 0, l = game.objects.size(); i < l; ++i) {
                 Object* obj = game.objects[i];
                 if (obj->scene == GameSceneMenu && !obj->name.empty()) {
