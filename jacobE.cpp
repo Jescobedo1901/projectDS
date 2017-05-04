@@ -54,7 +54,7 @@ void spawnEnemy()
         enemy2->vel.x = -(rndPos * 3 + 3);
         enemy2->dim.x = rndDim;
         enemy2->dim.y = rndDim;
-        enemy2->offset = Position(30, 30, 0);
+        enemy2->offset = enemy2->dim/2.0f;
         enemy2->avgRadius = dimToAvgRadius(enemy2->dim);
         enemy2->mass = avgRadiusTOEstMass(enemy2->avgRadius);
         enemy2->intAttribute1 = 20; //hard coded for now
@@ -73,7 +73,7 @@ void spawnEnemy()
         enemy1->vel.x = -(rndPos * 3 + 3);
         enemy1->dim.x = rndDim;
         enemy1->dim.y = rndDim;
-        enemy1->offset = Position(30, 30, 0);
+        enemy1->offset = enemy1->dim/2.0f;
         enemy1->avgRadius = dimToAvgRadius(enemy1->dim);
         enemy1->mass = avgRadiusTOEstMass(enemy1->avgRadius);
         enemy1->intAttribute1 = 10; //hard coded for now
