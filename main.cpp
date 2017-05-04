@@ -117,6 +117,7 @@ void handleClickMenuItems(const XEvent& event)
                     if (obj->name == "Play") {
                         game.scene = GameScenePlay | GameSceneHUD;
                         game.start = clock();
+						game.isGamePaused = false;
                     } else if (obj->name == "Help") {
                         game.scene = GameSceneHelp;
                     } else if (obj->name == "Credits") {
