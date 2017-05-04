@@ -122,20 +122,16 @@ void elapsedTime()
 
 void handleWindowResize(const XEvent& event)
 {
-	//XWindowAttributes attribs;
-	if(event.type == Expose){
-		//XConfigureWindow(game.display, game.win, change_values, &values); 
-	
-		printf("Entering");
-			//XSendEvent(event.xexpose.display,
-			//		   event.xexpose.window,
-			//		   True,
-			//		   ExposureMask,
-			//		   (XEvent *)&event);
-			//game.xres=event.xexpose.width;
-			//game.yres=event.xexpose.height;
-		
-					   
-	}
+    //XWindowAttributes attribs;
+    if(event.type == ConfigureNotify) {
+        if (event.xconfigure.width != game.xres || event.xconfigure.height != game.yres) {
+            game.xres = event.xconfigure.width;
+            game.yres = event.xconfigure.height;        
+            glViewport(0, 0, game.xres, game.yres);
+            glMatrixMode(GL_PROJECTION); glLoadIdentity();
+            glMatrixMode(GL_MODELVIEW); glLoadIdentity();
+            glOrtho(0, game.xres, 0, game.yres, -1, 1);    
+        }
+    }
 }
 

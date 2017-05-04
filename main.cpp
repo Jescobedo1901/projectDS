@@ -77,7 +77,7 @@ void handleEvents()
     XEvent event;
     while (XPending(game.display) > 0) {
         XNextEvent(game.display, &event);
-		handleWindowResize(event);
+        handleWindowResize(event);
         handlePlayerMovement(event);
         handleMenuMouseMovement(event);
         handlePlayerClickExit(event);
