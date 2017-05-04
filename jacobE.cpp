@@ -39,7 +39,7 @@ void spawnEnemy()
     //double rnd = (double) rand() / (double) RAND_MAX;
     float rndPos = (float) rand() / (float) RAND_MAX;
     float rndNum = (float) rand() / (float) RAND_MAX;
-	int rndDim = (int)(rand() % 100) + 60;
+    int rndDim = (int)(rand() % 60) + 30;
 
     if (rndNum < .2) {
         Object* enemy2 = new Object();
