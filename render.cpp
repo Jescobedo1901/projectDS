@@ -209,7 +209,7 @@ void addRes(std::string name, std::string path, int tolerance = 0, float optFps 
     if(path.find_first_of("*") == std::string::npos) {
         game.resourceMap[name] = new TextureResource(path, tolerance);
     } else {
-        game.resourceMap[name] = new FlipBook(path, tolerance, optFps);
+        game.resourceMap[name] = new FlipBook(path, optFps, tolerance);
     }
 }
 
@@ -243,7 +243,7 @@ void initResources()
     addRes("images/player", "./images/bigfoot.ppm");
     addRes("images/enemy1", "./images/ojFish.jpg", 75);
     addRes("images/enemy2", "./images/anglerFish.jpg", 10);
-    addRes("images/friendly2", "./images/goldCoin*.png", 50, 2);
+    addRes("images/friendly2", "./images/goldCoin*.png", 50, 10);
     addRes("images/friendly1", "./images/Cheeseburger.jpg", 10);
     addRes("images/rock1", "./images/rock1.ppm");
     addRes("images/coral1", "./images/coral1.ppm");
