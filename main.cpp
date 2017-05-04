@@ -49,8 +49,8 @@ isGamePaused(false),
 lastButton(0),
 mapBoundsIteration(0),
 playerMovementDirectionMask(0),
-xres(800),
-yres(600),
+xres(1600),
+yres(900),
 camera(),
 cameraXMin(),
 objects(),
@@ -77,6 +77,7 @@ void handleEvents()
     XEvent event;
     while (XPending(game.display) > 0) {
         XNextEvent(game.display, &event);
+		handleWindowResize(event);
         handlePlayerMovement(event);
         handleMenuMouseMovement(event);
         handlePlayerClickExit(event);
@@ -104,7 +105,7 @@ void handleClickMenuItems(const XEvent& event)
 {
     if (event.type == ButtonPress) {
         int x = event.xbutton.x;
-        int y = 600 - event.xbutton.y;
+        int y = game.yres - event.xbutton.y;
         for (int i = 0, l = game.objects.size(); i < l; ++i) {
             Object* obj = game.objects[i];
             //If object is in menu scene and has a name

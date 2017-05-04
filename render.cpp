@@ -57,7 +57,7 @@ void initX11()
     game.swa.colormap = game.cmap;
     game.swa.event_mask =
             ExposureMask | KeyPressMask | KeyReleaseMask |
-            PointerMotionMask | MotionNotify | ButtonPress |
+            PointerMotionMask | MotionNotify | ButtonPress | ExposureMask | 
             ButtonRelease | StructureNotifyMask | SubstructureNotifyMask;
     game.win = XCreateWindow(
             game.display,
@@ -273,8 +273,8 @@ void initSceneMenu()
     lostTxt->objectType = ObjectTypeTexture;
     lostTxt->pos.x = 0;
     lostTxt->pos.y = -100;
-    lostTxt->dim.x = 800;
-    lostTxt->dim.y = 800;
+    lostTxt->dim.x = 1600;
+    lostTxt->dim.y = 900;
     mapResource(lostTxt, "images/lost");
     game.objects.push_back(lostTxt);
 
@@ -291,10 +291,10 @@ void initSceneMenu()
     Object* logo = new Object();
     logo->scene = GameSceneMenu;
     logo->objectType = ObjectTypeTexture;
-    logo->pos.x = 100;
-    logo->pos.y = game.yres-120;
-    logo->dim.x = 600;
-    logo->dim.y = 150;
+    logo->pos.x = (game.xres * .25);
+    logo->pos.y = (game.yres * .70);
+    logo->dim.x = game.xres * .50;
+    logo->dim.y = game.yres * .2;
     mapResource(logo, "images/logo");
 	//game.logo = logo;
     game.objects.push_back(logo);
@@ -303,8 +303,8 @@ void initSceneMenu()
     menuBg->scene = GameSceneMenu;
     menuBg->objectType = ObjectTypeRectangle;
     menuBg->color = Color(75, 75, 75, 128);
-    menuBg->pos.y = 75;
-    menuBg->pos.x = 25;
+    menuBg->pos.y = game.yres * .25;
+    menuBg->pos.x = game.xres * .03;
     menuBg->dim.x = 350;
     menuBg->dim.y = 450;
     game.objects.push_back(menuBg);
@@ -325,8 +325,8 @@ void initSceneMenu()
         btnBg->name = buttons[3 - i];
         btnBg->objectType = ObjectTypeRectangle;
         btnBg->color = Color(0, 0, 0, 32);
-        btnBg->pos.y = 100 + i * 100;
-        btnBg->pos.x = 50;
+        btnBg->pos.y = (game.yres * .29) + i * 100;
+        btnBg->pos.x = game.xres * .045;
         btnBg->dim.x = 300;
         btnBg->dim.y = 90;
         game.objects.push_back(btnBg);
@@ -337,8 +337,8 @@ void initSceneMenu()
         btnTextShadow->objectType = ObjectTypeText;
         btnTextShadow->style = plain40;
         btnTextShadow->color = Color(0, 0, 0);
-        btnTextShadow->pos.y = 124 + i * 100;
-        btnTextShadow->pos.x = 104;
+        btnTextShadow->pos.y = (game.yres * .315) + i * 100;
+        btnTextShadow->pos.x = game.xres * .1;
         game.objects.push_back(btnTextShadow);
 
         Object* btnText = new Object();
@@ -347,8 +347,8 @@ void initSceneMenu()
         btnText->objectType = ObjectTypeText;
         btnText->style = plain40;
         btnText->color = Color(210, 210, 210);
-        btnText->pos.y = 120 + i * 100;
-        btnText->pos.x = 100;
+        btnText->pos.y = (game.yres * .31) + i * 100;
+        btnText->pos.x = game.xres * .1;
         game.objects.push_back(btnText);
 
     }
@@ -358,8 +358,8 @@ void initSceneMenu()
     soundBg->objectType = ObjectTypeRectangle;
     soundBg->color = Color(75, 75, 75, 128);
     soundBg->pos.y = 5;
-    soundBg->pos.x = 200;
-    soundBg->dim.x = 400;
+    soundBg->pos.x = game.xres * .03;
+    soundBg->dim.x = 350;
     soundBg->dim.y = 40;
     game.objects.push_back(soundBg);
 
@@ -370,7 +370,7 @@ void initSceneMenu()
     soundText->style = plain16;
     soundText->color = Color(210, 210, 210);
     soundText->pos.y = 10;
-    soundText->pos.x = 260;
+    soundText->pos.x = game.xres * .05;
     game.objects.push_back(soundText);
 
     Object* btnBg = new Object();
@@ -382,7 +382,7 @@ void initSceneMenu()
     btnBg->color = Color(0, 0, 0, 32);
     btnBg->intAttribute1 = 0;
     btnBg->pos.y = 8;
-    btnBg->pos.x = 441;
+    btnBg->pos.x = game.xres * .15;
     btnBg->dim.x = 65;
     btnBg->dim.y = 34;
     game.objects.push_back(btnBg);
@@ -394,15 +394,15 @@ void initSceneMenu()
     muteText->style = plain16;
     muteText->color = Color(210, 210, 210);
     muteText->pos.y = 10;
-    muteText->pos.x = 455;
+    muteText->pos.x = game.xres * .155;
     game.objects.push_back(muteText);
 
     Object* menuBg2 = new Object();
     menuBg2->scene = GameSceneMenu;
     menuBg2->objectType = ObjectTypeRectangle;
     menuBg2->color = Color(75, 75, 75, 128);
-    menuBg2->pos.y = 275;
-    menuBg2->pos.x = game.xres-375;
+    menuBg2->pos.y = game.yres * .35;
+    menuBg2->pos.x = game.xres - (game.xres * .25);
     menuBg2->dim.x = 350;
     menuBg2->dim.y = 250;
     game.objects.push_back(menuBg2);
@@ -420,8 +420,8 @@ void initSceneMenu()
         leftButts->name = buttonsLeft[i];
         leftButts->objectType = ObjectTypeRectangle;
         leftButts->color = Color(0, 0, 0, 32);
-        leftButts->pos.y = 300 + i * 100;
-        leftButts->pos.x = game.xres-350;
+        leftButts->pos.y = game.yres * .38 + i * 100;
+        leftButts->pos.x = game.xres * .765;
         leftButts->dim.x = 300;
         leftButts->dim.y = 90;
         game.objects.push_back(leftButts);
@@ -432,8 +432,8 @@ void initSceneMenu()
         leftButtsShadow->objectType = ObjectTypeText;
         leftButtsShadow->style = plain40;
         leftButtsShadow->color = Color(0, 0, 0);
-        leftButtsShadow->pos.y = 324 + i * 100;
-        leftButtsShadow->pos.x = game.xres-296;
+        leftButtsShadow->pos.y = game.yres * .4 + i * 100;
+        leftButtsShadow->pos.x = game.xres * .79;
         game.objects.push_back(leftButtsShadow);
 
         Object* leftButtsText = new Object();
@@ -442,8 +442,8 @@ void initSceneMenu()
         leftButtsText->objectType = ObjectTypeText;
         leftButtsText->style = plain40;
         leftButtsText->color = Color(210, 210, 210);
-        leftButtsText->pos.y = 320 + i * 100;
-        leftButtsText->pos.x = game.xres-300;
+        leftButtsText->pos.y = game.yres * .395 + i * 100;
+        leftButtsText->pos.x = game.xres * .793;
         game.objects.push_back(leftButtsText);
     }
 
@@ -1033,17 +1033,17 @@ void renderText(Object* obj)
 
 float getSkyUpperBound(int x)
 {
-    return 600;
+    return game.yres;
 }
 
 float getSkyLowerBound(int x)
 {
-    return 450;
+    return (.75 * game.yres);
 }
 
 float getOceanUpperBound(int x)
 {
-    return 500 + 10 * std::sin((x + game.mapBoundsIteration * 0.25) / 25.0);
+    return (.8 * game.yres) + 10 * std::sin((x + game.mapBoundsIteration * 0.25) / 25.0);
 }
 
 float getOceanFloorUpperBound(int x)

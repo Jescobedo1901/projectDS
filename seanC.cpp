@@ -3,6 +3,8 @@
 //DeepSea Survival Game
 
 #include "game.h"
+#define CWWidth (1<<2)
+#define CWHeight (1<<3)
 
 void playHover();
 
@@ -68,7 +70,7 @@ void handleMenuMouseMovement(const XEvent& event)
 #ifndef DISABLE_AUDIO
     if (event.type == MotionNotify) {
         int x = event.xbutton.x;
-        int y = 600 - event.xbutton.y;
+        int y = game.yres - event.xbutton.y;
 
         if (game.scene & GameSceneMenu  && !(game.scene & GameSceneLogin) && game.lastButton == 0) {
             for (int i = 0, l = game.objects.size(); i < l; ++i) {
@@ -116,5 +118,24 @@ void elapsedTime()
 	elapsedSec = elapsedSec / 1000;
 	Object* obj = game.objects[9];
 	obj->doubleAttribute1 = elapsedSec;
+}
+
+void handleWindowResize(const XEvent& event)
+{
+	//XWindowAttributes attribs;
+	if(event.type == Expose){
+		//XConfigureWindow(game.display, game.win, change_values, &values); 
+	
+		printf("Entering");
+			//XSendEvent(event.xexpose.display,
+			//		   event.xexpose.window,
+			//		   True,
+			//		   ExposureMask,
+			//		   (XEvent *)&event);
+			//game.xres=event.xexpose.width;
+			//game.yres=event.xexpose.height;
+		
+					   
+	}
 }
 

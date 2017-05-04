@@ -476,6 +476,7 @@ void renderTexture(Object*);
 void renderText(Object*);
 void generateFloorObjects(int x);
 
+
 /**
  * This function maps a resource to an object
  * @param obj the object to map the resource to
@@ -503,7 +504,7 @@ void handleClickMenuItems(const XEvent& event);
 void handleClickUpgradeItems(const XEvent& event);
 void handleESC(const XEvent& event);
 void handleLoginInput(const XEvent& event);
-
+void handleWindowResize(const XEvent& event);
 
 //Audio
 void playHover();
