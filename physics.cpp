@@ -196,6 +196,7 @@ void stepPhysics(float stepDuration)
                 case ObjectTypeEnemy:
                 case ObjectTypeFriendly:
                 case ObjectTypeNeutral: 
+                    applyNonPlayerMotion(obj, stepDuration);
                     break; //Just break, don't apply
             default:
                 applyGravity(obj);

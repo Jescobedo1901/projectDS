@@ -390,3 +390,25 @@ int updateHighScores(std::string username, int latestHigh)
 
     return 0;
 }
+
+
+void applyNonPlayerMotion(Object* obj, float stepDuration)
+{
+    if(obj->objectType == ObjectTypeEnemy) {
+        if(obj->doubleAttribute1 == 0) {
+            //If double attribute is not set, see the motion pattern here
+            obj->doubleAttribute1 = (float)rand() / (float)RAND_MAX;
+        }
+
+        float ymin = getOceanFloorUpperBound(obj->pos.x);
+        float ymax = getOceanUpperBound(obj->pos.x);
+
+        float time = obj->pos.x;
+        float phase = 0.0f;
+        float freq = 0.025f * stepDuration *  obj->doubleAttribute1;
+        float amplitude = ((ymax-ymin) / 2.0f);
+        float shift = ymax/2.0f;
+
+        obj->pos.y = amplitude * std::sin(2 * M_PI * freq * time + phase) + shift;
+    }
+}

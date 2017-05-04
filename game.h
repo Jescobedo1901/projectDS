@@ -531,6 +531,7 @@ void applySpawnRate(float stepDuration);
 void applyPlayerOceanFloorCollision(Object*);
 void spawnEnemy();
 void spawnFriendly();
+void applyNonPlayerMotion(Object*, float stepDuration);
 
 float dimToAvgRadius(Dimension dim);
 float avgRadiusTOEstMass(float);
