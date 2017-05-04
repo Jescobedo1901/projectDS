@@ -738,7 +738,7 @@ void initSceneScore()
     highScores->pos.x = padLeft;
     game.objects.push_back(highScores);
 
-    for (unsigned int i = 0; i < 10; ++i) {
+    for (unsigned int i = 0; i < 11; ++i) {
 
         Object* scoreRect = new Object();
         scoreRect->scene = GameSceneScore;
@@ -777,11 +777,25 @@ void initSceneScore()
         tsTotal->pos.x = padLeft + 300;
         game.objects.push_back(tsTotal);
 
-        std::vector<Object*> vecs;
-        vecs.push_back(tsName);
-        vecs.push_back(tsMax);
-        vecs.push_back(tsTotal);
-        game.scoreObjects.push_back(vecs);
+        if(i < 10) {
+            std::vector<Object*> vecs;
+            vecs.push_back(tsName);
+            vecs.push_back(tsMax);
+            vecs.push_back(tsTotal);
+            game.scoreObjects.push_back(vecs);
+        } else {
+            tsName->pos.x += 4;
+            tsMax->pos.x += 4;
+            tsTotal->pos.x += 4;
+            tsName->pos.y += 2;
+            tsMax->pos.y += 2;
+            tsTotal->pos.y += 2;
+            tsName->color = tsMax->color = tsTotal->color = Color(255, 255, 0);
+            tsName->style = tsMax->style = tsTotal->style = plain16;
+            tsName->name = "Name";
+            tsMax->name = "Max";
+            tsTotal->name = "Total";
+        }
     }
 
     Object* yourScoreBg = new Object();
