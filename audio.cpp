@@ -190,17 +190,23 @@ void gameOver()
 void audioLoop()
 {
 	//printf("audio\n");
-
+	if(game.isGamePaused == true){
+		alGetSourcei(alSource[3], AL_SOURCE_STATE, &state);
+		if(state == AL_PLAYING)
+			alSourceStop(alSource[3]);
+	}
 	if(game.scene == (GameSceneMenu | GameSceneLost)){
 		alGetSourcei(alSource[3], AL_SOURCE_STATE, &state);
 		if(state == AL_PLAYING)
 			alSourceStop(alSource[3]);
 	}
 	if(game.scene == (GameScenePlay | GameSceneHUD)){
+		if(game.isGamePaused == false){
 		//printf("audio\n");
-		alGetSourcei(alSource[3], AL_SOURCE_STATE, &state);
-		if(state != AL_PLAYING)
-			alSourcePlay(alSource[3]);
+			alGetSourcei(alSource[3], AL_SOURCE_STATE, &state);
+			if(state != AL_PLAYING)
+				alSourcePlay(alSource[3]);
+		}
 	}
 	
 	//alSourcePlay(alSource[3]);

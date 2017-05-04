@@ -271,10 +271,10 @@ void initSceneMenu()
     Object* lostTxt = new Object();
     lostTxt->scene = GameSceneLost;
     lostTxt->objectType = ObjectTypeTexture;
-    lostTxt->pos.x = 0;
-    lostTxt->pos.y = -100;
-    lostTxt->dim.x = 1600;
-    lostTxt->dim.y = 900;
+    lostTxt->pos.x = game.xres*.32;
+    lostTxt->pos.y = game.yres*.38;
+    lostTxt->dim.x = 600;
+    lostTxt->dim.y = 200;
     mapResource(lostTxt, "images/lost");
     game.objects.push_back(lostTxt);
 
@@ -714,7 +714,7 @@ void initSceneCredits()
 
 void initSceneScore()
 {
-    int bottomOffset = game.yres / 6.0;
+    int bottomOffset = game.yres / 4.0;
     int lineHeight= 40;
     int padLeft = game.xres / 4.0;
 
@@ -735,7 +735,7 @@ void initSceneScore()
     highScores->style = plain40;
     highScores->color = Color(0, 255, 255);
     highScores->pos.y = game.yres - 80;
-    highScores->pos.x = padLeft;
+    highScores->pos.x = game.xres * .40;
     game.objects.push_back(highScores);
 
     for (unsigned int i = 0; i < 11; ++i) {
@@ -802,7 +802,7 @@ void initSceneScore()
     yourScoreBg->scene = GameSceneScore;
     yourScoreBg->objectType = ObjectTypeRectangle;
     yourScoreBg->color = Color(0, 50, 0, 128);
-    yourScoreBg->pos.y = 40;
+    yourScoreBg->pos.y = game.yres*.15;
     yourScoreBg->pos.x = padLeft;
     yourScoreBg->dim.x = game.xres / 2.0;
     yourScoreBg->dim.y = 40;
@@ -815,7 +815,7 @@ void initSceneScore()
     yourScoreTxtLbl->name = "You:";
     yourScoreTxtLbl->style = plain17;
     yourScoreTxtLbl->color = Color(210, 210, 210);
-    yourScoreTxtLbl->pos.y = 45;
+    yourScoreTxtLbl->pos.y = game.yres*.16;
     yourScoreTxtLbl->pos.x = padLeft;
     game.objects.push_back(yourScoreTxtLbl);
 
@@ -825,7 +825,7 @@ void initSceneScore()
     yourScoreTxtVal->name = "5123";
     yourScoreTxtVal->style = plain17;
     yourScoreTxtVal->color = Color(210, 210, 210);
-    yourScoreTxtVal->pos.y = 45;
+    yourScoreTxtVal->pos.y = game.yres*.16;
     yourScoreTxtVal->pos.x = padLeft + 175;
     game.objects.push_back(yourScoreTxtVal);
     game.highScoreTxt = yourScoreTxtVal;
@@ -836,7 +836,7 @@ void initSceneScore()
     yourScoreTxtVal2->name = "123";
     yourScoreTxtVal2->style = plain17;
     yourScoreTxtVal2->color = Color(210, 210, 210);
-    yourScoreTxtVal2->pos.y = 45;
+    yourScoreTxtVal2->pos.y = game.yres*.16;
     yourScoreTxtVal2->pos.x = padLeft + 300;
     game.objects.push_back(yourScoreTxtVal2);
     game.totalScoreTxt = yourScoreTxtVal2;

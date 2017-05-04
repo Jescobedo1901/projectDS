@@ -39,6 +39,7 @@ void spawnEnemy()
     //double rnd = (double) rand() / (double) RAND_MAX;
     float rndPos = (float) rand() / (float) RAND_MAX;
     float rndNum = (float) rand() / (float) RAND_MAX;
+	int rndDim = (int)(rand() % 100) + 60;
 
     if (rndNum < .2) {
         Object* enemy2 = new Object();
@@ -51,8 +52,8 @@ void spawnEnemy()
         //float rnd = (float) rand() / (float) RAND_MAX;
         enemy2->pos.y = rand() % (max - min) + min;
         enemy2->vel.x = -(rndPos * 3 + 3);
-        enemy2->dim.x = 60;
-        enemy2->dim.y = 60;
+        enemy2->dim.x = rndDim;
+        enemy2->dim.y = rndDim;
         enemy2->offset = Position(30, 30, 0);
         enemy2->avgRadius = dimToAvgRadius(enemy2->dim);
         enemy2->mass = avgRadiusTOEstMass(enemy2->avgRadius);
@@ -70,8 +71,8 @@ void spawnEnemy()
         float rnd = (float) rand() / (float) RAND_MAX;
         enemy1->pos.y = rand() % (max - min) + min;
         enemy1->vel.x = -(rndPos * 3 + 3);
-        enemy1->dim.x = 60;
-        enemy1->dim.y = 60;
+        enemy1->dim.x = rndDim;
+        enemy1->dim.y = rndDim;
         enemy1->offset = Position(30, 30, 0);
         enemy1->avgRadius = dimToAvgRadius(enemy1->dim);
         enemy1->mass = avgRadiusTOEstMass(enemy1->avgRadius);
@@ -276,6 +277,7 @@ void handleESC(const XEvent& event)
             } else if (game.scene & GameScenePlay) {
                 game.scene = GameSceneMenu;
                 game.isGamePaused = true;
+				audioLoop();
             } else if (game.scene & GameSceneCredits) {
                 game.scene = GameSceneMenu;
             } else if (game.scene & GameSceneHelp) {
@@ -314,8 +316,8 @@ void initSceneUpgrades()
                 upgradesTitle->color = Color(255, 255, 255);
                 upgradesTitle->style = plain17;
             }
-        upgradesTitle->pos.y = 525;
-        upgradesTitle->pos.x = 275-i*250;
+        upgradesTitle->pos.y = 500 + (i * 100);
+        upgradesTitle->pos.x = game.xres*.45;
         game.objects.push_back(upgradesTitle);
     }
 
@@ -394,7 +396,7 @@ void handleClickUpgradeItems(const XEvent& event)
 {
     if (event.type == ButtonPress) {
     int x = event.xbutton.x;
-    int y = 600 - event.xbutton.y;
+    int y = game.yres - event.xbutton.y;
         for (int i = 0, l = game.objects.size(); i < l; ++i) {
             Object* obj = game.objects[i];
             //If object is in Upgrades Scene and has a name
