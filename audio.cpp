@@ -34,7 +34,7 @@ void initAudio()
 	alBuffer[0] = alutCreateBufferFromFile("./sound/hover.wav"); //button hover
 	alBuffer[1] = alutCreateBufferFromFile("./sound/click.wav"); //button click
 	alBuffer[2] = alutCreateBufferFromFile("./sound/point.wav"); //point collection
-   	alBuffer[3] = alutCreateBufferFromFile("./sound/loop.wav");//main loop
+   	alBuffer[3] = alutCreateBufferFromFile("./sound/woah.wav");//main loop
 	alBuffer[4] = alutCreateBufferFromFile("./sound/dmg.wav");//Dmg
 	alBuffer[5] = alutCreateBufferFromFile("./sound/gameover.wav");//Game over
 
@@ -67,7 +67,7 @@ void initAudio()
     if (alGetError() != AL_NO_ERROR) {
         printf("ERROR: settings\n");
     }
-	alSourcef(alSource[3], AL_GAIN, 1.0f);
+	alSourcef(alSource[3], AL_GAIN, 2.0f);
   	alSourcef(alSource[3], AL_PITCH, 1.0f);
   	alSourcef(alSource[3], AL_LOOPING, AL_TRUE);
     if (alGetError() != AL_NO_ERROR) {
