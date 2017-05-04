@@ -176,7 +176,6 @@ struct TextureResource : Resource {
     ~TextureResource();
     virtual GLuint getResourceId();
 protected:
-    Ppmimage *tex;
     GLuint texId;
     bool texTransUsingFirstPixel;
     int tolerance;

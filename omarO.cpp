@@ -83,31 +83,32 @@ Resource::~Resource()
 
 TextureResource::TextureResource(std::string texFile, int tol)
     : Resource(texFile),
-    tex(NULL), texId(), texTransUsingFirstPixel(true),
+    texId(), texTransUsingFirstPixel(true),
     tolerance(tol)
 {
     glEnable(GL_TEXTURE_2D);
     //If textureFile does not end with .ppm,
     //we must map it to the generated .ppm first
     std::string ext(".ppm");
+    Ppmimage* tex = NULL;
     if (texFile.size() > ext.size() &&
             texFile.compare(texFile.size() - ext.size(), ext.size(), ext)
             != 0) {
         std::string mappedFile = texFile + ext;
-        this->tex = ppm6GetImage(mappedFile.c_str());
+        tex = ppm6GetImage(mappedFile.c_str());
     } else {
-        this->tex = ppm6GetImage(texFile.c_str());
+        tex = ppm6GetImage(texFile.c_str());
     }
     glGenTextures(1, &this->texId);
-    int w = this->tex->width;
-    int h = this->tex->height;
+    int w = tex->width;
+    int h = tex->height;
     glBindTexture(GL_TEXTURE_2D, this->texId);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     //TRANSPARENCY
     unsigned char *texAlphaData = buildAlphaData(
-        this->tex,
+        tex,
         this->texTransUsingFirstPixel,
         this->tolerance
     );
@@ -124,7 +125,6 @@ TextureResource::TextureResource(std::string texFile, int tol)
 }
 
 TextureResource::~TextureResource() {
-    delete this->tex;
 }
 
 GLuint TextureResource::getResourceId() {

@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     gameLoop();
     //@TODO enable later, after changing all textures to alternate
     //formats to PPM
-    //uninitResources();
+    uninitResources();
     uninitAudio();
     uninitGL();
     uninitX11();

@@ -57,7 +57,7 @@ void initX11()
     game.swa.colormap = game.cmap;
     game.swa.event_mask =
             ExposureMask | KeyPressMask | KeyReleaseMask |
-            PointerMotionMask | MotionNotify | ButtonPress | ExposureMask | 
+            PointerMotionMask | MotionNotify | ButtonPress | ExposureMask |
             ButtonRelease | StructureNotifyMask | SubstructureNotifyMask;
     game.win = XCreateWindow(
             game.display,
@@ -190,10 +190,15 @@ void uninitResources() {
                         ) == 0) {
                     std::string removingFile = std::string("./images/") +
                             dir->d_name;
-                    remove(removingFile.c_str());
+                    if(remove(removingFile.c_str()) == -1) {
+                        perror("Error deleting temporary resource file");
+                    } else {
+                        printf("Resource: %s - cleaned up\n", removingFile.c_str());
+                    }
                 }
             }
         }
+        closedir(d);
     }
     for(ResourceMap::iterator it =
             game.resourceMap.begin(),
@@ -233,22 +238,25 @@ void initResources()
                     std::string command =
                             "convert \"./images/" + texFile + "\" \"" +
                             newFile + "\"";
-                    system(command.c_str());
+                    int res = system(command.c_str());
+                    if(WIFEXITED(res) && WEXITSTATUS(res) == 0) {
+                        printf("Resource: %s - generated\n", newFile.c_str());
+                    }
                 }
             }
         }
         closedir(d);
     }
 
-    addRes("images/player", "./images/bigfoot.ppm");
+    addRes("images/player", "./images/player.jpg", 50);
     addRes("images/enemy1", "./images/ojFish.jpg", 75);
     addRes("images/enemy2", "./images/anglerFish.jpg", 10);
     addRes("images/friendly2", "./images/goldCoin*.png", 50, 10);
     addRes("images/friendly1", "./images/Cheeseburger.jpg", 10);
-    addRes("images/rock1", "./images/rock1.ppm");
-    addRes("images/coral1", "./images/coral1.ppm");
-    addRes("images/coral2", "./images/coral2.ppm");
-    addRes("images/coral3", "./images/coral3.ppm");
+    addRes("images/rock1", "./images/rock1.jpg");
+    addRes("images/coral1", "./images/coral1.jpg");
+    addRes("images/coral2", "./images/coral2.jpg");
+    addRes("images/coral3", "./images/coral3.jpg");
     addRes("images/lost", "./images/lost.jpg", 150);
     addRes("images/logo", "./images/logo.jpg", 75);
 }
@@ -532,8 +540,8 @@ void initScenePlay()
     player->pos.x = game.xres/2 + 5;
     player->dim.x = -60; //
     player->dim.y = 40; //
-    player->offset.x = 30;
-    player->offset.y = 20;
+    player->offset.x = std::abs(player->dim.x)/2.0f;
+    player->offset.y = std::abs(player->dim.y)/2.0f;
     player->avgRadius = dimToAvgRadius(player->dim);
     player->mass = avgRadiusTOEstMass(player->avgRadius);
     mapResource(player, "images/player");
