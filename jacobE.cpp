@@ -394,7 +394,7 @@ void handleClickUpgradeItems(const XEvent& event)
 {
     if (event.type == ButtonPress) {
     int x = event.xbutton.x;
-    int y = 600 - event.xbutton.y;
+    int y = game.yres - event.xbutton.y;
         for (int i = 0, l = game.objects.size(); i < l; ++i) {
             Object* obj = game.objects[i];
             //If object is in Upgrades Scene and has a name
