@@ -205,11 +205,17 @@ void updateGameStats() {
         }
         game.objects.erase(game.objects.begin() + game.preservedObjects, game.objects.end());
         game.healthTxt->intAttribute1 = 100;
+        game.healthTxt->doubleAttribute1 = 100.0f;
         game.pointsTxt->intAttribute1 = 0;
+        game.upgrade1->intAttribute1 = 0;
+        game.upgrade2->intAttribute1 = 0;
         game.isGamePaused = true;
     }
     if(game.scene & GameScenePlay) {
-        game.healthBar->dim.x = game.healthTxt->intAttribute1;
+        game.healthBar->dim.x = (
+            game.healthTxt->intAttribute1 / 
+            game.healthTxt->doubleAttribute1
+        ) * 100.0f;
         std::stringstream ss; ss << game.healthTxt->intAttribute1;
         game.healthTxt->name = ss.str();
         ss.str(""); ss << game.pointsTxt->intAttribute1;

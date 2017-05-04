@@ -568,6 +568,7 @@ void initScenePlay()
     healthValue->style = plain16;
     healthValue->color = Color(255, 255, 255);
     healthValue->intAttribute1 = 100;
+    healthValue->doubleAttribute1 = 100;
     healthValue->pos.y = game.yres - 35;
     healthValue->pos.x = 70;
     healthValue->name = "100";

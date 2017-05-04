@@ -407,8 +407,9 @@ void handleClickUpgradeItems(const XEvent& event)
                     //then this button was pressed!
                     if (obj->name == "+ Health") {
                         game.upgrade2->intAttribute1++;
-                        game.healthTxt->intAttribute1 +=
-                                10 * game.upgrade2->intAttribute1;
+                        int increment = 10 * game.upgrade2->intAttribute1;
+                        game.healthTxt->intAttribute1 += increment;
+                        game.healthTxt->doubleAttribute1 += increment;
                     } else if (obj->name == "+ Speed") {
                         game.upgrade1->intAttribute1++;
                         game.thrustModifier = 100 * std::pow(1.05, game.upgrade1->intAttribute1);
