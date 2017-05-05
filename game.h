@@ -192,6 +192,7 @@ struct FlipBook : Resource {
     ~FlipBook();
     void step(float stepDuration);
     virtual GLuint getResourceId();
+    virtual void setFPS(float fps);
 protected:
     float duration;
     float fps;

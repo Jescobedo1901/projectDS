@@ -241,7 +241,7 @@ void initResources()
         closedir(d);
     }
 
-    addRes("images/player", "./images/player.jpg", 50);
+    addRes("images/player", "./images/player_*.jpg", 50, 5);
     addRes("images/enemy1", "./images/ojFish.jpg", 75);
     addRes("images/enemy2", "./images/anglerFish.jpg", 10);
     addRes("images/friendly2", "./images/goldCoin*.png", 50, 10);

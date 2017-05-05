@@ -183,6 +183,13 @@ GLuint FlipBook::getResourceId()
     return this->current->getResourceId();
 }
 
+void FlipBook::setFPS(float newFPS)
+{
+    this->duration = this->duration * this->fps / newFPS;
+    this->fps = newFPS;
+}
+
+
 /**
  * Lookup resources by mapped name to the actual resource name
  * @param obj
