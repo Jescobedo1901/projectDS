@@ -445,8 +445,8 @@ void initSceneUpgrades()
     game.objects.push_back(bonusBg);
 
     const char* buttonsUp[2] = {
-        "+ Speed",
-        "+ Health"
+        "+ (S)peed",
+        "+ (H)ealth"
     };
 
     for (int i = 0; i < 2; ++i) {
@@ -487,7 +487,7 @@ void initSceneUpgrades()
         upgradeType->style = plain40;
 
         upgradeType->pos.y = 320 + i * 100;
-        upgradeType->pos.x = 250;
+        upgradeType->pos.x = 260;
 
         game.objects.push_back(upgradeType);
 
@@ -574,7 +574,7 @@ void handleClickUpgradeItems(const XEvent& event)
                 if (y >= obj->  pos.y && y <= (obj->pos.y + obj->dim.y) &&
                         x >= obj->pos.x && x <= (obj->pos.x + obj->dim.x)) {
                     //then this button was pressed!
-                    if (obj->name == "+ Health") {
+                    if (obj->name == "+ (H)ealth") {
                         int avail = availablePoints();
                         int cost = upgradeCurrentCost(game.upgrade2->intAttribute1);
                         if(avail >= cost) {
@@ -586,7 +586,7 @@ void handleClickUpgradeItems(const XEvent& event)
                         } else {
                             playDmg();
                         }
-                    } else if (obj->name == "+ Speed") {
+                    } else if (obj->name == "+ (S)peed") {
                             int avail = availablePoints();
                             int cost = upgradeCurrentCost(game.upgrade1->intAttribute1);
                             if(avail >= cost) {
@@ -630,7 +630,7 @@ void handleMenuPress(const XEvent& event)
             if (key == XK_m || key == XK_M) {
                 for (int i = 0, l = game.objects.size(); i < l; i++) {
                     Object* obj = game.objects[i];
-                    if (obj->name == "Mute") {
+                    if (obj->name == "(M)ute") {
                         if(obj->objectType == ObjectTypeRectangle) {
                             if (obj->intAttribute1 == 0) {
                                 obj->color = Color(51,204,255);
@@ -676,7 +676,7 @@ void handleUpgradePress(const XEvent& event)
         for (int i = 0, l = game.objects.size(); i < l; ++i) {
             Object* obj = game.objects[i];
             if (obj->scene & GameSceneUpgrades) {
-                if (obj->name == "+ Health" && (key == XK_h || key == XK_H)) {
+                if (obj->name == "+ (H)ealth" && (key == XK_h || key == XK_H)) {
                     int avail = availablePoints();
                     int cost = upgradeCurrentCost(game.upgrade2->intAttribute1);
                     if (avail >= cost) {
@@ -690,7 +690,7 @@ void handleUpgradePress(const XEvent& event)
                         playDmg();
                     }
                     break;
-                } else if (obj->name == "+ Speed" && (key == XK_s || key == XK_S)) {
+                } else if (obj->name == "+ (S)peed" && (key == XK_s || key == XK_S)) {
                     int avail = availablePoints();
                     int cost = upgradeCurrentCost(
                             game.upgrade1->intAttribute1);
