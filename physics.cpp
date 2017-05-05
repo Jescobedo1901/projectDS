@@ -202,11 +202,15 @@ void stepPhysics(float stepDuration)
                     if(obj->name == "enemy3") {
                         applyGravity(obj);
                         break;
+                    } else if(obj->name == "ship" ||
+                            obj->name == "ship-wreck") {
+                        goto handleShip;
                     }
                 case ObjectTypeFriendly:
                 case ObjectTypeNeutral:
                     applyNonPlayerMotion(obj, stepDuration);
                     break; //Just break, don't apply
+            handleShip:
             default:
                 applyGravity(obj);
                 applyStokesApprox(obj);
@@ -223,6 +227,7 @@ void stepPhysics(float stepDuration)
             default:
                 break;
             }
+            applyRotationalHandling(obj, stepDuration);
             applyObjectBoundaryCollision(obj);
         }
         //Broad collision handling separately
@@ -349,19 +354,20 @@ void applyObjectCollisions(Object* obj)
     }
 }
 
-void applyObjectBoundaryCollision(Object* player)
+void applyObjectBoundaryCollision(Object* obj)
 {
-    switch(player->objectType) {
+    switch(obj->objectType) {
     case ObjectTypePlayer:
         //Only let player move left left from position game.xres/2
-        if(player->pos.x < game.cameraXMin) {
-            player->pos.x = game.cameraXMin;
-            player->vel.x = -player->vel.x;
+        if(obj->pos.x < game.cameraXMin) {
+            obj->pos.x = game.cameraXMin;
+            obj->vel.x = -obj->vel.x;
         }
     case ObjectTypeEnemy:
     case ObjectTypeFriendly:
-        if (player->pos.y < getOceanFloorUpperBound(player->pos.x) + player->avgRadius * PIXEL_TO_METER) {
-            player->pos.y = getOceanFloorUpperBound(player->pos.x) + player->avgRadius * PIXEL_TO_METER;
+        if (    obj->name != "treasure" &&
+                obj->pos.y < getOceanFloorUpperBound(obj->pos.x) + obj->avgRadius * PIXEL_TO_METER) {
+            obj->pos.y = getOceanFloorUpperBound(obj->pos.x) + obj->avgRadius * PIXEL_TO_METER;
         }
     default:
         break;

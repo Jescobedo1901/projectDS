@@ -254,9 +254,11 @@ void initResources()
     addRes("images/coral3", "./images/coral3.jpg");
     addRes("images/lost", "./images/lost.jpg", 150);
     addRes("images/logo", "./images/logo.jpg", 75);
-	addRes("images/treasure", "./images/treasure.jpg", 100);
-	addRes("images/ship", "./images/ship.jpg", 50);
-	
+    addRes("images/treasure", "./images/treasure.jpg", 100);
+    addRes("images/ship", "./images/ship.jpg", 50);
+    addRes("images/ship-wreck-1", "./images/ship-wreck-1.jpg", 25);
+    addRes("images/ship-wreck-2", "./images/ship-wreck-2.jpg", 25);
+
 }
 
 void initScenes()
@@ -963,7 +965,7 @@ void renderRectangle(Object* obj)
 void renderTexture(Object* obj)
 {
     float   offsetX = obj->offset.x,
-            offsetY = obj->offset.x,
+            offsetY = obj->offset.y,
             posX = obj->pos.x,
             posY = obj->pos.y,
             dimX = obj->dim.x,
@@ -986,21 +988,9 @@ void renderTexture(Object* obj)
     glBindTexture(GL_TEXTURE_2D, obj->resource->getResourceId());
 
 
-    if(obj->rotateByVelocity) {
+    if(obj->rotation) {
         glTranslatef(posX, posY, 0);
-        if(obj->vel.x > 0) {
-            if(obj->vel.y > 0) {
-                glRotatef(std::min(obj->vel.angleXY() * 180 / M_PI, 45.0), 0, 0, 1);
-            } else {
-                glRotatef(std::max(obj->vel.angleXY() * 180 / M_PI, -45.0), 0, 0, 1);
-            }
-        } else if(obj->vel.x < 0) {
-            if(obj->vel.y > 0) {
-                glRotatef(std::min((obj->vel.angleXY() + M_PI) * 180 / M_PI, -45.0), 0, 0, 1);
-            } else {
-                glRotatef(std::min((obj->vel.angleXY() + M_PI) * 180 / M_PI, 45.0), 0, 0, 1);
-            }
-        }
+        glRotatef(obj->rotation, 0, 0, 1);
         glTranslatef(-posX, -posY, 0);
     }
 
