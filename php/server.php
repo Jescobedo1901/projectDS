@@ -19,7 +19,7 @@ if(isset($_GET['username']) && isset($_GET['score'])) {
         echo "Failed saving score";
     }
 
-    $rowQuery = ' awk -v u="$user" \'END { print u "\\t" sum "\\t" max } BEGIN { max = -1 } { if ($1>max) max = $1 fi; sum += $1 }\'';
+    $rowQuery = ' awk -v u="$user" \'END { print u "\\t" sum "\\t" max } BEGIN { max = -1 } { if ($1>max) { max = $1 }; sum += $1 }\'';
     $rowQueryEsc = str_replace('$', '\$', str_replace('"', '\"', $rowQuery));
     $cdCmd = ' cd "'.$dir.'"';
     $userScoreQuery = ' cat ./'.$esc_usr.'/* | '.$rowQuery.' | sed \'s/^/'.$esc_usr.'\t/\'';
