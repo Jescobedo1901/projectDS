@@ -58,9 +58,29 @@ void spawnEnemy()
         enemy2->avgRadius = dimToAvgRadius(enemy2->dim);
         enemy2->mass = avgRadiusTOEstMass(enemy2->avgRadius);
         enemy2->intAttribute1 = 20; //hard coded for now
-	mapResource(enemy2, "images/enemy2");
+	    mapResource(enemy2, "images/enemy2");
         game.objects.push_back(enemy2);
-    } else {
+    } else if(rndNum >= .2 && rndNum < .3) {
+        Object* ship = new Object();
+        ship->scene = GameScenePlay;
+        ship->objectType = ObjectTypeEnemy;
+        ship->pos.x = game.player->pos.x + game.xres * 2;
+        // rand for [min,max] = rand() % (max - min) + min
+        //int max = getOceanUpperBound(ship->pos.x);
+        //int min = getOceanFloorUpperBound(ship->pos.x);
+        //float rnd = (float) rand() / (float) RAND_MAX;
+        ship->pos.y = getOceanUpperBound(game.player->pos.x);
+        ship->vel.x = 0;
+        ship->dim.x = 200;
+        ship->dim.y = 200;
+        ship->offset = ship->dim/2.0f;
+        ship->avgRadius = dimToAvgRadius(ship->dim);
+        ship->mass = avgRadiusTOEstMass(ship->avgRadius);
+        ship->intAttribute1 = 10;
+		ship->doubleAttribute1 = 1; //hard coded for now
+        mapResource(ship, "images/ship");
+        game.objects.push_back(ship);			
+	}else{
         Object* enemy1 = new Object();
         enemy1->scene = GameScenePlay;
         enemy1->objectType = ObjectTypeEnemy;
@@ -97,7 +117,7 @@ void spawnFriendly()
         int min = getOceanFloorUpperBound(friendly1->pos.x);
         //float rnd = (float) rand() / (float) RAND_MAX;
         friendly1->pos.y = rand() % (max - min) + min;
-        friendly1->vel.x = -(rndPos * 1.1+ 0.25);
+        friendly1->vel.x = -(rndPos * 2 + 0.25);
         friendly1->dim.x = 64;
         friendly1->dim.y = 64;
         friendly1->offset = Position(32, 32, 0);
@@ -107,7 +127,27 @@ void spawnFriendly()
         mapResource(friendly1, "images/friendly1");
         game.objects.push_back(friendly1);
     }
-    else {
+    else if(rndNum >= .01 && rndNum < .09) {
+		printf("spawned Treasure\n");
+        Object* treasure = new Object();
+        treasure->scene = GameScenePlay;
+        treasure->objectType = ObjectTypeFriendly;
+        treasure->pos.x = game.player->pos.x + game.xres * 2;
+        // rand for [min,max] = rand() % (max - min) + min
+        int max = getOceanUpperBound(treasure->pos.x);
+        int min = getOceanFloorUpperBound(treasure->pos.x);
+        //float rnd = (float) rand() / (float) RAND_MAX;
+        treasure->pos.y = getOceanFloorUpperBound(treasure->pos.x);
+        treasure->vel.x = 0;
+        treasure->dim.x = 100;
+        treasure->dim.y = 100;
+        treasure->offset = Position(32, 32, 0);
+        treasure->avgRadius = dimToAvgRadius(treasure->dim);
+        treasure->mass = avgRadiusTOEstMass(treasure->avgRadius);
+        treasure->intAttribute1 = 10; //hard coded for now
+        mapResource(treasure, "images/treasure");
+        game.objects.push_back(treasure);		
+	}else{
         Object* friendly2 = new Object();
         friendly2->scene = GameScenePlay;
         friendly2->objectType = ObjectTypeFriendly;
