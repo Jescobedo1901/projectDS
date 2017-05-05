@@ -115,15 +115,6 @@ void initGL()
             &game.gwa
             );
 
-    glOrtho(
-            0,
-            game.gwa.width,
-            0,
-            game.gwa.height,
-            -1,
-            1
-            );
-
     glViewport(
             0, 0,
             game.gwa.width,
@@ -141,9 +132,11 @@ void initGL()
             game.gwa.width,
             0,
             game.gwa.height,
-            -1,
-            1
+            -100.0f,
+            100.0f
             );
+
+    initialize_fonts();
 
     glDisable(GL_LIGHTING);
     glDisable(GL_DEPTH_TEST);
@@ -157,7 +150,7 @@ void initGL()
     //Clear the screen to black
     glClearColor(0.0, 0.0, 0.0, 1.0);
 
-    initialize_fonts();
+
 
 }
 
@@ -248,7 +241,7 @@ void initResources()
         closedir(d);
     }
 
-    addRes("images/player", "./images/player.jpg", 50);
+    addRes("images/player", "./images/player_*.jpg", 50, 5);
     addRes("images/enemy1", "./images/ojFish.jpg", 75);
     addRes("images/enemy2", "./images/anglerFish.jpg", 10);
     addRes("images/enemy3", "./images/skeleton*.jpg", 25);
@@ -261,6 +254,9 @@ void initResources()
     addRes("images/coral3", "./images/coral3.jpg");
     addRes("images/lost", "./images/lost.jpg", 150);
     addRes("images/logo", "./images/logo.jpg", 75);
+	addRes("images/treasure", "./images/treasure.jpg", 100);
+	addRes("images/ship", "./images/ship.jpg", 50);
+	
 }
 
 void initScenes()
@@ -546,6 +542,7 @@ void initScenePlay()
     player->offset.y = std::abs(player->dim.y)/2.0f;
     player->avgRadius = dimToAvgRadius(player->dim);
     player->mass = avgRadiusTOEstMass(player->avgRadius);
+    player->rotateByVelocity = true;
     mapResource(player, "images/player");
     game.objects.push_back(player);
     game.player = player;
@@ -965,35 +962,63 @@ void renderRectangle(Object* obj)
 
 void renderTexture(Object* obj)
 {
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_ALPHA_TEST);
-    glAlphaFunc(GL_GREATER, 0.0f);
-    glColor4ub(255, 255, 255, 255);
-    glBindTexture(GL_TEXTURE_2D, obj->resource->getResourceId());
-    glBegin(GL_QUADS);
-    float offsetX = obj->offset.x,
+    float   offsetX = obj->offset.x,
             offsetY = obj->offset.x,
             posX = obj->pos.x,
             posY = obj->pos.y,
             dimX = obj->dim.x,
             dimY = obj->dim.y;
+
     if (dimX < 0) {
         offsetX *= -1;
     }
     if (dimY < 0) {
         offsetY *= -1;
     }
-    glTexCoord2f(0.0f, 1.0f);
-    glVertex2i(posX - offsetX, posY - offsetY);
-    glTexCoord2f(0.0f, 0.0f);
-    glVertex2i(posX - offsetX, posY - offsetY + dimY);
-    glTexCoord2f(1.0f, 0.0f);
-    glVertex2i(posX - offsetX + dimX, posY - offsetY + dimY);
-    glTexCoord2f(1.0f, 1.0f);
-    glVertex2i(posX - offsetX + dimX, posY - offsetY);
+
+    glPushMatrix ();
+
+    glColor4ub(255, 255, 255, 255);
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER, 0.0f);
+
+    glBindTexture(GL_TEXTURE_2D, obj->resource->getResourceId());
+
+
+    if(obj->rotateByVelocity) {
+        glTranslatef(posX, posY, 0);
+        if(obj->vel.x > 0) {
+            if(obj->vel.y > 0) {
+                glRotatef(std::min(obj->vel.angleXY() * 180 / M_PI, 45.0), 0, 0, 1);
+            } else {
+                glRotatef(std::max(obj->vel.angleXY() * 180 / M_PI, -45.0), 0, 0, 1);
+            }
+        } else if(obj->vel.x < 0) {
+            if(obj->vel.y > 0) {
+                glRotatef(std::min((obj->vel.angleXY() + M_PI) * 180 / M_PI, -45.0), 0, 0, 1);
+            } else {
+                glRotatef(std::min((obj->vel.angleXY() + M_PI) * 180 / M_PI, 45.0), 0, 0, 1);
+            }
+        }
+        glTranslatef(-posX, -posY, 0);
+    }
+
+    glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex2f(posX - offsetX, posY - offsetY);
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex2f(posX - offsetX, posY - offsetY + dimY);
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex2f(posX - offsetX + dimX, posY - offsetY + dimY);
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex2f(posX - offsetX + dimX, posY - offsetY);
     glEnd();
+
     glDisable(GL_ALPHA_TEST);
     glDisable(GL_TEXTURE_2D);
+
+    glPopMatrix();
 }
 
 void renderText(Object* obj)

@@ -50,6 +50,8 @@ struct Vec3 {
     //Create a normalized vector from this
     Vec3 norm() const;
 
+    float angleXY() const;
+
     // += math operator
     Vec3& operator+=(const Vec3& r);
 
@@ -190,6 +192,7 @@ struct FlipBook : Resource {
     ~FlipBook();
     void step(float stepDuration);
     virtual GLuint getResourceId();
+    virtual void setFPS(float fps);
 protected:
     float duration;
     float fps;
@@ -205,7 +208,8 @@ struct Object {
     mass(), forces(0), color(), style(),
     dim(), offset(),
     intAttribute1(),
-    resource(NULL)
+    resource(NULL),
+    rotateByVelocity(false)
     {
     }
 
@@ -285,6 +289,8 @@ struct Object {
 	double doubleAttribute1;
 
     Resource* resource;
+
+    bool rotateByVelocity;
 
     inline Force cumForces() const
     {
@@ -531,6 +537,7 @@ void applyPlayerMovement(Object*);
 void applyPlayerDirChange(Object*);
 void applySpawnRate(float stepDuration);
 void applyObjectBoundaryCollision(Object*);
+void applyPlayerOceanBurstMovement(Object* player, float stepDuration);
 void spawnEnemy();
 void spawnFriendly();
 void applyNonPlayerMotion(Object*, float stepDuration);

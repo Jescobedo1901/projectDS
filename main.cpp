@@ -212,6 +212,8 @@ void updateGameStats() {
         game.isGamePaused = true;
     }
     if(game.scene & GameScenePlay) {
+        FlipBook* fb = dynamic_cast<FlipBook*>(game.player->resource);
+        fb->setFPS(std::max(game.player->vel.magnitude()* 10, 5.0f));
         game.healthBar->dim.x = (
             game.healthTxt->intAttribute1 / 
             game.healthTxt->doubleAttribute1
