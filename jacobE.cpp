@@ -576,5 +576,6 @@ void updateUsedPoints(int pointLoss)
 
 int availablePoints()
 {
-    return (game.playerInfo.totalScore) - (game.usedScore);
+    return (game.playerInfo.totalScore) - (game.usedScore) +
+            (game.pointsTxt->intAttribute1);
 }

@@ -218,7 +218,6 @@ void stepPhysics(float stepDuration)
             case ObjectTypePlayer:
                 applyPlayerMovement(obj);
                 applyPlayerDirChange(obj);
-                applyPlayerOceanFloorCollision(obj);
                 applyPlayerOceanBurstMovement(obj, stepDuration);
                 break;
             default:
@@ -366,6 +365,12 @@ void applyObjectBoundaryCollision(Object* player)
         }
     default:
         break;
+    }
+}
+
+void applyPlayerOceanBurstMovement(Object* player, float stepDuration) {
+    if (player->pos.y > getOceanUpperBound(player->pos.x) && player->vel.y > 8.0f) {
+        player->vel.y = 8.0f;
     }
 }
 
