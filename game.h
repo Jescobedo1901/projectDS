@@ -533,6 +533,7 @@ void applyPlayerMovement(Object*);
 void applyPlayerDirChange(Object*);
 void applySpawnRate(float stepDuration);
 void applyPlayerOceanFloorCollision(Object*);
+void applyPlayerOceanBurstMovement(Object* player, float stepDuration);
 void spawnEnemy();
 void spawnFriendly();
 void applyNonPlayerMotion(Object*, float stepDuration);

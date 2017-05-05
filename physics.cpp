@@ -215,6 +215,7 @@ void stepPhysics(float stepDuration)
                 applyPlayerMovement(obj);
                 applyPlayerDirChange(obj);
                 applyPlayerOceanFloorCollision(obj);
+                applyPlayerOceanBurstMovement(obj, stepDuration);
                 break;
             default:
                 break;
@@ -354,6 +355,12 @@ void applyPlayerOceanFloorCollision(Object* player)
     if(player->pos.x < game.cameraXMin) {
         player->pos.x = game.cameraXMin;
         player->vel.x = -player->vel.x;
+    }
+}
+
+void applyPlayerOceanBurstMovement(Object* player, float stepDuration) {
+    if (player->pos.y > getOceanUpperBound(player->pos.x) && player->vel.y > 8.0f) {
+        player->vel.y = 8.0f;
     }
 }
 
