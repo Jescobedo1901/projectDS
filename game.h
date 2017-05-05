@@ -403,6 +403,8 @@ struct Game {
 
     Object* totalScoreTxt;
 
+    Object* spendingScoreTxt;
+
     float thrustModifier;
 
     ResourceMap resourceMap;
@@ -411,6 +413,7 @@ struct Game {
      * The score of the previous game
      */
     int lastScore;
+    int usedScore;
 
     /**
      * Logged in player score info
@@ -527,7 +530,7 @@ void applyBuoyancyApprox(Object*);
 void applyPlayerMovement(Object*);
 void applyPlayerDirChange(Object*);
 void applySpawnRate(float stepDuration);
-void applyPlayerOceanFloorCollision(Object*);
+void applyObjectBoundaryCollision(Object*);
 void spawnEnemy();
 void spawnFriendly();
 void applyNonPlayerMotion(Object*, float stepDuration);
@@ -547,7 +550,9 @@ void checkObjectCollisions();
  * @return 0 on success, -1 on failure
  */
 int updateHighScores(std::string name, int latestHigh);
-
+int upgradeCurrentCost(int incVal);
+void updateUsedPoints(int);
+int availablePoints();
 
 /**
  * This function should call any object specific handlers to release resources

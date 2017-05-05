@@ -194,8 +194,12 @@ void stepPhysics(float stepDuration)
             //Apply to all except object type enemy
             switch(obj->objectType) {
                 case ObjectTypeEnemy:
+                    if(obj->name == "enemy3") {
+                        applyGravity(obj);
+                        break;
+                    }
                 case ObjectTypeFriendly:
-                case ObjectTypeNeutral: 
+                case ObjectTypeNeutral:
                     applyNonPlayerMotion(obj, stepDuration);
                     break; //Just break, don't apply
             default:
@@ -209,11 +213,11 @@ void stepPhysics(float stepDuration)
             case ObjectTypePlayer:
                 applyPlayerMovement(obj);
                 applyPlayerDirChange(obj);
-                applyPlayerOceanFloorCollision(obj);
                 break;
             default:
                 break;
             }
+            applyObjectBoundaryCollision(obj);
         }
         //Broad collision handling separately
         checkObjectCollisions();
@@ -332,23 +336,29 @@ void applyObjectCollisions(Object* obj)
 {
     switch (obj->objectType) {
     case ObjectTypePlayer:
-        applyPlayerOceanFloorCollision(obj);
+        applyObjectBoundaryCollision(obj);
         break;
     default:
         break;
     }
 }
 
-void applyPlayerOceanFloorCollision(Object* player)
+void applyObjectBoundaryCollision(Object* player)
 {
-    if (player->pos.y < getOceanFloorUpperBound(player->pos.x) + player->avgRadius * PIXEL_TO_METER) {
-        player->pos.y = getOceanFloorUpperBound(player->pos.x) + player->avgRadius * PIXEL_TO_METER;
-    }
-    
-    //Only let player move left left from position game.xres/2
-    if(player->pos.x < game.cameraXMin) {
-        player->pos.x = game.cameraXMin;
-        player->vel.x = -player->vel.x;
+    switch(player->objectType) {
+    case ObjectTypePlayer:
+        //Only let player move left left from position game.xres/2
+        if(player->pos.x < game.cameraXMin) {
+            player->pos.x = game.cameraXMin;
+            player->vel.x = -player->vel.x;
+        }
+    case ObjectTypeEnemy:
+    case ObjectTypeFriendly:
+        if (player->pos.y < getOceanFloorUpperBound(player->pos.x) + player->avgRadius * PIXEL_TO_METER) {
+            player->pos.y = getOceanFloorUpperBound(player->pos.x) + player->avgRadius * PIXEL_TO_METER;
+        }
+    default:
+        break;
     }
 }
 

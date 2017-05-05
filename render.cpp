@@ -251,6 +251,8 @@ void initResources()
     addRes("images/player", "./images/player.jpg", 50);
     addRes("images/enemy1", "./images/ojFish.jpg", 75);
     addRes("images/enemy2", "./images/anglerFish.jpg", 10);
+    addRes("images/enemy3", "./images/skeleton*.jpg", 25);
+    addRes("images/enemy3stand", "./images/standSkeleton.jpg", 25);
     addRes("images/friendly2", "./images/goldCoin*.png", 50, 10);
     addRes("images/friendly1", "./images/Cheeseburger.jpg", 10);
     addRes("images/rock1", "./images/rock1.jpg");

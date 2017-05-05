@@ -59,7 +59,28 @@ void spawnEnemy()
         enemy2->mass = avgRadiusTOEstMass(enemy2->avgRadius);
         enemy2->intAttribute1 = 20; //hard coded for now
 	mapResource(enemy2, "images/enemy2");
+        enemy2->name = "enemy2";
         game.objects.push_back(enemy2);
+    } else if (rndNum >= .2 && rndNum < .3) {
+        Object* enemy3 = new Object();
+        enemy3->scene = GameScenePlay;
+        enemy3->objectType = ObjectTypeEnemy;
+        enemy3->pos.x = game.player->pos.x + game.xres * 2;
+        // rand for [min,max] = rand() % (max - min) + min
+        int max = getOceanUpperBound(enemy3->pos.x);
+        int min = getOceanFloorUpperBound(enemy3->pos.x);
+        //float rnd = (float) rand() / (float) RAND_MAX;
+        enemy3->pos.y = min+25;
+        enemy3->vel.x = -(rndPos * 3 + 3);
+        enemy3->dim.x = 35;
+        enemy3->dim.y = 69;
+        enemy3->offset = enemy3->dim/2.0f;
+        enemy3->avgRadius = enemy3->dim.y / 2.0 / PIXEL_TO_METER;
+        enemy3->mass = avgRadiusTOEstMass(enemy3->avgRadius);
+        enemy3->intAttribute1 = 40;
+	mapResource(enemy3, "images/enemy3");
+        enemy3->name = "enemy3";
+        game.objects.push_back(enemy3);
     } else {
         Object* enemy1 = new Object();
         enemy1->scene = GameScenePlay;
@@ -78,6 +99,7 @@ void spawnEnemy()
         enemy1->mass = avgRadiusTOEstMass(enemy1->avgRadius);
         enemy1->intAttribute1 = 10; //hard coded for now
         mapResource(enemy1, "images/enemy1");
+        enemy1->name = "enemy1";
         game.objects.push_back(enemy1);
     }
 }
@@ -87,7 +109,7 @@ void spawnFriendly()
     float rndPos = (float) rand() / (float) RAND_MAX;
     float rndNum = (float) rand() / (float) RAND_MAX;
 
-    if (rndNum < .01) {
+    if (rndNum < .10) {
         Object* friendly1 = new Object();
         friendly1->scene = GameScenePlay;
         friendly1->objectType = ObjectTypeFriendly;
@@ -104,6 +126,7 @@ void spawnFriendly()
         friendly1->avgRadius = dimToAvgRadius(friendly1->dim);
         friendly1->mass = avgRadiusTOEstMass(friendly1->avgRadius);
         friendly1->intAttribute1 = 10; //hard coded for now
+        friendly1->name = "friendly1";
         mapResource(friendly1, "images/friendly1");
         game.objects.push_back(friendly1);
     }
@@ -123,7 +146,8 @@ void spawnFriendly()
         friendly2->offset = Position(32, 32, 0);
         friendly2->avgRadius = dimToAvgRadius(friendly2->dim);
         friendly2->mass = avgRadiusTOEstMass(friendly2->avgRadius);
-        friendly2->intAttribute1 = 1; //hard coded for now
+        friendly2->intAttribute1 = 100; //hard coded for now
+        friendly2->name = "friendly2";
         mapResource(friendly2, "images/friendly2");
         game.objects.push_back(friendly2);
     }
@@ -141,6 +165,11 @@ void applyPlayerCollision(Object* player, Object* other,
 		playDmg();
         break;
     case ObjectTypeFriendly:
+        if ( other->name == "friendly1" ) {
+            game.healthTxt->intAttribute1 = std::min(
+                game.healthTxt->intAttribute1 + other->intAttribute1,
+                (int)(game.healthTxt->doubleAttribute1));
+        }
         game.pointsTxt->intAttribute1 += other->intAttribute1;
         removeBag.insert(other);
         playPoint();
@@ -163,8 +192,10 @@ void applyEnemyCollision(
         game.healthTxt->intAttribute1 -= enemy->intAttribute1;
         break;
     case ObjectTypeEnemy:
-        enemy->intAttribute1 += other->intAttribute1;
-        removeBag.insert(other);
+        if (enemy->name == "enemy2") {
+            enemy->intAttribute1 += other->intAttribute1;
+            removeBag.insert(other);
+        }
         break;
     case ObjectTypeFriendly:
         //game.pointsTxt->intAttribute1 += other->intAttribute1;
@@ -316,7 +347,7 @@ void initSceneUpgrades()
                 upgradesTitle->color = Color(255, 255, 255);
                 upgradesTitle->style = plain17;
             }
-        upgradesTitle->pos.y = 500 + (i * 100);
+        upgradesTitle->pos.y = 550 + (i * 75);
         upgradesTitle->pos.x = game.xres*.45;
         game.objects.push_back(upgradesTitle);
     }
@@ -327,7 +358,7 @@ void initSceneUpgrades()
     bonusBg->color = Color(25, 225, 25, 50);
     bonusBg->pos.y = 275;
     bonusBg->pos.x = 25;
-    bonusBg->dim.x = 350;
+    bonusBg->dim.x = 700;
     bonusBg->dim.y = 250;
     game.objects.push_back(bonusBg);
 
@@ -344,7 +375,7 @@ void initSceneUpgrades()
         upgradeRect->color = Color(0, 0, 0, 128);
         upgradeRect->pos.y = 300 + i * 100;
         upgradeRect->pos.x = 50;
-        upgradeRect->dim.x = 300;
+        upgradeRect->dim.x = 650;
         upgradeRect->dim.y = 90;
         game.objects.push_back(upgradeRect);
 
@@ -390,10 +421,66 @@ void initSceneUpgrades()
             game.upgrade2 = upgradeType;
         }
     }
+
+    Object* pointTotalBg = new Object();
+    pointTotalBg->scene = GameSceneUpgrades;
+    pointTotalBg->objectType = ObjectTypeRectangle;
+    pointTotalBg->color = Color(25, 225, 25, 50);
+    pointTotalBg->pos.y = 125;
+    pointTotalBg->pos.x = 25;
+    pointTotalBg->dim.x = 700;
+    pointTotalBg->dim.y = 125;
+    game.objects.push_back(pointTotalBg);
+
+    Object* pTotalRect = new Object();
+    pTotalRect->scene = GameSceneUpgrades;
+    pTotalRect->name = "Spending Points: ";
+    pTotalRect->objectType = ObjectTypeRectangle;
+    pTotalRect->color = Color(0, 0, 0, 128);
+    pTotalRect->pos.y = 145;
+    pTotalRect->pos.x = 50;
+    pTotalRect->dim.x = 650;
+    pTotalRect->dim.y = 90;
+    game.objects.push_back(pTotalRect);
+
+    Object* pTotalShadow = new Object();
+    pTotalShadow->scene = GameSceneUpgrades;
+    pTotalShadow->name = "Spending Points: ";
+    pTotalShadow->objectType = ObjectTypeText;
+    pTotalShadow->style = plain40;
+    pTotalShadow->color = Color(0, 0, 0);
+    pTotalShadow->pos.y = 169;
+    pTotalShadow->pos.x = 79;
+    game.objects.push_back(pTotalShadow);
+
+    Object* pTotalTxt = new Object();
+    pTotalTxt->scene = GameSceneUpgrades;
+    pTotalTxt->name = "Spending Points ";
+    pTotalTxt->objectType = ObjectTypeText;
+    pTotalTxt->style = plain40;
+    pTotalTxt->color = Color(255, 255, 255);
+    pTotalTxt->pos.y = 165;
+    pTotalTxt->pos.x = 75;
+    game.objects.push_back(pTotalTxt);
+
+    Object* spendingScoreTxt = new Object();
+    spendingScoreTxt->scene = GameSceneUpgrades;
+    spendingScoreTxt->objectType = ObjectTypeText;
+    spendingScoreTxt->style = plain40;
+    spendingScoreTxt->intAttribute1 = availablePoints();
+    spendingScoreTxt->pos.y = 165;
+    spendingScoreTxt->pos.x = 375;
+    spendingScoreTxt->color = Color(255, 255, 255);
+    spendingScoreTxt->name = "0";
+    game.objects.push_back(spendingScoreTxt);
+    game.spendingScoreTxt = spendingScoreTxt;
+    
+
 }
 
 void handleClickUpgradeItems(const XEvent& event)
 {
+    //Total Points stored game.playerInfo.totalScore
     if (event.type == ButtonPress) {
     int x = event.xbutton.x;
     int y = game.yres - event.xbutton.y;
@@ -406,13 +493,28 @@ void handleClickUpgradeItems(const XEvent& event)
                         x >= obj->pos.x && x <= (obj->pos.x + obj->dim.x)) {
                     //then this button was pressed!
                     if (obj->name == "+ Health") {
-                        game.upgrade2->intAttribute1++;
-                        int increment = 10 * game.upgrade2->intAttribute1;
-                        game.healthTxt->intAttribute1 += increment;
-                        game.healthTxt->doubleAttribute1 += increment;
+                        int avail = availablePoints();
+                        int cost = upgradeCurrentCost(game.upgrade2->intAttribute1);
+                        if(avail >= cost) {
+                            game.upgrade2->intAttribute1++;
+                            int increment = 10 * game.upgrade2->intAttribute1;
+                            game.healthTxt->intAttribute1 += increment;
+                            game.healthTxt->doubleAttribute1 += increment;
+                            updateUsedPoints(cost);
+                        } else {
+                            playDmg();
+                        }
                     } else if (obj->name == "+ Speed") {
-                        game.upgrade1->intAttribute1++;
-                        game.thrustModifier = 100 * std::pow(1.05, game.upgrade1->intAttribute1);
+                            int avail = availablePoints();
+                            int cost = upgradeCurrentCost(game.upgrade1->intAttribute1);
+                            if(avail >= cost) {
+                            game.upgrade1->intAttribute1++;
+                            game.thrustModifier = 100 * std::pow(1.05,
+                            game.upgrade1->intAttribute1);
+                            updateUsedPoints(cost);
+                        } else {
+                            playDmg();
+                        }
                     }
                     playClick();
                     break;
@@ -420,4 +522,19 @@ void handleClickUpgradeItems(const XEvent& event)
             }
         }
     }
+}
+
+int upgradeCurrentCost(int totalAllocated)
+{
+    return std::max(1 << totalAllocated, 1);
+}
+
+void updateUsedPoints(int pointLoss)
+{
+    game.usedScore += pointLoss;
+}
+
+int availablePoints()
+{
+    return (game.playerInfo.totalScore) - (game.usedScore);
 }

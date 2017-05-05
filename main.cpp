@@ -237,12 +237,21 @@ void updateGameStats() {
         game.pointsLast->name = ss.str();
     }
     if(game.scene & GameSceneUpgrades) {
-        std::stringstream ss; ss << game.upgrade1->intAttribute1;
+        std::stringstream ss;
+        ss.str("");
+        ss << game.upgrade1->intAttribute1 << " (";
+        ss << upgradeCurrentCost(game.upgrade1->intAttribute1) << ")";
         game.upgrade1->name = ss.str();
-    }
-    if(game.scene & GameSceneUpgrades) {
-        std::stringstream ss; ss << game.upgrade2->intAttribute1;
+
+        ss.str("");
+        ss << game.upgrade2->intAttribute1 <<" (";
+        ss << upgradeCurrentCost(game.upgrade2->intAttribute1) << ")";
         game.upgrade2->name = ss.str();
+
+        ss.str("");
+        ss << availablePoints();
+        game.spendingScoreTxt->name = ss.str();
+
     }
     if(game.scene & GameSceneScore) {
         std::stringstream ss;
