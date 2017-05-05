@@ -511,6 +511,8 @@ void handleMenuMouseMovement(const XEvent& event);
 void handleClickMenuItems(const XEvent& event);
 void handleClickUpgradeItems(const XEvent& event);
 void handleESC(const XEvent& event);
+void handleMenuPress(const XEvent& event);
+void handleUpgradePress(const XEvent& event);
 void handleLoginInput(const XEvent& event);
 void handleWindowResize(const XEvent& event);
 

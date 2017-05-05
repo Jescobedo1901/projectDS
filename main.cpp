@@ -82,6 +82,8 @@ void handleEvents()
         handleMenuMouseMovement(event);
         handlePlayerClickExit(event);
         handleESC(event);
+        handleMenuPress(event);
+        handleUpgradePress(event);
         handleMouseClicks(event);
         audioLoop();
     }

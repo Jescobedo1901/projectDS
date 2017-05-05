@@ -653,29 +653,6 @@ void initScenePlay()
 
 }
 
-void initSceneHelp()
-{
-    Object* screenBg = new Object();
-    screenBg->scene = GameSceneHelp;
-    screenBg->objectType = ObjectTypeRectangle;
-    screenBg->color = Color(0, 0, 0, 220);
-    screenBg->pos.y = 0;
-    screenBg->pos.x = 0;
-    screenBg->dim.x = game.xres;
-    screenBg->dim.y = game.yres;
-    game.objects.push_back(screenBg);
-
-    Object* title = new Object();
-    title->scene = GameSceneHelp;
-    title->name = "This is a sparring program..";
-    title->objectType = ObjectTypeText;
-    title->color = Color(25, 225, 25);
-    title->style = plain40;
-    title->pos.y = 525;
-    title->pos.x = 300;
-    game.objects.push_back(title);
-}
-
 void initScenePlayPause()
 {
 
