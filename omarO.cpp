@@ -412,7 +412,7 @@ void applyNonPlayerMotion(Object* obj, float stepDuration)
 
         float time = obj->pos.x;
         float phase = 0.0f;
-        float freq = 0.025f * stepDuration *  obj->doubleAttribute1;
+        float freq = std::min(0.025f * stepDuration *  obj->doubleAttribute1, 1.0/750.0);
         float amplitude = ((ymax-ymin) / 2.0f);
         float shift = ymax/2.0f;
 
