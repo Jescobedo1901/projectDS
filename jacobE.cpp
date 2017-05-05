@@ -81,26 +81,26 @@ void spawnEnemy()
 	mapResource(enemy3, "images/enemy3");
         enemy3->name = "enemy3";
         game.objects.push_back(enemy3);
-  } else if(rndNum >= .3 && rndNum < .305) {
-        Object* ship = new Object();
-        ship->scene = GameScenePlay;
-        ship->objectType = ObjectTypeEnemy;
-        ship->pos.x = game.player->pos.x + game.xres * 2;
+  } else if(rndNum >= .3 && rndNum < .301) {
+        //Object* ship = new Object();
+        //ship->scene = GameScenePlay;
+        //ship->objectType = ObjectTypeEnemy;
+        //ship->pos.x = game.player->pos.x + game.xres * 2;
         // rand for [min,max] = rand() % (max - min) + min
         //int max = getOceanUpperBound(ship->pos.x);
         //int min = getOceanFloorUpperBound(ship->pos.x);
         //float rnd = (float) rand() / (float) RAND_MAX;
-        ship->pos.y = getOceanUpperBound(game.player->pos.x);
-        ship->vel.x = 0;
-        ship->dim.x = 200;
-        ship->dim.y = 200;
-        ship->offset = ship->dim/2.0f;
-        ship->avgRadius = dimToAvgRadius(ship->dim);
-        ship->mass = avgRadiusTOEstMass(ship->avgRadius);
-        ship->intAttribute1 = 10;
-		ship->doubleAttribute1 = 1; //hard coded for now
-        mapResource(ship, "images/ship");
-        game.objects.push_back(ship);	
+        //ship->pos.y = getOceanUpperBound(game.player->pos.x)+50;
+        //ship->vel.x = 0;
+        //ship->dim.x = 200;
+        //ship->dim.y = 200;
+        //ship->offset = ship->dim/2.0f;
+        //ship->avgRadius = dimToAvgRadius(ship->dim);
+        //ship->mass = avgRadiusTOEstMass(ship->avgRadius);
+        //ship->intAttribute1 = 10;
+		//ship->doubleAttribute1 = 1; //hard coded for now
+        //mapResource(ship, "images/ship");
+        //game.objects.push_back(ship);	
     } else {
         Object* enemy1 = new Object();
         enemy1->scene = GameScenePlay;
@@ -151,7 +151,7 @@ void spawnFriendly()
         game.objects.push_back(friendly1);
     }
     else if(rndNum >= .10 && rndNum < .19) {
-		printf("spawned Treasure\n");
+		//printf("spawned Treasure\n");
         Object* treasure = new Object();
         treasure->scene = GameScenePlay;
         treasure->objectType = ObjectTypeFriendly;
