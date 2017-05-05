@@ -252,6 +252,9 @@ void initResources()
     addRes("images/coral3", "./images/coral3.jpg");
     addRes("images/lost", "./images/lost.jpg", 150);
     addRes("images/logo", "./images/logo.jpg", 75);
+	addRes("images/treasure", "./images/treasure.jpg", 100);
+	addRes("images/ship", "./images/ship.jpg", 50);
+	
 }
 
 void initScenes()
