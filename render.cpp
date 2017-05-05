@@ -316,11 +316,11 @@ void initSceneMenu()
     game.objects.push_back(menuBg);
 
     const char* buttons[5] = {
-        "Play",
-        "Help",
-        "Credits",
-        "Exit",
-        "Mute"
+        "(P)lay",
+        "(H)elp",
+        "(C)redits",
+        "(E)xit",
+        "(M)ute"
     };
 
     for (int i = 0; i < 4; ++i) {
@@ -414,8 +414,8 @@ void initSceneMenu()
     game.objects.push_back(menuBg2);
 
     const char* buttonsLeft[2] = {
-        "Upgrades",
-        "High Score"
+        "(U)pgrades",
+        "High (S)core"
     };
 
     for (int i = 0; i < 2; ++i) {

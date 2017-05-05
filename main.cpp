@@ -116,21 +116,21 @@ void handleClickMenuItems(const XEvent& event)
                 if (y >= obj->  pos.y && y <= (obj->pos.y + obj->dim.y) &&
                         x >= obj->pos.x && x <= (obj->pos.x + obj->dim.x)) {
                     //then this button was pressed. Change state
-                    if (obj->name == "Play") {
+                    if (obj->name == "(P)lay") {
                         game.scene = GameScenePlay | GameSceneHUD;
                         game.start = clock();
 						game.isGamePaused = false;
-                    } else if (obj->name == "Help") {
+                    } else if (obj->name == "(H)elp") {
                         game.scene = GameSceneHelp;
-                    } else if (obj->name == "Credits") {
+                    } else if (obj->name == "(C)redits") {
                         game.scene = GameSceneCredits;
-                    } else if (obj->name == "Exit") {
+                    } else if (obj->name == "(E)xit") {
                         game.done = true;
-                    } else if (obj->name == "High Score") {
+                    } else if (obj->name == "High (S)core") {
                         game.scene = GameSceneScore;
-                    } else if (obj->name == "Upgrades") {
+                    } else if (obj->name == "(U)pgrades") {
                         game.scene = GameSceneUpgrades;
-                    } else if (obj->name == "Mute") {
+                    } else if (obj->name == "(M)ute") {
 						if(obj->objectType == ObjectTypeRectangle){
 						if(obj->intAttribute1 == 0){
 							obj->color = Color(51,204,255);
