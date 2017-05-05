@@ -50,6 +50,8 @@ struct Vec3 {
     //Create a normalized vector from this
     Vec3 norm() const;
 
+    float angleXY() const;
+
     // += math operator
     Vec3& operator+=(const Vec3& r);
 
@@ -205,7 +207,8 @@ struct Object {
     mass(), forces(0), color(), style(),
     dim(), offset(),
     intAttribute1(),
-    resource(NULL)
+    resource(NULL),
+    rotateByVelocity(false)
     {
     }
 
@@ -285,6 +288,8 @@ struct Object {
 	double doubleAttribute1;
 
     Resource* resource;
+
+    bool rotateByVelocity;
 
     inline Force cumForces() const
     {

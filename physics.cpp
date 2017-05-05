@@ -24,6 +24,11 @@ Vec3 Vec3::norm() const
     return Vec3(x / magn, y / magn, z / magn);
 }
 
+float Vec3::angleXY() const
+{
+    return std::atan2(this->y, this->x);
+}
+
 Vec3& Vec3::operator+=(const Vec3& r)
 {
     x += r.x,
