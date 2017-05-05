@@ -49,7 +49,7 @@ void handlePlayerMovement(const XEvent& event)
 
 bool isOffscreen(Object* obj)
 {
-    return obj->pos.x <= game.player->pos.x - game.xres;
+    return obj->pos.x <= game.player->pos.x - game.xres*0.5;
 }
 
 bool applyObjectLifetimePolicies(Object* obj)
@@ -404,7 +404,7 @@ void applyNonPlayerMotion(Object* obj, float stepDuration)
     if(obj->objectType == ObjectTypeEnemy) {
         if(obj->doubleAttribute1 == 0) {
             //If double attribute is not set, see the motion pattern here
-            obj->doubleAttribute1 = (float)rand() / (float)RAND_MAX;
+            obj->doubleAttribute1 = ((float)rand() / (float)RAND_MAX + 0.5f);
         }
 
         float ymin = getOceanFloorUpperBound(obj->pos.x);
@@ -417,5 +417,38 @@ void applyNonPlayerMotion(Object* obj, float stepDuration)
         float shift = ymax/2.0f;
 
         obj->pos.y = amplitude * std::sin(2 * M_PI * freq * time + phase) + shift;
+    }
+}
+
+void applyRotationalHandling(Object* obj, float stepDuration) {
+    if(obj->rotateByVelocity) {
+        float deg = obj->vel.angleXY();
+        float target = 0.0f;
+        if(obj->vel.x > 0) {
+            if(obj->vel.y > 0) {
+                target = std::min(deg * 180 / M_PI, 45.0);
+            } else {
+                target = std::max(deg * 180 / M_PI, -45.0);
+            }
+        } else if(obj->vel.x < 0) {
+            if(obj->vel.y > 0) {
+                target = std::min((deg + M_PI) * 180 / M_PI, -45.0);
+            } else {
+                target = std::min((deg + M_PI) * 180 / M_PI, 45.0);
+            }
+        }
+        if(obj->slowRotate) {
+            obj->rotation += target * stepDuration * obj->rotationRate;
+        } else {
+            obj->rotation = target;
+        }
+    } else if(obj->rotationTarget != obj->rotation && obj->slowRotate) {
+        float delta = stepDuration * obj->rotationRate;
+        if(obj->rotationRate > 0 && obj->rotation < obj->rotationTarget) {
+            obj->rotation = std::min(obj->rotation + delta, obj->rotationTarget);
+        } else if(obj->rotationRate < 0 && obj->rotation > obj->rotationTarget) {
+            obj->rotation = std::max(obj->rotation + delta, obj->rotationTarget);
+        }
+        printf("Rotating object: %f\n", delta );
     }
 }

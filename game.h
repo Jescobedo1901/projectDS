@@ -209,7 +209,11 @@ struct Object {
     dim(), offset(),
     intAttribute1(),
     resource(NULL),
-    rotateByVelocity(false)
+    rotateByVelocity(false),
+    slowRotate(false),
+    rotationRate(0),
+    rotation(0),
+    rotationTarget(0)
     {
     }
 
@@ -291,6 +295,17 @@ struct Object {
     Resource* resource;
 
     bool rotateByVelocity;
+
+    bool slowRotate;
+
+    /**
+     * Degrees per second
+     */
+    float rotationRate;
+
+    float rotation;
+
+    float rotationTarget;
 
     inline Force cumForces() const
     {
@@ -414,7 +429,7 @@ struct Game {
     float thrustModifier;
 
     ResourceMap resourceMap;
-    
+
     /**
      * The score of the previous game
      */
@@ -543,6 +558,7 @@ void applyPlayerOceanBurstMovement(Object* player, float stepDuration);
 void spawnEnemy();
 void spawnFriendly();
 void applyNonPlayerMotion(Object*, float stepDuration);
+void applyRotationalHandling(Object* obj, float stepDuration);
 
 float dimToAvgRadius(Dimension dim);
 float avgRadiusTOEstMass(float);
