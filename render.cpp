@@ -167,33 +167,13 @@ void uninitGL()
     glXDestroyContext(game.display, game.glc);
 }
 
-void uninitResources() {
-    DIR *d;
-    struct dirent *dir;
-    d = opendir("./images");
-    if (d) {
-        while ((dir = readdir(d)) != NULL) {
-            if (dir->d_type == DT_REG) {
-                std::string ext(".ppm"), texFile(dir->d_name);
-                //If textureFile does not end with .ppm, we must convert
-                //it to .ppm first
-                if(texFile.size() > ext.size() &&
-                        texFile.compare(
-                            texFile.size() - ext.size(), ext.size(), ext
-                        ) == 0) {
-                    std::string removingFile = std::string("./images/") +
-                            dir->d_name;
-                    if(remove(removingFile.c_str()) == -1) {
-                        perror("Error deleting temporary resource file");
-                    } else {
-                        printf("Resource: %s - cleaned up\n", removingFile.c_str());
-                    }
-                }
-            }
-        }
-        closedir(d);
-    }
-    for(ResourceMap::iterator it =
+void uninitResources()
+{
+
+    //Cleanup any decompressed resource generated
+    decompressedResourcesCleanup();
+
+    for (ResourceMap::iterator it =
             game.resourceMap.begin(),
             end = game.resourceMap.end();
             it != end;
@@ -203,8 +183,13 @@ void uninitResources() {
 }
 
 //Helper function to map and initialize resources, only used by initResources
-void addRes(std::string name, std::string path, int tolerance = 0, float optFps = 10.0) {
-    if(path.find_first_of("*") == std::string::npos) {
+
+void addRes(    std::string name, 
+                std::string path, 
+                int tolerance = 0, 
+                float optFps = 10.0)
+{
+    if (path.find_first_of("*") == std::string::npos) {
         game.resourceMap[name] = new TextureResource(path, tolerance);
     } else {
         game.resourceMap[name] = new FlipBook(path, optFps, tolerance);
@@ -213,33 +198,8 @@ void addRes(std::string name, std::string path, int tolerance = 0, float optFps 
 
 void initResources()
 {
-    DIR *d;
-    struct dirent *dir;
-    d = opendir("./images");
-    if (d) {
-        while ((dir = readdir(d)) != NULL) {
-            if (dir->d_type == DT_REG) {
-                std::string ext(".ppm"), texFile(dir->d_name);
-                //If textureFile does not end with .ppm, we must convert it
-                //to .ppm first
-                if( texFile.size() > ext.size() &&
-                        (texFile.compare(
-                            texFile.size() - ext.size(), ext.size(), ext
-                        ) != 0 &&
-                        texFile.find_first_of(".") != 0)) {
-                    std::string newFile = "./images/" + texFile + ext;
-                    std::string command =
-                            "convert \"./images/" + texFile + "\" \"" +
-                            newFile + "\"";
-                    int res = system(command.c_str());
-                    if(WIFEXITED(res) && WEXITSTATUS(res) == 0) {
-                        printf("Resource: %s - generated\n", newFile.c_str());
-                    }
-                }
-            }
-        }
-        closedir(d);
-    }
+    //Decompress images using system tool convert
+    decompressResources();
 
     addRes("images/player", "./images/player_*.jpg", 50, 5);
     addRes("images/enemy1", "./images/ojFish.jpg", 75);
@@ -279,8 +239,8 @@ void initSceneMenu()
     Object* lostTxt = new Object();
     lostTxt->scene = GameSceneLost;
     lostTxt->objectType = ObjectTypeTexture;
-    lostTxt->pos.x = game.xres*.32;
-    lostTxt->pos.y = game.yres*.38;
+    lostTxt->pos.x = game.xres * .32;
+    lostTxt->pos.y = game.yres * .38;
     lostTxt->dim.x = 600;
     lostTxt->dim.y = 200;
     mapResource(lostTxt, "images/lost");
@@ -304,7 +264,7 @@ void initSceneMenu()
     logo->dim.x = game.xres * .50;
     logo->dim.y = game.yres * .2;
     mapResource(logo, "images/logo");
-	//game.logo = logo;
+    //game.logo = logo;
     game.objects.push_back(logo);
 
     Object* menuBg = new Object();
@@ -462,7 +422,7 @@ void initSceneMenu()
     endScoreShadow->style = plain40;
     endScoreShadow->color = Color(255, 182, 193);
     endScoreShadow->pos.y = 101;
-    endScoreShadow->pos.x = game.xres-373;
+    endScoreShadow->pos.x = game.xres - 373;
     game.objects.push_back(endScoreShadow);
 
     Object* endScore = new Object();
@@ -472,7 +432,7 @@ void initSceneMenu()
     endScore->style = plain40;
     endScore->color = Color(10, 180, 73);
     endScore->pos.y = 100;
-    endScore->pos.x = game.xres-375;
+    endScore->pos.x = game.xres - 375;
     game.objects.push_back(endScore);
 
     Object* pointsLast = new Object();
@@ -482,7 +442,7 @@ void initSceneMenu()
     pointsLast->color = Color(255, 0, 50);
     pointsLast->intAttribute1 = game.lastScore;
     pointsLast->pos.y = 100;
-    pointsLast->pos.x = game.xres-250;
+    pointsLast->pos.x = game.xres - 250;
     pointsLast->name = "0";
     game.objects.push_back(pointsLast);
     game.pointsLast = pointsLast;
@@ -502,10 +462,10 @@ void initSceneMenu()
     loginBox->scene = GameSceneLogin;
     loginBox->objectType = ObjectTypeRectangle;
     loginBox->color = Color(0, 0, 0, 128);
-    loginBox->pos.y = game.yres/3.0;
-    loginBox->pos.x = game.xres/3.0;
-    loginBox->dim.x = game.xres/3.0;
-    loginBox->dim.y = game.yres/3.0;
+    loginBox->pos.y = game.yres / 3.0;
+    loginBox->pos.x = game.xres / 3.0;
+    loginBox->dim.x = game.xres / 3.0;
+    loginBox->dim.y = game.yres / 3.0;
     game.objects.push_back(loginBox);
 
     Object* useTxt = new Object();
@@ -514,8 +474,8 @@ void initSceneMenu()
     useTxt->objectType = ObjectTypeText;
     useTxt->style = plain17;
     useTxt->color = Color(255, 255, 255);
-    useTxt->pos.y = game.yres/3.0+150;
-    useTxt->pos.x = game.xres/3.0+25;
+    useTxt->pos.y = game.yres / 3.0 + 150;
+    useTxt->pos.x = game.xres / 3.0 + 25;
     game.objects.push_back(useTxt);
 
     Object* userInputTxt = new Object();
@@ -524,8 +484,8 @@ void initSceneMenu()
     userInputTxt->objectType = ObjectTypeText;
     userInputTxt->style = plain17;
     userInputTxt->color = Color(255, 255, 255);
-    userInputTxt->pos.y = game.yres/3.0+50;
-    userInputTxt->pos.x = game.xres/3.0+25;
+    userInputTxt->pos.y = game.yres / 3.0 + 50;
+    userInputTxt->pos.x = game.xres / 3.0 + 25;
     game.objects.push_back(userInputTxt);
     game.loginTxt = userInputTxt;
 }
@@ -537,11 +497,11 @@ void initScenePlay()
     player->name = "player";
     player->objectType = ObjectTypePlayer;
     player->pos.y = 150;
-    player->pos.x = game.xres/2 + 5;
+    player->pos.x = game.xres / 2 + 5;
     player->dim.x = -60; //
     player->dim.y = 40; //
-    player->offset.x = std::abs(player->dim.x)/2.0f;
-    player->offset.y = std::abs(player->dim.y)/2.0f;
+    player->offset.x = std::abs(player->dim.x) / 2.0f;
+    player->offset.y = std::abs(player->dim.y) / 2.0f;
     player->avgRadius = dimToAvgRadius(player->dim);
     player->mass = avgRadiusTOEstMass(player->avgRadius);
     player->rotateByVelocity = true;
@@ -702,7 +662,7 @@ void initSceneCredits()
 void initSceneScore()
 {
     int bottomOffset = game.yres / 4.0;
-    int lineHeight= 40;
+    int lineHeight = 40;
     int padLeft = game.xres / 4.0;
 
     Object* screenBg = new Object();
@@ -764,7 +724,7 @@ void initSceneScore()
         tsTotal->pos.x = padLeft + 300;
         game.objects.push_back(tsTotal);
 
-        if(i < 10) {
+        if (i < 10) {
             std::vector<Object*> vecs;
             vecs.push_back(tsName);
             vecs.push_back(tsMax);
@@ -789,7 +749,7 @@ void initSceneScore()
     yourScoreBg->scene = GameSceneScore;
     yourScoreBg->objectType = ObjectTypeRectangle;
     yourScoreBg->color = Color(0, 50, 0, 128);
-    yourScoreBg->pos.y = game.yres*.15;
+    yourScoreBg->pos.y = game.yres * .15;
     yourScoreBg->pos.x = padLeft;
     yourScoreBg->dim.x = game.xres / 2.0;
     yourScoreBg->dim.y = 40;
@@ -802,7 +762,7 @@ void initSceneScore()
     yourScoreTxtLbl->name = "You:";
     yourScoreTxtLbl->style = plain17;
     yourScoreTxtLbl->color = Color(210, 210, 210);
-    yourScoreTxtLbl->pos.y = game.yres*.16;
+    yourScoreTxtLbl->pos.y = game.yres * .16;
     yourScoreTxtLbl->pos.x = padLeft;
     game.objects.push_back(yourScoreTxtLbl);
 
@@ -812,7 +772,7 @@ void initSceneScore()
     yourScoreTxtVal->name = "5123";
     yourScoreTxtVal->style = plain17;
     yourScoreTxtVal->color = Color(210, 210, 210);
-    yourScoreTxtVal->pos.y = game.yres*.16;
+    yourScoreTxtVal->pos.y = game.yres * .16;
     yourScoreTxtVal->pos.x = padLeft + 175;
     game.objects.push_back(yourScoreTxtVal);
     game.highScoreTxt = yourScoreTxtVal;
@@ -823,14 +783,15 @@ void initSceneScore()
     yourScoreTxtVal2->name = "123";
     yourScoreTxtVal2->style = plain17;
     yourScoreTxtVal2->color = Color(210, 210, 210);
-    yourScoreTxtVal2->pos.y = game.yres*.16;
+    yourScoreTxtVal2->pos.y = game.yres * .16;
     yourScoreTxtVal2->pos.x = padLeft + 300;
     game.objects.push_back(yourScoreTxtVal2);
     game.totalScoreTxt = yourScoreTxtVal2;
 
 }
 
-void renderObjects(int scenesToRender) {
+void renderObjects(int scenesToRender)
+{
     //Rendered in order and let's hope it works
     for (int i = 0, l = game.objects.size(); i < l; ++i) {
         Object* obj = game.objects[i];
@@ -856,55 +817,6 @@ void renderObjects(int scenesToRender) {
                 break;
             }
         }
-    }
-}
-
-void renderAll()
-{
-    glClear(GL_COLOR_BUFFER_BIT); // Clear the color buffer (background)
-    if (game.scene & GameScenePlay || game.isGamePaused) {
-        glPushMatrix();
-        game.cameraXMin = std::max(
-            game.cameraXMin, game.player->pos.x - game.xres / 2
-        );
-        game.camera.x = std::max(
-            game.cameraXMin, game.player->pos.x - game.xres / 4
-        );
-        glTranslatef(-game.camera.x, -game.camera.y, -game.camera.z);
-        renderMap();
-        renderObjects(GameScenePlay);
-        glPopMatrix();
-        if(game.scene & GameSceneHUD) {
-            renderObjects(GameSceneHUD);
-        }
-    }
-    if(game.scene & ~(GameScenePlay | GameSceneHUD)) {
-        renderMap();
-        renderObjects(game.scene);
-    }
-	//audioLoop();
-    glXSwapBuffers(game.display, game.win);
-}
-
-void renderMap()
-{
-    for (int x = game.camera.x; x < game.xres + game.camera.x; ++x) {
-        glBegin(GL_LINES);
-        glColor3ub(239, 245, 250);
-        glVertex2d(x, getSkyUpperBound(x));
-        glColor3ub(101, 188, 255);
-        glVertex2f(x, getSkyLowerBound(x));
-
-        glColor3ub(43, 175, 255);
-        glVertex2d(x, getOceanUpperBound(x));
-        glColor3ub(0, 75, 125);
-        glVertex2f(x, getOceanFloorLowerBound(x));
-
-        glColor3ub(221, 207, 18);
-        glVertex2d(x, getOceanFloorUpperBound(x));
-        glColor3ub(247, 223, 48);
-        glVertex2f(x, getOceanFloorLowerBound(x));
-        glEnd();
     }
 }
 
@@ -935,13 +847,13 @@ void renderRectangle(Object* obj)
             obj->pos.y,
             obj->pos.x + obj->dim.x,
             obj->pos.y + obj->dim.y
-    );
+            );
     glDisable(GL_BLEND);
 }
 
 void renderTexture(Object* obj)
 {
-    float   offsetX = obj->offset.x,
+    float offsetX = obj->offset.x,
             offsetY = obj->offset.y,
             posX = obj->pos.x,
             posY = obj->pos.y,
@@ -955,7 +867,7 @@ void renderTexture(Object* obj)
         offsetY *= -1;
     }
 
-    glPushMatrix ();
+    glPushMatrix();
 
     glColor4ub(255, 255, 255, 255);
     glEnable(GL_TEXTURE_2D);
@@ -965,21 +877,21 @@ void renderTexture(Object* obj)
     glBindTexture(GL_TEXTURE_2D, obj->resource->getResourceId());
 
 
-    if(obj->rotation) {
+    if (obj->rotation) {
         glTranslatef(posX, posY, 0);
         glRotatef(obj->rotation, 0, 0, 1);
         glTranslatef(-posX, -posY, 0);
     }
 
     glBegin(GL_QUADS);
-        glTexCoord2f(0.0f, 1.0f);
-        glVertex2f(posX - offsetX, posY - offsetY);
-        glTexCoord2f(0.0f, 0.0f);
-        glVertex2f(posX - offsetX, posY - offsetY + dimY);
-        glTexCoord2f(1.0f, 0.0f);
-        glVertex2f(posX - offsetX + dimX, posY - offsetY + dimY);
-        glTexCoord2f(1.0f, 1.0f);
-        glVertex2f(posX - offsetX + dimX, posY - offsetY);
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex2f(posX - offsetX, posY - offsetY);
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex2f(posX - offsetX, posY - offsetY + dimY);
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex2f(posX - offsetX + dimX, posY - offsetY + dimY);
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex2f(posX - offsetX + dimX, posY - offsetY);
     glEnd();
 
     glDisable(GL_ALPHA_TEST);
@@ -1033,34 +945,6 @@ void renderText(Object* obj)
     }
     glDisable(GL_TEXTURE_2D);
 }
-
-float getSkyUpperBound(int x)
-{
-    return game.yres;
-}
-
-float getSkyLowerBound(int x)
-{
-    return (.75 * game.yres);
-}
-
-float getOceanUpperBound(int x)
-{
-    return (.8 * game.yres) + 10 * std::sin((x + game.mapBoundsIteration * 0.25) / 25.0);
-}
-
-float getOceanFloorUpperBound(int x)
-{
-    return 100 + 30 * std::sin(x / 100.0);
-}
-
-float getOceanFloorLowerBound(int x)
-{
-    return 0;
-}
-
-
-
 
 
 

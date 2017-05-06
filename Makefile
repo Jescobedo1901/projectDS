@@ -19,11 +19,11 @@ TARGET_NO_AUDIO	=   ds_noaudio
 all:		    $(TARGET) $(TARGET_NO_AUDIO)
 
 # Link
-$(TARGET): jacobE.o main.o marcelF.o omarO.o physics.o ppm.o render.o seanC.o audio.o
-	$(CXX) physics.o render.o jacobE.o main.o marcelF.o omarO.o seanC.o audio.o ppm.o $(LFLAGS) $(OALFLAGS) -o $(TARGET)
+$(TARGET): jacobE.o main.o marcelF.o omarO.o physics.o ppm.o render.o seanC.o
+	$(CXX) physics.o render.o jacobE.o main.o marcelF.o omarO.o seanC.o ppm.o $(LFLAGS) $(OALFLAGS) -o $(TARGET)
 
-$(TARGET_NO_AUDIO): jacobE.o main.o marcelF.o omarO.o physics.o ppm.o render.o seanC.o audio_disabled.o
-	$(CXX) physics.o render.o jacobE.o main.o marcelF.o omarO.o seanC.o audio_disabled.o ppm.o  $(LFLAGS) -o $(TARGET_NO_AUDIO)
+$(TARGET_NO_AUDIO): jacobE.o main.o marcelF.o omarO.o physics.o ppm.o render.o seanC_audio_disabled.o
+	$(CXX) physics.o render.o jacobE.o main.o marcelF.o omarO.o seanC_audio_disabled.o ppm.o  $(LFLAGS) -o $(TARGET_NO_AUDIO)
 
 jacobE.o: jacobE.cpp $(HEADERS)
 	$(CXX) $(CFLAGS) -c jacobE.cpp -o jacobE.o
@@ -47,13 +47,10 @@ render.o: render.cpp $(HEADERS)
 	$(CXX) $(CFLAGS) -c render.cpp -o render.o
 
 seanC.o: seanC.cpp $(HEADERS)
-	$(CXX) $(CFLAGS) -c seanC.cpp -o seanC.o
-
-audio.o: audio.cpp $(HEADERS)
-	$(CXX) $(CFLAGS) -D USE_OPENAL_SOUND -c audio.cpp -o audio.o
+	$(CXX) $(CFLAGS) -D USE_OPENAL_SOUND -c seanC.cpp -o seanC.o
 	
-audio_disabled.o: audio.cpp $(HEADERS)	
-	$(CXX) $(CFLAGS) -D DISABLE_AUDIO -c audio.cpp -o audio_disabled.o
+seanC_audio_disabled.o: seanC.cpp $(HEADERS)
+	$(CXX) $(CFLAGS) -D DISABLE_AUDIO -c seanC.cpp -o seanC_audio_disabled.o
 
 clean:
 	-rm -f $(TARGET) $(TARGET_NO_AUDIO) *.o

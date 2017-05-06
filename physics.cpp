@@ -143,6 +143,23 @@ double diff(timespec& start, timespec& end)
             (double) (start.tv_nsec - end.tv_nsec) * 1e-9;
 }
 
+void handleEvents()
+{
+    XEvent event;
+    while (XPending(game.display) > 0) {
+        XNextEvent(game.display, &event);
+        handleWindowResize(event);
+        handlePlayerMovement(event);
+        handleMenuMouseMovement(event);
+        handlePlayerClickExit(event);
+        handleESC(event);
+        handleMenuPress(event);
+        handleUpgradePress(event);
+        handleMouseClicks(event);
+        audioLoop();
+    }
+}
+
 void gameLoop()
 {
     const double tickSeconds = 1.0 / 120.0;
@@ -157,7 +174,7 @@ void gameLoop()
     while (!game.done) {
 
         handleEvents();
-        
+
         updateGameStats();
 
         //tick game state
@@ -166,7 +183,7 @@ void gameLoop()
         double dt = diff(now, prev);
 
         while (dt >= tickSeconds) {
-            dt -= tickSeconds;            
+            dt -= tickSeconds;
             stepPhysics(tickSeconds);
             applyAudio();
         }
@@ -178,161 +195,6 @@ void gameLoop()
     }
 }
 
-void stepPhysics(float stepDuration)
-{
-    /**
-     * No physical effects are apply
-     * unless the game scene loaded is play
-     */
-    if (game.scene & GameScenePlay) {
-
-        stepMapBoundsIteration();
-        applySpawnRate(stepDuration);
-        
-        stepFlipBooks(stepDuration);
-        
-        for (std::vector<Object*>::iterator it = game.objects.begin(), end = game.objects.end(); it != end; ++it) {            
-            Object* obj = *it;
-            if(applyObjectLifetimePolicies(obj)) {
-                continue;
-            }
-            //Apply to all except object type enemy
-            switch(obj->objectType) {
-                case ObjectTypeEnemy:
-                    if(obj->name == "enemy3") {
-                        applyGravity(obj);
-                        break;
-                    } else if(obj->name == "ship" ||
-                            obj->name == "ship-wreck") {
-                        goto handleShip;
-                    }
-                case ObjectTypeFriendly:
-                case ObjectTypeNeutral:
-                    applyNonPlayerMotion(obj, stepDuration);
-                    break; //Just break, don't apply
-            handleShip:
-            default:
-                applyGravity(obj);
-                applyStokesApprox(obj);
-                applyBuoyancyApprox(obj);
-                break;
-            }
-            applyNewtonianPhysics(obj, stepDuration);
-            switch (obj->objectType) {
-            case ObjectTypePlayer:
-                applyPlayerMovement(obj);
-                applyPlayerDirChange(obj);
-                applyPlayerOceanBurstMovement(obj, stepDuration);
-                break;
-            default:
-                break;
-            }
-            applyRotationalHandling(obj, stepDuration);
-            applyObjectBoundaryCollision(obj);
-        }
-        //Broad collision handling separately
-        checkObjectCollisions();
-    }
-}
-
-void applyNewtonianPhysics(Object* obj, float stepDuration)
-{
-    Vec3 force = obj->cumForces();
-    obj->forces.clear(); //clear applied forces
-
-    //Apply only to objects with mass
-    if (obj->mass) {
-        // a = F / m
-        obj->acc = force / obj->mass;
-
-        //Velocity  = acceleration * time
-        obj->vel += obj->acc * stepDuration;
-
-        //Position = velocity * time
-        // Adjust pixel to meter radio
-        obj->pos += obj->vel * stepDuration * PIXEL_TO_METER;
-    }
-}
-
-void applyStokesApprox(Object* obj)
-{
-    //Only apply Buoyancy approximation to objects that have mass
-    //and if below waves
-    int waterLine = getOceanUpperBound(obj->pos.x);
-    if (obj->mass &&
-            obj->pos.y <= waterLine) {
-
-        //Water Density
-        float waterDensity = 1;
-
-        float radius = obj->avgRadius;
-        float volEst
-                = 4.0 / 3.0 * radius * radius * radius * M_PI;
-
-        //Force of Gravity
-        Acceleration forceG(0, -9.8, 0);
-        //F_B = V * D * F
-        Vec3 forceOfBuoyancy = -(volEst * forceG * waterDensity);
-        obj->forces.push_back(forceOfBuoyancy);
-    }
-}
-
-void applyGravity(Object* obj)
-{
-    //Apply gravity on objects with mass
-    if (obj->mass > 0) {
-        obj->forces.push_back(obj->mass * Acceleration(0, -9.8, 0));
-    }
-}
-
-/**
- * Applies resistance as a product of time
- * http://hyperphysics.phy-astr.gsu.edu/hbase/lindrg.html#c2
- * https://en.wikipedia.org/wiki/Drag_(physics)
- * https://en.wikipedia.org/wiki/Stokes'_law
- */
-void applyBuoyancyApprox(Object* obj)
-{
-
-    //Only apply Stokes approximation to objects that have mass
-    //and if below waves
-    if (obj->mass &&
-            obj->pos.y <= getOceanUpperBound(obj->pos.x)) {
-        //Viscoscity of water at 20C
-        float water_mu = 1.002;
-
-        Vec3 force = -(6.0f * (float) (M_PI) * water_mu * obj->avgRadius * obj->vel);
-
-        obj->forces.push_back(force);
-    }
-}
-
-void stepMapBoundsIteration()
-{
-
-    //Step mapBoundsIteration
-    //used to move waves forward in time
-    ++game.mapBoundsIteration;
-}
-
-void applyPlayerMovement(Object* obj)
-{
-    if (obj->pos.y < getOceanUpperBound(obj->pos.x)) {
-        float thrust = game.thrustModifier * obj->mass;
-        if (game.playerMovementDirectionMask & DirUp)
-            obj->forces.push_back(Vec3(0, thrust, 0));
-        if (game.playerMovementDirectionMask & DirDown) {
-            obj->forces.push_back(Vec3(0, -(thrust), 0));
-        }
-        if (game.playerMovementDirectionMask & DirRight) {
-            obj->forces.push_back(Vec3(thrust, 0, 0));
-        }
-        if (game.playerMovementDirectionMask & DirLeft) {
-            obj->forces.push_back(Vec3(-(thrust), 0, 0));
-        }
-    }
-}
-
 void applyPlayerDirChange(Object* obj)
 {
     if (obj->vel.x > 0 && obj->dim.x > 0) {
@@ -340,43 +202,6 @@ void applyPlayerDirChange(Object* obj)
     }
     if (obj->vel.x < 0 && obj->dim.x < 0) {
         obj->dim.x = -obj->dim.x;
-    }
-}
-
-void applyObjectCollisions(Object* obj)
-{
-    switch (obj->objectType) {
-    case ObjectTypePlayer:
-        applyObjectBoundaryCollision(obj);
-        break;
-    default:
-        break;
-    }
-}
-
-void applyObjectBoundaryCollision(Object* obj)
-{
-    switch(obj->objectType) {
-    case ObjectTypePlayer:
-        //Only let player move left left from position game.xres/2
-        if(obj->pos.x < game.cameraXMin) {
-            obj->pos.x = game.cameraXMin;
-            obj->vel.x = -obj->vel.x;
-        }
-    case ObjectTypeEnemy:
-    case ObjectTypeFriendly:
-        if (    obj->name != "treasure" &&
-                obj->pos.y < getOceanFloorUpperBound(obj->pos.x) + obj->avgRadius * PIXEL_TO_METER) {
-            obj->pos.y = getOceanFloorUpperBound(obj->pos.x) + obj->avgRadius * PIXEL_TO_METER;
-        }
-    default:
-        break;
-    }
-}
-
-void applyPlayerOceanBurstMovement(Object* player, float stepDuration) {
-    if (player->pos.y > getOceanUpperBound(player->pos.x) && player->vel.y > 8.0f) {
-        player->vel.y = 8.0f;
     }
 }
 

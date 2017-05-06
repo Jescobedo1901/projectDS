@@ -28,7 +28,7 @@ void applySpawnRate(float stepDuration)
         spawnEnemy();
     }
 
-    if(rnd < probabilityPerStep * 0.33) {
+    if (rnd < probabilityPerStep * 0.33) {
         spawnFriendly();
     }
 
@@ -39,7 +39,7 @@ void spawnEnemy()
     //double rnd = (double) rand() / (double) RAND_MAX;
     float rndPos = (float) rand() / (float) RAND_MAX;
     float rndNum = (float) rand() / (float) RAND_MAX;
-    int rndDim = (int)(rand() % 60) + 30;
+    int rndDim = (int) (rand() % 60) + 30;
 
     if (rndNum < .2) {
         Object* enemy2 = new Object();
@@ -54,11 +54,11 @@ void spawnEnemy()
         enemy2->vel.x = -(rndPos * 3 + 3);
         enemy2->dim.x = rndDim;
         enemy2->dim.y = rndDim;
-        enemy2->offset = enemy2->dim/2.0f;
+        enemy2->offset = enemy2->dim / 2.0f;
         enemy2->avgRadius = dimToAvgRadius(enemy2->dim);
         enemy2->mass = avgRadiusTOEstMass(enemy2->avgRadius);
         enemy2->intAttribute1 = 20; //hard coded for now
-	mapResource(enemy2, "images/enemy2");
+        mapResource(enemy2, "images/enemy2");
         enemy2->name = "enemy2";
         game.objects.push_back(enemy2);
     } else if (rndNum >= .2 && rndNum < .3) {
@@ -70,15 +70,15 @@ void spawnEnemy()
         int max = getOceanUpperBound(enemy3->pos.x);
         int min = getOceanFloorUpperBound(enemy3->pos.x);
         //float rnd = (float) rand() / (float) RAND_MAX;
-        enemy3->pos.y = min+25;
+        enemy3->pos.y = min + 25;
         enemy3->vel.x = -(rndPos * 3 + 3);
         enemy3->dim.x = 35;
         enemy3->dim.y = 69;
-        enemy3->offset = enemy3->dim/2.0f;
+        enemy3->offset = enemy3->dim / 2.0f;
         enemy3->avgRadius = enemy3->dim.y / 2.0 / PIXEL_TO_METER;
         enemy3->mass = avgRadiusTOEstMass(enemy3->avgRadius);
         enemy3->intAttribute1 = 40;
-	mapResource(enemy3, "images/enemy3");
+        mapResource(enemy3, "images/enemy3");
         enemy3->name = "enemy3";
         game.objects.push_back(enemy3);
     } else if (rndNum >= .3 && rndNum < .31) {
@@ -86,7 +86,7 @@ void spawnEnemy()
             Object* ship = new Object();
             ship->scene = GameScenePlay;
             ship->objectType = ObjectTypeEnemy;
-            ship->pos.x = game.player->pos.x + game.xres*2;
+            ship->pos.x = game.player->pos.x + game.xres * 2;
             ship->pos.y = getOceanUpperBound(game.player->pos.x);
             ship->vel.x = -(rndPos * 2 + 1);
             ship->dim.x = 150;
@@ -105,13 +105,13 @@ void spawnEnemy()
             Object* w1 = new Object();
             w1->scene = GameScenePlay;
             w1->objectType = ObjectTypeEnemy;
-            w1->pos.x = game.player->pos.x +game.xres;
+            w1->pos.x = game.player->pos.x + game.xres;
             w1->pos.y = getOceanUpperBound(game.player->pos.x);
             w1->vel.x = -0.1;
             w1->dim.x = 82.5;
             w1->dim.y = 150;
             w1->offset.y = 25;
-            w1->offset.x =  41.25;
+            w1->offset.x = 41.25;
             w1->avgRadius = dimToAvgRadius(w1->dim);
             float r = w1->avgRadius;
             w1->mass = 4.0 / 3.0 * r * r * r * M_PI * 1.4; //floats
@@ -131,7 +131,7 @@ void spawnEnemy()
             w2->dim.x = 82.5;
             w2->dim.y = 150;
             w2->offset.y = 25;
-            w2->offset.x =  41.25;
+            w2->offset.x = 41.25;
             w2->avgRadius = dimToAvgRadius(w2->dim);
             r = w2->avgRadius;
             w2->mass = 4.0 / 3.0 * r * r * r * M_PI * 1.4; //floats
@@ -161,7 +161,7 @@ void spawnEnemy()
         enemy1->vel.x = -(rndPos * 3 + 3);
         enemy1->dim.x = rndDim;
         enemy1->dim.y = rndDim;
-        enemy1->offset = enemy1->dim/2.0f;
+        enemy1->offset = enemy1->dim / 2.0f;
         enemy1->avgRadius = dimToAvgRadius(enemy1->dim);
         enemy1->mass = avgRadiusTOEstMass(enemy1->avgRadius);
         enemy1->intAttribute1 = 10; //hard coded for now
@@ -186,7 +186,7 @@ void spawnFriendly()
         int min = getOceanFloorUpperBound(friendly1->pos.x);
         //float rnd = (float) rand() / (float) RAND_MAX;
         friendly1->pos.y = rand() % (max - min) + min;
-        friendly1->vel.x = -(rndPos * 1.1+ 0.25);
+        friendly1->vel.x = -(rndPos * 1.1 + 0.25);
         friendly1->dim.x = 64;
         friendly1->dim.y = 64;
         friendly1->offset = Position(32, 32, 0);
@@ -244,13 +244,13 @@ void applyPlayerCollision(Object* player, Object* other,
     case ObjectTypeEnemy:
         game.healthTxt->intAttribute1 -= other->intAttribute1;
         removeBag.insert(other);
-		playDmg();
+        playDmg();
         break;
     case ObjectTypeFriendly:
-        if ( other->name == "friendly1" ) {
+        if (other->name == "friendly1") {
             game.healthTxt->intAttribute1 = std::min(
-                game.healthTxt->intAttribute1 + other->intAttribute1,
-                (int)(game.healthTxt->doubleAttribute1));
+                    game.healthTxt->intAttribute1 + other->intAttribute1,
+                    (int) (game.healthTxt->doubleAttribute1));
         }
         game.pointsTxt->intAttribute1 += other->intAttribute1;
         removeBag.insert(other);
@@ -354,7 +354,7 @@ void checkObjectCollisions()
 
 bool isColliding(Object* left, Object* right, std::set<Object*>& removeBag)
 {
-    if(left->scene != GameScenePlay || right->scene != GameScenePlay) {
+    if (left->scene != GameScenePlay || right->scene != GameScenePlay) {
         return false;
     }
     if (removeBag.find(left) != removeBag.end() ||
@@ -367,9 +367,9 @@ bool isColliding(Object* left, Object* right, std::set<Object*>& removeBag)
     //Is left colliding with right
     float dist = (left->pos - right->pos).magnitude();
     float radiuses = left->avgRadius * PIXEL_TO_METER +
-                    right->avgRadius * PIXEL_TO_METER;
+            right->avgRadius * PIXEL_TO_METER;
     float effectiveDist = dist - radiuses;
-    if ( effectiveDist <= 0.0 ) {
+    if (effectiveDist <= 0.0) {
         return true;
     }
     return false;
@@ -390,7 +390,7 @@ void handleESC(const XEvent& event)
             } else if (game.scene & GameScenePlay) {
                 game.scene = GameSceneMenu;
                 game.isGamePaused = true;
-				audioLoop();
+                audioLoop();
             } else if (game.scene & GameSceneCredits) {
                 game.scene = GameSceneMenu;
             } else if (game.scene & GameSceneHelp) {
@@ -420,17 +420,17 @@ void initSceneUpgrades()
         Object* upgradesTitle = new Object();
         upgradesTitle->scene = GameSceneUpgrades;
         upgradesTitle->objectType = ObjectTypeText;
-            if (i == 0) {
-                upgradesTitle->name = "UPGRADES! ! ! !";
-                upgradesTitle->color = Color(25, 225, 25);
-                upgradesTitle->style = plain40;
-            } else {
-                upgradesTitle->name = "Press ESC to Exit!";
-                upgradesTitle->color = Color(255, 255, 255);
-                upgradesTitle->style = plain17;
-            }
+        if (i == 0) {
+            upgradesTitle->name = "UPGRADES! ! ! !";
+            upgradesTitle->color = Color(25, 225, 25);
+            upgradesTitle->style = plain40;
+        } else {
+            upgradesTitle->name = "Press ESC to Exit!";
+            upgradesTitle->color = Color(255, 255, 255);
+            upgradesTitle->style = plain17;
+        }
         upgradesTitle->pos.y = 550 + (i * 75);
-        upgradesTitle->pos.x = game.xres*.45;
+        upgradesTitle->pos.x = game.xres * .45;
         game.objects.push_back(upgradesTitle);
     }
 
@@ -556,7 +556,7 @@ void initSceneUpgrades()
     spendingScoreTxt->name = "0";
     game.objects.push_back(spendingScoreTxt);
     game.spendingScoreTxt = spendingScoreTxt;
-    
+
 
 }
 
@@ -564,20 +564,21 @@ void handleClickUpgradeItems(const XEvent& event)
 {
     //Total Points stored game.playerInfo.totalScore
     if (event.type == ButtonPress) {
-    int x = event.xbutton.x;
-    int y = game.yres - event.xbutton.y;
+        int x = event.xbutton.x;
+        int y = game.yres - event.xbutton.y;
         for (int i = 0, l = game.objects.size(); i < l; ++i) {
             Object* obj = game.objects[i];
             //If object is in Upgrades Scene and has a name
             //then it's an Upgrade Option
             if (obj->scene & (GameSceneUpgrades) && !obj->name.empty()) {
-                if (y >= obj->  pos.y && y <= (obj->pos.y + obj->dim.y) &&
+                if (y >= obj-> pos.y && y <= (obj->pos.y + obj->dim.y) &&
                         x >= obj->pos.x && x <= (obj->pos.x + obj->dim.x)) {
                     //then this button was pressed!
                     if (obj->name == "+ (H)ealth") {
                         int avail = availablePoints();
-                        int cost = upgradeCurrentCost(game.upgrade2->intAttribute1);
-                        if(avail >= cost) {
+                        int cost = 
+                            upgradeCurrentCost(game.upgrade2->intAttribute1);
+                        if (avail >= cost) {
                             game.upgrade2->intAttribute1++;
                             int increment = 10 * game.upgrade2->intAttribute1;
                             game.healthTxt->intAttribute1 += increment;
@@ -587,12 +588,13 @@ void handleClickUpgradeItems(const XEvent& event)
                             playDmg();
                         }
                     } else if (obj->name == "+ (S)peed") {
-                            int avail = availablePoints();
-                            int cost = upgradeCurrentCost(game.upgrade1->intAttribute1);
-                            if(avail >= cost) {
+                        int avail = availablePoints();
+                        int cost = 
+                            upgradeCurrentCost(game.upgrade1->intAttribute1);
+                        if (avail >= cost) {
                             game.upgrade1->intAttribute1++;
                             game.thrustModifier = 100 * std::pow(1.05,
-                            game.upgrade1->intAttribute1);
+                                    game.upgrade1->intAttribute1);
                             updateUsedPoints(cost);
                         } else {
                             playDmg();
@@ -631,12 +633,12 @@ void handleMenuPress(const XEvent& event)
                 for (int i = 0, l = game.objects.size(); i < l; i++) {
                     Object* obj = game.objects[i];
                     if (obj->name == "(M)ute") {
-                        if(obj->objectType == ObjectTypeRectangle) {
+                        if (obj->objectType == ObjectTypeRectangle) {
                             if (obj->intAttribute1 == 0) {
-                                obj->color = Color(51,204,255);
+                                obj->color = Color(51, 204, 255);
                                 obj->intAttribute1 = 1;
-                            } else{
-                                obj->color = Color(0,0,0,32);
+                            } else {
+                                obj->color = Color(0, 0, 0, 32);
                                 obj->intAttribute1 = 0;
                             }
                             muteAudio();
@@ -690,7 +692,8 @@ void handleUpgradePress(const XEvent& event)
                         playDmg();
                     }
                     break;
-                } else if (obj->name == "+ (S)peed" && (key == XK_s || key == XK_S)) {
+                } else if ( obj->name == "+ (S)peed" && 
+                            (key == XK_s || key == XK_S)) {
                     int avail = availablePoints();
                     int cost = upgradeCurrentCost(
                             game.upgrade1->intAttribute1);
@@ -754,7 +757,7 @@ void initSceneHelp()
         hlogicTxt->name = helpLogic[i];
         hlogicTxt->objectType = ObjectTypeText;
         hlogicTxt->style = plain40;
-        hlogicTxt->pos.y = 100 + i*150;
+        hlogicTxt->pos.y = 100 + i * 150;
         hlogicTxt->pos.x = 75;
         game.objects.push_back(hlogicTxt);
         if (i == 1) {

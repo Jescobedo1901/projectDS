@@ -159,7 +159,6 @@ enum TextStyle {
  * Generic resource class
  */
 struct Resource {
-
     Resource(std::string p);
 
     virtual ~Resource();
@@ -282,15 +281,16 @@ struct Object {
     /**
      * (OPTIONAL)
      * Optional integer attribute
-     * If the type is ObjectTypeEenemy, then this is the amount of damage it inflicts
+     * If the type is ObjectTypeEenemy, then this is the amount of damage it
+     * inflicts
      */
     int intAttribute1;
-	 /**
+    /**
      * (OPTIONAL)
      * Optional Double attribute
      * Used for floats
      */
-	double doubleAttribute1;
+    double doubleAttribute1;
 
     Resource* resource;
 
@@ -325,8 +325,10 @@ struct Object {
  highestScore will hold max score in one play*/
 
 struct Score {
+
     Score(std::string name, int totalScore, int highScore) :
-    name(name), totalScore(totalScore), highScore(highScore) {
+    name(name), totalScore(totalScore), highScore(highScore)
+    {
     }
     std::string name;
     int totalScore;
@@ -352,7 +354,7 @@ struct Game {
     GLXContext glc;
 
 
-	clock_t start; //clock start of game
+    clock_t start; //clock start of game
 
 
     //Set to true to exit the game
@@ -410,7 +412,7 @@ struct Game {
 
     Object* pointsTxt;
 
-	Object* timeTxt;
+    Object* timeTxt;
 
     Object* pointsLast;
 
@@ -445,7 +447,8 @@ struct Game {
     std::vector<std::vector<Object*> > scoreObjects;
 
     /**
-     * Keeps track of how many objects are a part of initialization and should never be removed
+     * Keeps track of how many objects are a part of initialization and should
+     * never be removed
      */
     int preservedObjects;
 };
@@ -472,6 +475,8 @@ void uninitAudio();
 
 void uninitResources();
 
+void decompressResources();
+void decompressedResourcesCleanup();
 void initResources();
 void initScenes();
 void initSceneMenu();
@@ -507,7 +512,7 @@ void generateFloorObjects(int x);
  */
 void mapResource(Object* obj, const char* resourceName);
 
-unsigned char *buildAlphaData(Ppmimage *,bool = true, int = 0);
+unsigned char *buildAlphaData(Ppmimage *, bool = true, int = 0);
 
 
 //SkyBounds for rendering map
