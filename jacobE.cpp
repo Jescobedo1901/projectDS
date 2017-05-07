@@ -2,9 +2,46 @@
 //Group 4
 //DeepSea Survival Game
 
+
+//---------------COMMENTS-------------
+/*****************************
+ * xx This code has a few main points of functionality.
+ * -----------------------
+ * OO Check for collisions
+ * OO Resolve collisions
+ *      -(Imagination is the limit for resolving conflicts,
+ *        additional room to grow)
+ * -----------------------
+ * OO Determine spawn rate
+ * OO Suggest spawning distribution
+ * -----------------------
+ * OO Initialize any newly spawned objects
+ * OO Structure and format a few menus
+ * -----------------------
+ * OO Handle various scene button selection
+ * OO Handle button selection resolution (ESC included)
+ * OO Support for keyboard input
+ *
+ * xx Function title are labeled by their functionality
+ * xx All objects must be initialized with a specific set of values
+ *      - These values determine various things such as movement,
+ *        rendering, and operation/resolution upon selection
+ * yy A few contributions not listed within code:
+ *      General physics help and logic
+ *      Assist with main/credit menu structure and design
+ *      Simplifying the code structure for less complexity
+ *****************************/
+
+
+
+
 #include "game.h"
 
 bool isColliding(Object* left, Object* right, std::set<Object*>& removeBag);
+
+/**************************************************************
+ *                   Spawn Rate                               *
+ **************************************************************/
 
 void applySpawnRate(float stepDuration)
 {
@@ -34,6 +71,10 @@ void applySpawnRate(float stepDuration)
 
 }
 
+/**************************************************************
+ *             Spawn Enemy + Distribution                     *
+ **************************************************************/
+
 void spawnEnemy()
 {
     //double rnd = (double) rand() / (double) RAND_MAX;
@@ -41,6 +82,7 @@ void spawnEnemy()
     float rndNum = (float) rand() / (float) RAND_MAX;
     int rndDim = (int) (rand() % 60) + 30;
 
+    //Start of the probability distribution for spawning enemies
     if (rndNum < .2) {
         Object* enemy2 = new Object();
         enemy2->scene = GameScenePlay;
@@ -171,6 +213,10 @@ void spawnEnemy()
     }
 }
 
+/**************************************************************
+ *             Spawn Friendly + Distribution                  *
+ **************************************************************/
+
 void spawnFriendly()
 {
     float rndPos = (float) rand() / (float) RAND_MAX;
@@ -228,12 +274,16 @@ void spawnFriendly()
         friendly2->offset = Position(32, 32, 0);
         friendly2->avgRadius = dimToAvgRadius(friendly2->dim);
         friendly2->mass = avgRadiusTOEstMass(friendly2->avgRadius);
-        friendly2->intAttribute1 = 1; //hard coded for now
+        friendly2->intAttribute1 = 2; //hard coded for now
         friendly2->name = "friendly2";
         mapResource(friendly2, "images/friendly2");
         game.objects.push_back(friendly2);
     }
 }
+
+/**************************************************************
+ *             Handle Player Collision Resolution             *
+ **************************************************************/
 
 void applyPlayerCollision(Object* player, Object* other,
         std::set<Object*>& removeBag)
@@ -265,6 +315,10 @@ void applyPlayerCollision(Object* player, Object* other,
     }
 }
 
+/**************************************************************
+ *             Handle Enemy Collision Resolution              *
+ **************************************************************/
+
 void applyEnemyCollision(
         Object* enemy, Object* other,
         std::set<Object*>& removeBag)
@@ -292,19 +346,42 @@ void applyEnemyCollision(
     }
 }
 
+/**************************************************************
+ *             Handle Friendly Collision Resolution           *
+ **************************************************************/
+
 void applyFriendlyCollision(
         Object* friendly, Object* other,
         std::set<Object*>& removeBag)
 {
-
+    switch (other->objectType) {
+        //Player and Enemy is room to grow
+        case ObjectTypePlayer:
+            break;
+        case ObjectTypeEnemy:
+            break;
+        case ObjectTypeFriendly:
+            if (friendly->name == "treasure") {
+                friendly->intAttribute1 += other->intAttribute1;
+                removeBag.insert(other);
+            }
+            break;
+        default:
+            break;
+    }
 }
 
+//Room to grow, initialized for completion of logic
 void applyNeutralCollision(
         Object* neutral, Object* other,
         std::set<Object*>& removeBag)
 {
 
 }
+
+/**************************************************************
+ *             Basic Collision Resolution                     *
+ **************************************************************/
 
 void checkObjectCollisions()
 {
@@ -352,6 +429,10 @@ void checkObjectCollisions()
     }
 }
 
+/**************************************************************
+ *             Initial Collision Check                        *
+ **************************************************************/
+
 bool isColliding(Object* left, Object* right, std::set<Object*>& removeBag)
 {
     if (left->scene != GameScenePlay || right->scene != GameScenePlay) {
@@ -374,6 +455,10 @@ bool isColliding(Object* left, Object* right, std::set<Object*>& removeBag)
     }
     return false;
 }
+
+/**************************************************************
+ *             Handle ESC keypress by scene                   *
+ **************************************************************/
 
 void handleESC(const XEvent& event)
 {
@@ -403,6 +488,10 @@ void handleESC(const XEvent& event)
         }
     }
 }
+
+/**************************************************************
+ *             Create and structure the Upgrade scene         *
+ **************************************************************/
 
 void initSceneUpgrades()
 {
@@ -560,6 +649,10 @@ void initSceneUpgrades()
 
 }
 
+/**************************************************************
+ *             Upgrade scene button resolution                *
+ **************************************************************/
+
 void handleClickUpgradeItems(const XEvent& event)
 {
     //Total Points stored game.playerInfo.totalScore
@@ -608,6 +701,10 @@ void handleClickUpgradeItems(const XEvent& event)
     }
 }
 
+/**************************************************************
+ *      Simple functions used for handling accurate logic     *
+ **************************************************************/
+
 int upgradeCurrentCost(int totalAllocated)
 {
     return std::max(1 << totalAllocated, 1);
@@ -623,6 +720,10 @@ int availablePoints()
     return (game.playerInfo.totalScore) - (game.usedScore) +
             (game.pointsTxt->intAttribute1);
 }
+
+/**************************************************************
+ *             Handle Menu scene button press events          *
+ **************************************************************/
 
 void handleMenuPress(const XEvent& event)
 {
@@ -671,6 +772,10 @@ void handleMenuPress(const XEvent& event)
     }
 }
 
+/**************************************************************
+ *       Handle Upgrade scene button press events             *
+ **************************************************************/
+
 void handleUpgradePress(const XEvent& event)
 {
     if (game.scene & GameSceneUpgrades && event.type == KeyPress) {
@@ -712,6 +817,10 @@ void handleUpgradePress(const XEvent& event)
         }
     }
 }
+
+/**************************************************************
+ *             Create and structure the Help scene            *
+ **************************************************************/
 
 void initSceneHelp()
 {
@@ -766,5 +875,4 @@ void initSceneHelp()
             hlogicTxt->color = Color(0, 240, 0);
         }
     }
-
 }
