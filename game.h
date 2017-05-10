@@ -174,7 +174,6 @@ struct Resource {
  */
 struct TextureResource : Resource {
     TextureResource(std::string texFile, int tol = 0);
-    ~TextureResource();
     virtual GLuint getResourceId();
 protected:
     GLuint texId;
@@ -209,7 +208,7 @@ struct Object {
     intAttribute1(),
     resource(NULL),
     rotateByVelocity(false),
-    slowRotate(false),
+    fixedRotation(false),
     rotationRate(0),
     rotation(0),
     rotationTarget(0)
@@ -296,7 +295,7 @@ struct Object {
 
     bool rotateByVelocity;
 
-    bool slowRotate;
+    bool fixedRotation;
 
     /**
      * Degrees per second
@@ -512,7 +511,7 @@ void generateFloorObjects(int x);
  */
 void mapResource(Object* obj, const char* resourceName);
 
-unsigned char *buildAlphaData(Ppmimage *, bool = true, int = 0);
+unsigned char *addAlphaChannel(Ppmimage *, bool = true, int = 0);
 
 
 //SkyBounds for rendering map

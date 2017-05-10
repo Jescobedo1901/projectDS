@@ -184,7 +184,7 @@ void spawnEnemy()
             game.objects.push_back(w2);
 
             //Rotate both objects together
-            w1->slowRotate = w2->slowRotate = true;
+            w1->fixedRotation = w2->fixedRotation = true;
             w1->rotationTarget = (rand() % 90 + 180);
             w1->rotationRate = 15;
             w2->rotationTarget = -(rand() % 90 + 180);

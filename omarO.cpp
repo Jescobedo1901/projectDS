@@ -2,17 +2,73 @@
 //Group 4
 //DeepSea Survival Game
 
-#include <sys/types.h>
+//Include headers for networking
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <netdb.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <netinet/tcp.h>
-#include <iomanip>
 
 #include "game.h"
 
+/**
+ * The following functions of the game are implemented in this source file:
+ *
+ * Resource generation
+ *      void decompressedResourcesCleanup()
+ *      void decompressResources()
+ * Scene loading & rendering
+ *      void renderAll()
+ * Generation of the game's map:
+ *      void renderMap()
+ *      float getSkyUpperBound(int x)
+ *      float getSkyLowerBound(int x)
+ *      float getOceanUpperBound(int x)
+ *      float getOceanFloorUpperBound(int x)
+ *      float getOceanFloorLowerBound(int x)
+ *      void stepMapBoundsIteration()
+ * Physics Handling:
+ *      void stepPhysics(float stepDuration)
+ *      void applyNewtonianPhysics(Object* obj, float stepDuration)
+ *      void applyBuoyancyApprox(Object* obj)
+ *      void applyGravity(Object* obj)
+ *      void applyStokesApprox(Object* obj)
+ *      void applyPlayerMovement(Object* obj)
+ *      void handlePlayerMovement(const XEvent& event)
+ *      void applyObjectBoundaryCollision(Object* obj)
+ *      void applyPlayerOceanBurstMovement(Object* player, float stepDuration)
+ *      bool isOffscreen(Object* obj)
+ *      bool applyObjectLifetimePolicies(Object* obj)
+ *      void applyNonPlayerMotion(Object* hobj, float stepDuration)
+ *      void applyRotationalHandling(Object* obj, float stepDuration)
+ * Resource classes / image handling
+ *      Resource::Resource(std::string p)
+ *      Resource::~Resource()
+ *      TextureResource::TextureResource(std::string texFile, int tol)
+ *      GLuint TextureResource::getResourceId()
+ *      FlipBook::FlipBook(std::string, float, int)
+ *      FlipBook::~FlipBook()
+ *      void FlipBook::step(float stepDuration)
+ *      GLuint FlipBook::getResourceId()
+ *      void FlipBook::setFPS(float newFPS)
+ *      void mapResource(Object* obj, const char* resourceName)
+ *      void stepFlipBooks(float stepDuration)
+ *      unsigned char *addAlphaChannel(Ppmimage *img, bool firstPixel, int tol)
+ * High score / networking:
+ *      int updateHighScores(std::string username, int latestHigh)
+ * Game logic
+ *      void updateGameStats()
+ * Keyboard input halding
+ *      void handleLoginInput(const XEvent& event)
+ *
+ *
+ * Note: This file contains specific sections which were my personal
+ * responsibility of maintaining and implementing. However, this file does not
+ * represent my total contribution to this project.
+ */
+
+/**
+ * Automatically cleanup all ppm images from the ./images directory (generated)
+ *
+ * This function uses the opendir, readdir, and remove functions
+ */
 void decompressedResourcesCleanup()
 {
     DIR *d;
@@ -22,8 +78,8 @@ void decompressedResourcesCleanup()
         while ((dir = readdir(d)) != NULL) {
             if (dir->d_type == DT_REG) {
                 std::string ext(".ppm"), texFile(dir->d_name);
-                //If textureFile does not end with .ppm, we must convert
-                //it to .ppm first
+                //Verify that the possible texture file (texFile)
+                //ends with .ppm
                 if (texFile.size() > ext.size() &&
                         texFile.compare(
                         texFile.size() - ext.size(), ext.size(), ext
@@ -34,7 +90,7 @@ void decompressedResourcesCleanup()
                         perror("Error deleting temporary resource file");
                     } else {
                         printf(
-                            "Resource: %s - cleaned up\n", 
+                            "Resource: %s - cleaned up\n",
                             removingFile.c_str()
                         );
                     }
@@ -45,6 +101,12 @@ void decompressedResourcesCleanup()
     }
 }
 
+/**
+ * Decompress all resources (images)
+ *
+ * This function will read all non-ppm images in the images directory and
+ * convert them to ppm format usable by the ppm header
+ */
 void decompressResources()
 {
     DIR *d;
@@ -54,8 +116,7 @@ void decompressResources()
         while ((dir = readdir(d)) != NULL) {
             if (dir->d_type == DT_REG) {
                 std::string ext(".ppm"), texFile(dir->d_name);
-                //If textureFile does not end with .ppm, we must convert it
-                //to .ppm first
+                //Select only files that do not end with .ppm
                 if (texFile.size() > ext.size() &&
                         (texFile.compare(
                         texFile.size() - ext.size(), ext.size(), ext
@@ -76,17 +137,28 @@ void decompressResources()
     }
 }
 
+/**
+ * This function is responsible for the rendering logic and keeping track
+ * of the motion of the "camera" as the player moves on the screen.
+ *
+ */
 void renderAll()
 {
     glClear(GL_COLOR_BUFFER_BIT); // Clear the color buffer (background)
+    //When game scene play is loaded  or the game is paused
     if (game.scene & GameScenePlay || game.isGamePaused) {
         glPushMatrix();
+        //Limit camera X min boundary to half the the left screen
+        //of the player but do not allow player to go back
+        //more than half the screen
         game.cameraXMin = std::max(
-                game.cameraXMin, game.player->pos.x - game.xres / 2
-                );
+            game.cameraXMin, game.player->pos.x - game.xres / 2
+        );
+        //This moves the camera x min forward when the player moves forward
         game.camera.x = std::max(
-                game.cameraXMin, game.player->pos.x - game.xres / 4
-                );
+            game.cameraXMin, game.player->pos.x - game.xres / 4
+        );
+        //Move the camera with the player movion
         glTranslatef(-game.camera.x, -game.camera.y, -game.camera.z);
         renderMap();
         renderObjects(GameScenePlay);
@@ -95,20 +167,26 @@ void renderAll()
             renderObjects(GameSceneHUD);
         }
     }
+    //If the game scene play and hud are NOT loaded, make sure
+    //to render the map in the background
     if (game.scene & ~(GameScenePlay | GameSceneHUD)) {
         renderMap();
         renderObjects(game.scene);
     }
-    //audioLoop();
+
     glXSwapBuffers(game.display, game.win);
 }
 
 /**
  * Render the map onto the screen.
- * 
+ *
  * To keep things simple, the map is rendered inplace of the game's translation
  * This means that we only need to draw the map on the screen where the player
  * is located
+ *
+ * @TODO replace vertical line drawing with vertices, to remove occasional
+ * effect where the blurring of the lines becomes visible if the player
+ * is moving too fast
  */
 void renderMap()
 {
@@ -132,44 +210,80 @@ void renderMap()
     }
 }
 
-//The following functions define the parameters of the map rendering
+//Map generation parameter functions
 
+/**
+ * This function defines the upper boundary of the sky (y resolution, constant)
+ */
 float getSkyUpperBound(int x)
 {
     return game.yres;
 }
 
+/**
+ * Returns the definition of the sky's lower
+ * boundary (75% of y resolution, constant)
+ */
 float getSkyLowerBound(int x)
 {
     return (.75 * game.yres);
 }
 
+/**
+ * Returns the definition of the ocean's upper boundary as a sine wave
+ * modeled as a function of time (game.mapBoundsIteration)
+ *
+ * This function will make the ocean move to the left even if the player
+ * is not moving due to the time parameter of mapBoundsIteration
+ * which is updated when the game is player
+ *
+ * The parameters of this function were defined experimentally to provide
+ * for a simple but effective "waves"
+ *
+ */
 float getOceanUpperBound(int x)
 {
-    return (.8 * game.yres) + 10 * 
+    return (.8 * game.yres) + 10 *
             std::sin((x + game.mapBoundsIteration * 0.25) / 25.0);
 }
 
+/**
+ * Returns the definition of the ocean floor upper bound
+ * as a function of a sine wave which is constant for x,
+ * meaning that the function does not move, only the player.
+ * (surface moves left when player moves right)
+ */
 float getOceanFloorUpperBound(int x)
 {
     return 100 + 30 * std::sin(x / 100.0);
 }
 
+/**
+ * Returns the definition of the ocean floor lower bound (screen bottom)
+ * @param x
+ * @return
+ */
 float getOceanFloorLowerBound(int x)
 {
     return 0;
 }
 
-//This function is called every step
-
+/**
+ * Increments map bounds iteration such that
+ * the ocean can move forward in time based on the rate at which
+ * the physics calculation are run
+ */
 void stepMapBoundsIteration()
 {
-
-    //Step mapBoundsIteration
-    //used to move waves forward in time
     ++game.mapBoundsIteration;
 }
 
+/**
+ * Moves the physics of the game play forward in time by
+ * the specified stepDuration parameter
+ *
+ * It is only applied if the gameScene play is loaded
+ */
 void stepPhysics(float stepDuration)
 {
     /**
@@ -178,34 +292,47 @@ void stepPhysics(float stepDuration)
      */
     if (game.scene & GameScenePlay) {
 
+        //Move map generation forward
         stepMapBoundsIteration();
+
         applySpawnRate(stepDuration);
 
         stepFlipBooks(stepDuration);
 
-        for (std::vector<Object*>::iterator 
-            it = game.objects.begin(), 
+        /**
+         * Loop through all objects and apply the correct
+         * physics effects depending on the type of the object
+         */
+        for (std::vector<Object*>::iterator
+            it = game.objects.begin(),
             end = game.objects.end();
-            it != end; ++it) {
+            it != end;) {
             Object* obj = *it;
+            //Check if object has reached the end of its life
             if (applyObjectLifetimePolicies(obj)) {
+                it = game.objects.erase(it);
                 continue;
             }
             //Apply to all except object type enemy
             switch (obj->objectType) {
             case ObjectTypeEnemy:
+                //Specifically apply gravity to enemy3 types
                 if (obj->name == "enemy3") {
                     applyGravity(obj);
                     break;
                 } else if (obj->name == "ship" ||
                         obj->name == "ship-wreck") {
+                    //circumvent non player motion and apply only default
+                    //effects on this object
                     goto handleShip;
                 }
             case ObjectTypeFriendly:
             case ObjectTypeNeutral:
+                //Friendlies and neutrals have specific motion
+                //defined in applyNonPlayerMotion
                 applyNonPlayerMotion(obj, stepDuration);
-                break; //Just break, don't apply
-            handleShip:
+                break; //Just break, don't apply the below
+            handleShip: //
             default:
                 applyGravity(obj);
                 applyStokesApprox(obj);
@@ -215,6 +342,10 @@ void stepPhysics(float stepDuration)
             applyNewtonianPhysics(obj, stepDuration);
             switch (obj->objectType) {
             case ObjectTypePlayer:
+                /**
+                 * The following physics effects are
+                 * applied specifically to player ONLY
+                 */
                 applyPlayerMovement(obj);
                 applyPlayerDirChange(obj);
                 applyPlayerOceanBurstMovement(obj, stepDuration);
@@ -222,14 +353,35 @@ void stepPhysics(float stepDuration)
             default:
                 break;
             }
+
             applyRotationalHandling(obj, stepDuration);
             applyObjectBoundaryCollision(obj);
+            ++it;
         }
-        //Broad collision handling separately
+        /**
+         * Check all objects for collisions
+         * This function is the responsibility of Jacob
+         * and the implementation can be found in jacobE.cpp
+         */
         checkObjectCollisions();
     }
 }
 
+/**
+ * Translate all physical forces into a single vector
+ * and calculate the acceleration and apply it is a
+ * fraction of a second (stepDuration) to the velocity
+ * which then is added to the position as a fraction of
+ * a second (stepDuration)
+ *
+ * Note: Only objects with a non-zero mass are considered
+ * for physical forces
+ *
+ * Equations used:
+ * F = ma
+ * a = F / m
+ * p = v t
+ */
 void applyNewtonianPhysics(Object* obj, float stepDuration)
 {
     Vec3 force = obj->cumForces();
@@ -249,7 +401,25 @@ void applyNewtonianPhysics(Object* obj, float stepDuration)
     }
 }
 
-void applyStokesApprox(Object* obj)
+/**
+ * Apply force of buoyancy for any object under the waterline
+ * as long as it has a mass
+ *
+ *
+ * Note: This function estimated volume based on the object's
+ * average radious property
+ *
+ *
+ * Equations used:
+
+ *
+ * Force of buoyancy = Vol * g * μ_water
+ * Volume = 4/3 r ^3 PI
+ *
+ * Constants:
+ *  μ_water = 1
+ */
+void applyBuoyancyApprox(Object* obj)
 {
     //Only apply Buoyancy approximation to objects that have mass
     //and if below waves
@@ -272,6 +442,12 @@ void applyStokesApprox(Object* obj)
     }
 }
 
+/**
+ * Gravity is applied to all objects that have mass uniformly (negative y)
+ *
+ * Equations used:
+ * Force of gravity = ma => Force of gravity y - axis = -9.8 * m
+ */
 void applyGravity(Object* obj)
 {
     //Apply gravity on objects with mass
@@ -281,12 +457,18 @@ void applyGravity(Object* obj)
 }
 
 /**
- * Applies resistance as a product of time
+ * The stokes approximation provides for a realistic motion in water
+ * where the volume of the object is considered. Only objects under
+ * the water line are considered and only ones that have a non-zero mass.
+ *
+ * This was an area of research where the following sources were eventually
+ * used to aid in the formation of a "good enough" approximation to model
+ * drag under water:
  * http://hyperphysics.phy-astr.gsu.edu/hbase/lindrg.html#c2
  * https://en.wikipedia.org/wiki/Drag_(physics)
  * https://en.wikipedia.org/wiki/Stokes'_law
  */
-void applyBuoyancyApprox(Object* obj)
+void applyStokesApprox(Object* obj)
 {
 
     //Only apply Stokes approximation to objects that have mass
@@ -303,6 +485,19 @@ void applyBuoyancyApprox(Object* obj)
     }
 }
 
+/**
+ * Applies player's input to the player object only when the player object
+ * is under water. This is so that the player loses control when jumping
+ * out of the water providing for a more realistic game play.
+ *
+ * Note: It is possible to apply forces to two directions at a the same time.
+ * Initially, this was merely an oversight but eventually we decided to keep
+ * this method as it allows the player to move at angles faster than in
+ * straight lines, as it seems to have a positive effect in that players
+ * are encourages to move up and down as they move forward.
+ *
+ * @param obj
+ */
 void applyPlayerMovement(Object* obj)
 {
     if (obj->pos.y < getOceanUpperBound(obj->pos.x)) {
@@ -321,6 +516,14 @@ void applyPlayerMovement(Object* obj)
     }
 }
 
+/**
+ * Listens to play inputs and modified the player movement mask using bit
+ * operators. On keyPress, the bit mask for the direction is added,
+ * on KeyRelease, the bit mask for the direction is removed from the player
+ * movement mask.
+ *
+ * See: applyPlayerMovement(...)
+ */
 void handlePlayerMovement(const XEvent& event)
 {
     if (event.type == KeyPress) {
@@ -354,6 +557,17 @@ void handlePlayerMovement(const XEvent& event)
     }
 }
 
+/**
+ * Makes sure the player can not move past the screen
+ * more than the minimum allowable position of the camera.
+ *
+ * If the player attempts to "collide" into the left side of the screen,
+ * he simply bounces back.
+ *
+ * Additionally, the function modified the way the treasure object
+ * is located on the y axis as we wanted it to rest slightly below
+ * the bottom of the ocean floor upper boundary
+ */
 void applyObjectBoundaryCollision(Object* obj)
 {
     switch (obj->objectType) {
@@ -366,9 +580,9 @@ void applyObjectBoundaryCollision(Object* obj)
     case ObjectTypeEnemy:
     case ObjectTypeFriendly:
         if (obj->name != "treasure" &&
-            obj->pos.y < (  getOceanFloorUpperBound(obj->pos.x) + 
+            obj->pos.y < (  getOceanFloorUpperBound(obj->pos.x) +
                             obj->avgRadius * PIXEL_TO_METER)) {
-            obj->pos.y = (  getOceanFloorUpperBound(obj->pos.x) + 
+            obj->pos.y = (  getOceanFloorUpperBound(obj->pos.x) +
                             obj->avgRadius * PIXEL_TO_METER);
         }
     default:
@@ -376,19 +590,39 @@ void applyObjectBoundaryCollision(Object* obj)
     }
 }
 
+/**
+ * This function caps the maximum velocity that the player
+ * can escape from the ocean. We found that after several upgrades, the
+ * velocity became so great that the player was in the air for such a long
+ * time that it was detrimental to the game play, we simply capped the vertical
+ * velocity at a highest value of 8.0
+ *
+ */
 void applyPlayerOceanBurstMovement(Object* player, float stepDuration)
 {
-    if (    player->pos.y > getOceanUpperBound(player->pos.x) && 
+    if (    player->pos.y > getOceanUpperBound(player->pos.x) &&
             player->vel.y > 8.0f) {
         player->vel.y = 8.0f;
     }
 }
 
+/**
+ * Helper function for the function applyObjectLifetimePolicies to help
+ * determine whether or not the object is off screen.
+ */
 bool isOffscreen(Object* obj)
 {
     return obj->pos.x <= game.player->pos.x - game.xres * 0.5;
 }
 
+/**
+ * Applies and determines whether or not an object lifetime has expired
+ * It considers only friendlies, neutrals and enemies for termination.
+ * In the case where an object is determined to be off screen, it is
+ * deleted, and it returns true as a signal that it can be safely
+ * removed from the vector of objects.
+ *
+ */
 bool applyObjectLifetimePolicies(Object* obj)
 {
     switch (obj->objectType) {
@@ -396,9 +630,6 @@ bool applyObjectLifetimePolicies(Object* obj)
     case ObjectTypeNeutral:
     case ObjectTypeEnemy:
         if (isOffscreen(obj)) {
-            game.objects.erase(
-                    std::remove(game.objects.begin(), game.objects.end(), obj)
-                    );
             delete obj;
             return true;
         }
@@ -409,19 +640,49 @@ bool applyObjectLifetimePolicies(Object* obj)
     return false;
 }
 
+/**
+ * The following functions are a part of the Resource base class,
+ * its prototype is as follows:
+ *
+ * struct Resource {
+ *   Resource(std::string p);
+ *   virtual ~Resource();
+ *   virtual GLuint getResourceId() = 0;
+ * };
+ */
+
+/**
+ * Base constructor of Resource class
+ * @param p the name or the path of the resource
+ */
 Resource::Resource(std::string p)
 : path(p)
 {
 }
 
+/**
+ * Resource base class must have a virtual destructor
+ */
 Resource::~Resource()
 {
 }
 
+/**
+ * TextureResource is a subclass of Resource
+ * It converts an image file to a openGL texture which can then be
+ * easily reused throughout the program
+ *
+ * @param texFile the name of the texture file (with or without ppm extension
+ * as it will automatically be converted to the appropriate ppm extension
+ * @param tol the tolerance of the pixel translation which allows
+ * the addAlphaChannel function to have a tolerance of how close the color is.
+ * See addAlphaChannel for details.
+ */
 TextureResource::TextureResource(std::string texFile, int tol)
-: Resource(texFile),
-texId(), texTransUsingFirstPixel(true),
-tolerance(tol)
+    :   Resource(texFile),
+        texId(),
+        texTransUsingFirstPixel(true),
+        tolerance(tol)
 {
     glEnable(GL_TEXTURE_2D);
     //If textureFile does not end with .ppm,
@@ -444,35 +705,70 @@ tolerance(tol)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     //TRANSPARENCY
-    unsigned char *texAlphaData = buildAlphaData(
-            tex,
-            this->texTransUsingFirstPixel,
-            this->tolerance
-            );
+    unsigned char *texAlphaData = addAlphaChannel(
+        tex,
+        this->texTransUsingFirstPixel,
+        this->tolerance
+    );
     glTexImage2D(
-            GL_TEXTURE_2D, 0,
-            GL_RGBA, w, h, 0,
-            GL_RGBA,
-            GL_UNSIGNED_BYTE,
-            texAlphaData
-            );
+        GL_TEXTURE_2D, 0,
+        GL_RGBA, w, h, 0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        texAlphaData
+    );
     ppm6CleanupImage(tex);
     free(texAlphaData);
     glDisable(GL_TEXTURE_2D);
 }
 
-TextureResource::~TextureResource()
-{
-}
-
+/**
+ * Returns the resource identifier for using the texture in openGL
+ */
 GLuint TextureResource::getResourceId()
 {
     return this->texId;
 }
 
 /**
- * Maps multiple textures into a flip book
- * @param pathWildcard
+ * The following functions are a part of the FlipBook class which is a sub
+ * class of the Resource base class and have a composition of TextureResources
+ * of one to many.
+ *
+ * The prototype for FlipBook defined as follows:
+ *
+ * struct FlipBook : Resource {
+ *      FlipBook(std::string pathWildcard, float fps, int tol = 0);
+ *      ~FlipBook();
+ *      void step(float stepDuration);
+ *      virtual GLuint getResourceId();
+ *      virtual void setFPS(float fps);
+ *  protected:
+ *      float duration;
+ *      float fps;
+ *      TextureResource* current;
+ *      std::vector<TextureResource*> book;
+ * };
+ */
+/**
+ *
+ * The constructor for the FlipBook resource class.
+ *
+ * A FlipBook maps multiple TextureResources as a single Resource.
+ * Then it provides for a way flipping through the pages, at a constant
+ * rate (that is framesPerSecond, or FPS). This frame rate is used to determine
+ * which texture it should be selecting at any given time.
+ *
+ * FlipBook also supports a way of adjust FPS on the fly, which is the way that
+ * the player's fish animation is speedup the faster the player is moving.
+ *
+ * @param pathWildcard a wildcard path such as "./images/coin*" that will
+ * be expanded to contain all textures that match the filename
+ *
+ * @param framesPerSeconds the number of frames to display per second
+ *
+ * @param tolerance this parameter will be passed to the TextureResource
+ * classes created as a result of the initialization of this class
  */
 FlipBook::FlipBook(
         std::string pathWildcard,
@@ -498,6 +794,10 @@ current(NULL), book()
     }
 }
 
+/**
+ * Deconstructor of the FlipBook simply iterates over all the pages
+ * in the book and deletes them, calling their own destructors.
+ */
 FlipBook::~FlipBook()
 {
     //free resources
@@ -510,9 +810,12 @@ FlipBook::~FlipBook()
 }
 
 /**
- * This increments the frame forward synchronized
- * with the physical movement during play (GameScenePlay)
- * @param stepDuration
+ * This function is called on a per FlipBook basis as a way
+ * of altering each FlipBook's FPS independently of other animations
+ * This function also selects which frame should be displayed at any given
+ * time.
+ *
+ * @param stepDuration the amount the game timer has moved forward
  */
 void FlipBook::step(float stepDuration)
 {
@@ -521,11 +824,21 @@ void FlipBook::step(float stepDuration)
     this->current = this->book[frame];
 }
 
+/**
+ * Returns the currently selected page in the FlipBook. See step(...) function
+ * to see how we decide which frame to display.
+ */
 GLuint FlipBook::getResourceId()
 {
     return this->current->getResourceId();
 }
 
+/**
+ * Adjust the FPS of the FlipBook, this can be done on the fly to
+ * change the number of frames to display per second
+ *
+ * @param newFPS the new frame rate per second
+ */
 void FlipBook::setFPS(float newFPS)
 {
     this->duration = this->duration * this->fps / newFPS;
@@ -533,9 +846,12 @@ void FlipBook::setFPS(float newFPS)
 }
 
 /**
- * Lookup resources by mapped name to the actual resource name
- * @param obj
- * @param resourceName
+ * Map a resource by name to an object. Makes it easier to find the appropriate
+ * resource to be used by the object. It searches (using a binary search) a map
+ * of all resource names to their respective Resource representation
+ *
+ * @param obj the object to map the resource to
+ * @param resourceName the name of the resource to map to the object
  */
 void mapResource(Object* obj, const char* resourceName)
 {
@@ -544,11 +860,19 @@ void mapResource(Object* obj, const char* resourceName)
         obj->resource = (*it).second;
     } else {
         initFailure(
-                (std::string("Resource not found: ") + resourceName).c_str()
-                );
+            (std::string("Resource not found: ") + resourceName).c_str()
+        );
     }
 }
 
+/**
+ * This function is called in stepPhysics to
+ * iterate over all resources, and check for an instance of a FlipBook,
+ * if a resource is a FlipBook, it's internal step counter is increment
+ * by calling the FlipBook.step(...) function
+ *
+ * @param stepDuration the amount of time the game time has moved forward
+ */
 void stepFlipBooks(float stepDuration)
 {
     for (ResourceMap::iterator it = game.resourceMap.begin(),
@@ -564,19 +888,29 @@ void stepFlipBooks(float stepDuration)
 
 }
 
-//ALPHA DATA FUNCTION
-
 /**
- * Builds transparency texture using non-transparent
- * image data
+ * Builds transparency texture using non-transparent image data
  *
- * @param img
+ * This function builds ontop of Gordon's original buildAlphaData function
+ * but adds a way of using the first pixel of the image to automatically
+ * infer the color which should be changed to transparency and it also
+ * provides for a way of adding tolerance to the way a pixel is determined
+ * whether or not it is close enough to the transparency color
+ *
+ * The reason for this tolerance parameter is that due to compression
+ * necessary to keep the size of the images down, it introduces pixelation of
+ * plain background color which meant that sharp images were no longer
+ * as sharp as before. This simple measure avoids that problem.
+ *
+ * @param img the Ppmimage image to process
  * @param firstPixel If true, it uses the first pixel to determine the
- * color that is transparent
- * @param tol the tolerance of that pixel
- * @return
+ * color that is transparent color
+ * @param tol the tolerance of that pixel, or how close the pixel can be to
+ * the firstPixel color to be considered transparent
+ * @return a new object allocated by malloc, therefore must be deallocated with
+ * free(...)
  */
-unsigned char *buildAlphaData(
+unsigned char *addAlphaChannel(
         Ppmimage *img,
         bool firstPixel,
         int tol)
@@ -600,8 +934,8 @@ unsigned char *buildAlphaData(
         *(ptr + 0) = a;
         *(ptr + 1) = b;
         *(ptr + 2) = c;
-        *(ptr + 3) = !( std::abs(a - ta) <= tol && 
-                        std::abs(b - tb) <= tol && 
+        *(ptr + 3) = !( std::abs(a - ta) <= tol &&
+                        std::abs(b - tb) <= tol &&
                         std::abs(c - tc) <= tol );
         ptr += 4;
         data += 3;
@@ -609,6 +943,24 @@ unsigned char *buildAlphaData(
     return newdata;
 }
 
+/**
+ * Updates the high scores on the server, retrieves the list of the player's
+ * scores, and updates the high score list on the client
+ *
+ * The server will send back a list of 11 high score entries, 10 of which
+ * are the global high scores for all players, and the last entry is the
+ * player who called this function. This provides a way to "resume" game play
+ * using the provided username. Of course, for simplicity's sake, we did not
+ * provide a way to assign a user a password.
+ *
+ * Method: Connects to sleipnir.cs.csub.edu web server and does a get
+ * request (HTTP  - GET) to the web server, submitting the username
+ * and the latestHigh (possibly a 0) as URL parameters.
+ *
+ * @param username The username entered on startup
+ * @param latestHigh the last high score, a score to be published.
+ * @return 0 on success, -1 on failure
+ */
 int updateHighScores(std::string username, int latestHigh)
 {
     const char* host = "sleipnir.cs.csub.edu";
@@ -742,6 +1094,19 @@ int updateHighScores(std::string username, int latestHigh)
     return 0;
 }
 
+/**
+ * Apply a randomized sinusoidal player motion
+ * It initializes the object doubleAttribute1 to a random value
+ * and then maps a sine wave to the ocean floor upper boundary
+ * and the ocean upper boundary.
+ *
+ * Note: This function could use more improvement, but after attempting many
+ * ways of randomizing the motion, this is still the one that provides the
+ * best game play.
+ *
+ * @param obj the object to be considered for non-player motion
+ * @param stepDuration how much the game time has moved forward
+ */
 void applyNonPlayerMotion(Object* obj, float stepDuration)
 {
     if (obj->objectType == ObjectTypeEnemy) {
@@ -765,6 +1130,25 @@ void applyNonPlayerMotion(Object* obj, float stepDuration)
     }
 }
 
+/**
+ * This function handles ALL rotation logic
+ *
+ * It provides two methods of rotation:
+ *
+ * 1) Setting object's rotateByVelocity - This method uses the velocity as a means of
+ * determining which direction the object should be rotating, but it is fixed
+ * at a 45% downward or upward angle at most.
+ *
+ * 2) Setting object's rotationTarget, fixedRotation, and rotationRate, an object
+ * can be rotated by a fixed amount per second, which is the method by which
+ * the pirate ship is rotated as it sinks down. For this method to take effect,
+ * rotationTarget must not be equal to the objects rotation, and fixedRotation
+ * must be set to true, then the object will be rotated by rotationRate
+ * (degrees) per second
+ *
+ * @param obj the object to consider for rotation handling
+ * @param stepDuration the time the game play has moved forward
+ */
 void applyRotationalHandling(Object* obj, float stepDuration)
 {
     if (obj->rotateByVelocity) {
@@ -783,19 +1167,19 @@ void applyRotationalHandling(Object* obj, float stepDuration)
                 target = std::min((deg + M_PI) * 180 / M_PI, 45.0);
             }
         }
-        if (obj->slowRotate) {
+        if (obj->fixedRotation) {
             obj->rotation += target * stepDuration * obj->rotationRate;
         } else {
             obj->rotation = target;
         }
-    } else if (obj->rotationTarget != obj->rotation && obj->slowRotate) {
+    } else if (obj->rotationTarget != obj->rotation && obj->fixedRotation) {
         float delta = stepDuration * obj->rotationRate;
-        if (    obj->rotationRate > 0 && 
+        if (    obj->rotationRate > 0 &&
                 obj->rotation < obj->rotationTarget) {
             obj->rotation = std::min(
                 obj->rotation + delta, obj->rotationTarget
             );
-        } else if ( obj->rotationRate < 0 && 
+        } else if ( obj->rotationRate < 0 &&
                     obj->rotation > obj->rotationTarget) {
             obj->rotation = std::max(
                 obj->rotation + delta, obj->rotationTarget
@@ -805,6 +1189,12 @@ void applyRotationalHandling(Object* obj, float stepDuration)
     }
 }
 
+/**
+ * Updates textual information in the game and provides a terminal play
+ * condition where the game state is reset in the case of the player
+ * depleting all health points.
+ *
+ */
 void updateGameStats()
 {
     //Link the health bar to the health text int attribute
@@ -815,8 +1205,8 @@ void updateGameStats()
         game.lastScore = game.pointsTxt->intAttribute1;
         updateHighScores(game.playerInfo.name, game.lastScore);
 
-        for (int    i = game.preservedObjects, 
-                    l = game.objects.size(); 
+        for (int    i = game.preservedObjects,
+                    l = game.objects.size();
                     i < l; ++i) {
             delete game.objects[i];
         }
@@ -887,6 +1277,10 @@ void updateGameStats()
     }
 }
 
+/**
+ * Listen to keyboard press events for the username menu when the game starts
+ *
+ */
 void handleLoginInput(const XEvent& event)
 {
     if (event.type == KeyPress) {
@@ -894,19 +1288,19 @@ void handleLoginInput(const XEvent& event)
         KeySym keysym;
         int key = XLookupKeysym(const_cast<XKeyEvent*> (&event.xkey), 0);
         int len = XLookupString(
-            const_cast<XKeyEvent*> (&event.xkey), 
+            const_cast<XKeyEvent*> (&event.xkey),
             seq, 25, &keysym, NULL
         );
         if (len > 0) {
-            if (    key == XK_Return && game.loginTxt->name != "<Enter>" && 
+            if (    key == XK_Return && game.loginTxt->name != "<Enter>" &&
                     game.loginTxt->name.size() >= 4) {
                 game.playerInfo.name = game.loginTxt->name;
                 game.scene &= ~GameSceneLogin;
                 updateHighScores(game.playerInfo.name, 0);
-            } else if ( key == XK_BackSpace && 
-                        game.loginTxt->name != "<Enter>" && 
+            } else if ( key == XK_BackSpace &&
+                        game.loginTxt->name != "<Enter>" &&
                         !game.loginTxt->name.empty()) {
-                game.loginTxt->name = 
+                game.loginTxt->name =
                     game.loginTxt->name.substr(
                         0, game.loginTxt->name.size() - 1
                     );
